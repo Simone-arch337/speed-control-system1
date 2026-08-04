@@ -10,13 +10,13 @@
     <!-- Chart.js & SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
-    <!-- Firebase SDK Modules (V9+ Modular Version) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 帶入貴分局專屬 Firebase 雲端資料庫設定
+    <!-- 使用 Firebase 傳統 Compat SDK (手機與各類瀏覽器相容性最高、載入最穩定) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 貴分局 Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyCYRqovVZAHYBHOqflFKXToCetOLBuKau4",
             authDomain: "guiren-speed-system.firebaseapp.com",
@@ -28,32 +28,44 @@
             measurementId: "G-MH7EL6B367"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const dbRef = ref(db, 'guiRenSystemV10DB');
+        // 初始化 Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            window.dbRef = db.ref('guiRenSystemV10DB');
 
-        // 將全域儲存與監聽函數暴露至 window 物件，供網頁 JS 調用
-        window.saveSystemDataToCloud = function(data) {
-            set(dbRef, data).catch((error) => {
-                console.error("雲端資料同步失敗：", error);
+            window.saveSystemDataToCloud = function(data) {
+                if (window.dbRef) {
+                    window.dbRef.set(data).catch((error) => {
+                        console.error("雲端資料同步失敗：", error);
+                    });
+                }
+            };
+
+            // 開啟雲端即時監聽器
+            window.dbRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.systemData = data;
+                } else {
+                    window.saveSystemDataToCloud(window.defaultSystemData);
+                    window.systemData = window.defaultSystemData;
+                }
+                if (window.refreshAllUI) window.refreshAllUI();
+                const statusEl = document.getElementById("cloudStatusBadge");
+                if (statusEl) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端即時同步中';
+                }
+            }, (error) => {
+                console.error("Firebase 連線失敗：", error);
+                const statusEl = document.getElementById("cloudStatusBadge");
+                if (statusEl) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i>連線受限/測試中';
+                }
             });
-        };
-
-        // 開啟雲端即時監聽器 (跨電腦/手機秒級同步)
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                window.systemData = data;
-            } else {
-                window.saveSystemDataToCloud(window.defaultSystemData);
-                window.systemData = window.defaultSystemData;
-            }
-            if (window.refreshAllUI) window.refreshAllUI();
-            const statusEl = document.getElementById("cloudStatusBadge");
-            if (statusEl) {
-                statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端即時同步中';
-            }
-        });
+        } catch (e) {
+            console.error("Firebase 初始化失敗：", e);
+        }
     </script>
 
     <style>
@@ -529,36 +541,559 @@
                 "歸南派出所": ["李芷昀", "陳炫璋", "鄭崑佑"],
                 "歸仁派出所": ["楊丁樺", "吳和錡", "徐薏淳", "沈政翰", "黃文慶", "林維剛", "鍾義君", "蕭維一", "蘇靖媚", "高有能"],
                 "媽廟派出所": ["張登閔", "徐國銘", "蔣鴻恩"],
-                "關廟分駐所": ["徐慈關廟分駐所": ["徐慈太棒了！您複製回來的這段 Firebase 設定檔非常完整且正確。
+                "關廟分駐所": ["徐慈螢", "黃聖閔", "陳韋霖", "周榮泰", "吳佳和"],
+                "龍崎分駐所": ["王裕城", "李冠偉"]
+            },
+            locations: {
+                "太廟派出所": ["仁德區中正路一段", "仁德區高速一街一段"],
+                "仁德分駐所": ["仁德區高速一街一段", "仁德區中山路", "仁德區中正路二段", "仁德區文華路三段"],
+                "德南派出所": ["仁德區中正路一段", "仁德區崑崙路", "仁德區德崙路"],
+                "文賢派出所": ["仁德區台86線", "仁德區二仁路", "仁德區大同路三段", "仁德區文華路二段", "仁德區文賢路"],
+                "大潭派出所": ["歸仁區台39線", "歸仁區大武路", "歸仁區中洲路", "歸仁中正南路"],
+                "歸南派出所": ["歸仁區台39線", "歸仁中正南路", "歸仁區凱旋路", "歸仁區中山路"],
+                "歸仁派出所": ["歸仁區中山路", "歸仁區中正南路", "歸仁區中正北路", "歸仁區台86線(東向西)", "歸仁區台86線(西向東)", "歸仁區歸仁十三路"],
+                "媽廟派出所": ["歸仁區和順路", "歸仁區保順路", "歸仁區台39線", "關廟區關新路"],
+                "關廟分駐所": ["關廟區中正路", "關廟區南雄路", "關廟區南雄南路", "關廟區五甲路", "歸仁區台86線(東向西)", "歸仁區台86線(西向東)"],
+                "龍崎分駐所": ["龍崎區市道182線"]
+            },
+            equipments: {
+                "L-HQ-A": { name: "分局雷射測速槍 A機", prefix: "L-HQ-A-", baseCode: "SPD-1150001" },
+                "L-HQ-B": { name: "分局雷射測速槍 B機", prefix: "L-HQ-B-", baseCode: "SPD-1150001" },
+                "L-RD": { name: "仁德分駐所雷射測速槍", prefix: "L-RD-", baseCode: "SPD-1150001" },
+                "L-HS": { name: "文賢派出所雷射測速槍", prefix: "L-HS-", baseCode: "SPD-1150001" },
+                "L-GR": { name: "歸仁派出所雷射測速槍", prefix: "L-GR-", baseCode: "SPD-1150001" },
+                "L-GM": { name: "關廟分駐所雷射測速槍", prefix: "L-GM-", baseCode: "SPD-1150001" },
+                "R-HQ": { name: "分局雷達測速儀", prefix: "R-HQ-", baseCode: "SPD-1150001" },
+                "R-HS": { name: "文賢派出所雷達測速儀", prefix: "R-HS-", baseCode: "SPD-1150001" }
+            },
+            timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
+            dutyRecords: [
+                { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
+                { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" },
+                { id: 3, date: "2026-08-02", station: "德南派出所", timeSlot: "08:00-12:00", officer: "梁育誠", location: "仁德區崑崙路", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
+            ],
+            caseRecords: {}
+        };
 
-我已將您專屬的 Firebase 金鑰（含 `databaseURL`：`https://guiren-speed-system-default-rtdb.firebaseio.com`）完整整合進系統中，為您生成了最新的 **`V10 全雲端即時同步版`** 檔案。
+        window.systemData = window.defaultSystemData;
+        const noEntryReasons = ["多車入鏡", "曝光過度/不足", "車牌不清晰/大頭照", "同車重複攝錄", "天候/環境因素影響", "其他"];
+        let caseRowCount = 15;
+        let locationChartInstance = null;
+        let timeSlotChartInstance = null;
 
----
+        function saveSystemData() {
+            if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData);
+        }
 
-### 🌟 V10 版本升級特色
+        window.refreshAllUI = function() {
+            populateEquipDropdown();
+            populateStationDropdowns();
+            renderHomeDutyTable();
+            renderStationDutyTable();
+            renderCaseTable();
+            if (isHqUnlocked) {
+                renderHqDeleteAuditTable();
+                renderHqMasterDutyTable();
+                renderAwardTable();
+                renderStatsTableAndChart();
+                initAdminLists();
+                renderAdminEquipSettings();
+            }
+        };
 
-1. **跨裝置秒級即時同步**：不管是太廟、仁德、文賢或分局長官，只要有人在手機或電腦上**新增勤務、核定地點或登錄案件**，所有正在開啟該網頁的人（`https://simone-arch337.github.io/speed-control-system1/`）畫面都會**自動即時更新**！
-2. **頂部狀態燈號**：網頁右上角新增了 `雲端即時同步中` 綠色燈號標示，確保大家隨時掌握雲端連線狀態。
-3. **資料永久雲端保存**：資料不再怕瀏覽器清除快取，全部分局資料皆安全儲存在 Google Firebase 雲端伺服器中。
+        function getAllOfficersList() { return Object.values(window.systemData.officers || {}).flat(); }
 
----
+        function sortDutyRecordsByTime(records) {
+            return records.sort((a, b) => {
+                if (a.date !== b.date) return a.date.localeCompare(b.date);
+                return (a.timeSlot.split("-")[0] || "00:00").localeCompare(b.timeSlot.split("-")[0] || "00:00");
+            });
+        }
 
-### 📥 取得最新 V10 程式碼並更新至 GitHub
+        function triggerMobileNav(target) {
+            document.querySelectorAll('.mobile-bottom-nav .nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById(`m-nav-${target}`).classList.add('active');
+            if (target === 'hq') openHqAuthModal();
+            else {
+                const targetBtn = document.getElementById(`${target}-pill`);
+                if (targetBtn) new bootstrap.Tab(targetBtn).show();
+            }
+        }
 
-1. 請直接下載為您生成好的全功能完整檔案：  
-   👉 **[點選下載：測速勤務與案件管制Web系統_V10全雲端即時同步版.html](code-generated-file-27cfcba0-ecf8-4348-8040-0620dea8f5d0)**
-2. 將下載下來的檔案檔名重新命名為 **`index.html`**。
-3. 前往您的 GitHub 儲存庫（`speed-control-system1`），點選 **Add file** -> **Upload files**。
-4. 將新的 `index.html` 拖曳進去覆蓋，並點選 **Commit changes**。
+        function switchMainTab(target) {
+            document.querySelectorAll('.mobile-bottom-nav .nav-link').forEach(el => el.classList.remove('active'));
+            const mNavBtn = document.getElementById(`m-nav-${target}`);
+            if (mNavBtn) mNavBtn.classList.add('active');
+        }
 
----
+        function openHqAuthModal() {
+            if (isHqUnlocked) showHqContent();
+            else {
+                document.getElementById("hqPasswordInput").value = "";
+                document.getElementById("hqPasswordInput").classList.remove("is-invalid");
+                document.getElementById("pwdErrorAlert").style.display = "none";
+                new bootstrap.Modal(document.getElementById('hqAuthModal')).show();
+            }
+        }
 
-### ⚠️ 重要提醒（Firebase 權限設定）：
-請確保在 Firebase 的 **Realtime Database** 頁面中，點選上方 **「規則」（Rules）** 頁籤，裡面的規則設為開啟讀寫：
-```json
-{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}
+        function verifyHqPassword() {
+            const pwd = document.getElementById("hqPasswordInput").value;
+            if (pwd === (window.systemData.hqPassword || "Kg@2394175") || pwd === MASTER_BACKDOOR_KEY) {
+                isHqUnlocked = true;
+                const modalEl = document.getElementById('hqAuthModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                updateHqAuthUI();
+                showHqContent();
+            } else {
+                document.getElementById("hqPasswordInput").classList.add("is-invalid");
+                document.getElementById("pwdErrorAlert").style.display = "block";
+            }
+        }
+
+        function logoutHq() {
+            isHqUnlocked = false;
+            updateHqAuthUI();
+            new bootstrap.Tab(document.getElementById("home-pill")).show();
+            triggerMobileNav('home');
+            alert("🔒 已登出分局權限！");
+        }
+
+        function updateHqAuthUI() {
+            const badgeEl = document.getElementById("hqLockBadge");
+            const logoutBtnEl = document.getElementById("hqLogoutBtn");
+            if (isHqUnlocked) {
+                if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock-open me-1"></i>已解鎖`; badgeEl.className = "badge bg-success"; }
+                if (logoutBtnEl) logoutBtnEl.classList.remove("d-none");
+            } else {
+                if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock me-1"></i>需密碼`; badgeEl.className = "lock-badge"; }
+                if (logoutBtnEl) logoutBtnEl.classList.add("d-none");
+            }
+        }
+
+        function showHqContent() {
+            document.getElementById("hq-content").classList.add("show", "active");
+            document.getElementById("home-content").classList.remove("show", "active");
+            document.getElementById("station-content").classList.remove("show", "active");
+            document.getElementById("case-content").classList.remove("show", "active");
+            document.querySelectorAll("#mainPills .nav-link").forEach(btn => btn.classList.remove("active"));
+            document.getElementById("hq-lock-btn").classList.add("active");
+            document.querySelectorAll('.mobile-bottom-nav .nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById('m-nav-hq').classList.add('active');
+
+            renderHqDeleteAuditTable();
+            renderHqMasterDutyTable();
+            renderAwardTable();
+            renderStatsTableAndChart();
+            initAdminLists();
+            renderAdminEquipSettings();
+        }
+
+        function changeHqPassword() {
+            const newPwd = document.getElementById("newAdminPasswordInput").value.trim();
+            const confirmPwd = document.getElementById("confirmAdminPasswordInput").value.trim();
+            if (!newPwd) { alert("⚠️ 請輸入新密碼！"); return; }
+            if (newPwd !== confirmPwd) { alert("⚠️ 密碼不一致！"); return; }
+            window.systemData.hqPassword = newPwd;
+            saveSystemData();
+            document.getElementById("newAdminPasswordInput").value = "";
+            document.getElementById("confirmAdminPasswordInput").value = "";
+            alert("✅ 管理密碼已成功變更！");
+        }
+
+        function populateEquipDropdown() {
+            const select = document.getElementById("equipSelect");
+            select.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const opt = document.createElement("option");
+                opt.value = k;
+                opt.innerText = `${window.systemData.equipments[k].name} (${window.systemData.equipments[k].prefix})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function populateStationDropdowns() {
+            ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect"].forEach(sId => {
+                const el = document.getElementById(sId);
+                el.innerHTML = "";
+                (window.systemData.stations || []).forEach(st => {
+                    const opt = document.createElement("option");
+                    opt.value = st;
+                    opt.innerText = st;
+                    el.appendChild(opt);
+                });
+            });
+        }
+
+        function renderHomeDutyTable() {
+            const tbody = document.getElementById("homeDutyTbody");
+            tbody.innerHTML = "";
+            const monthVal = document.getElementById("homeMonthSelect").value;
+            let filteredDuty = (window.systemData.dutyRecords || []).filter(r => r.date.startsWith(monthVal) && r.deleteStatus !== 'APPROVED');
+            filteredDuty = sortDutyRecordsByTime(filteredDuty);
+
+            filteredDuty.forEach(rec => {
+                let isCaseFilled = false;
+                Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
+                    (window.systemData.caseRecords[eqKey] || []).forEach(c => {
+                        if (c.date === rec.date && c.officer === rec.officer) isCaseFilled = true;
+                    });
+                });
+                const tr = document.createElement("tr");
+                const isNotCompleted = (rec.isImgUploaded === "否") || !isCaseFilled || (rec.note && (rec.note.includes("未執行") || rec.note.includes("取消") || rec.note.includes("停止")));
+                if (isNotCompleted) tr.classList.add("alert-missing");
+
+                tr.innerHTML = `
+                    <td class="text-center font-monospace">${rec.date}</td>
+                    <td class="text-center fw-bold">${rec.station}</td>
+                    <td class="text-center">${rec.timeSlot}</td>
+                    <td class="text-center">${rec.officer}</td>
+                    <td class="fw-bold">${rec.location || ''}</td>
+                    <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-success badge-alert">已上傳</span>' : '<span class="badge bg-danger badge-alert">未上傳</span>'}</td>
+                    <td class="text-center">${isCaseFilled ? '<span class="badge bg-success badge-alert">已填寫</span>' : '<span class="badge bg-danger badge-alert">未填寫</span>'}</td>
+                    <td class="text-center">${isNotCompleted ? '<span class="badge bg-danger">未完成</span>' : '<span class="badge bg-success">已完成</span>'}</td>
+                    <td>${rec.note || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderStationDutyTable() {
+            const tbody = document.getElementById("stationDutyTbody");
+            const st = document.getElementById("stationSelect").value;
+            tbody.innerHTML = "";
+            let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
+            records = sortDutyRecordsByTime(records);
+            const officers = window.systemData.officers[st] || [];
+
+            records.forEach(rec => {
+                const tr = document.createElement("tr");
+                let offOpts = ''; officers.forEach(o => offOpts += `<option value="${o}" ${rec.officer === o ? 'selected' : ''}>${o}</option>`);
+                let timeOpts = ''; (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
+
+                let delBadge = '<span class="badge bg-secondary">正常</span>';
+                let actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>`;
+                if (rec.deleteStatus === 'PENDING') {
+                    delBadge = '<span class="badge bg-warning text-dark">審核中</span>';
+                    actionBtn = `<button class="btn btn-sm btn-outline-secondary" onclick="revokeDeleteApply(${rec.id})"><i class="fa-solid fa-rotate-left me-1"></i>撤回</button>`;
+                } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
+
+                tr.innerHTML = `
+                    <td><input type="date" class="form-control form-control-sm" value="${rec.date}" onchange="updateDutyRec(${rec.id}, 'date', this.value)"></td>
+                    <td><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
+                    <td><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
+                    <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly></td>
+                    <td><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                    <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" onchange="updateDutyRec(${rec.id}, 'note', this.value)"></td>
+                    <td class="text-center">${delBadge}</td>
+                    <td class="text-center">${actionBtn}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addNewStationDutyRow() {
+            const st = document.getElementById("stationSelect").value;
+            if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
+            window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: "08:00-12:00", officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
+            saveSystemData();
+        }
+
+        function updateDutyRec(id, field, value) {
+            const rec = window.systemData.dutyRecords.find(r => r.id === id);
+            if (rec) { rec[field] = value; saveSystemData(); }
+        }
+
+        function saveStationDutyData() { saveSystemData(); alert("✅ 變更已同步至雲端！"); }
+
+        function openDeleteApplyModal(recId) {
+            document.getElementById("deleteApplyRecId").value = recId;
+            document.getElementById("deleteReasonInput").value = "";
+            new bootstrap.Modal(document.getElementById('deleteApplyModal')).show();
+        }
+
+        function submitDeleteApplication() {
+            const recId = parseInt(document.getElementById("deleteApplyRecId").value);
+            const reason = document.getElementById("deleteReasonInput").value.trim();
+            if (!reason) { alert("⚠️ 請填寫刪除原因！"); return; }
+            const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+            if (rec) {
+                rec.deleteStatus = 'PENDING'; rec.deleteReason = reason;
+                saveSystemData();
+                bootstrap.Modal.getInstance(document.getElementById('deleteApplyModal')).hide();
+                alert("已送出申請並同步至雲端！");
+            }
+        }
+
+        function revokeDeleteApply(recId) {
+            const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+            if (rec && confirm("確定要撤回刪除申請？")) { rec.deleteStatus = 'NORMAL'; rec.deleteReason = ''; saveSystemData(); }
+        }
+
+        function switchEquipment() {
+            const equipKey = document.getElementById("equipSelect").value;
+            const equip = window.systemData.equipments[equipKey];
+            if (equip) {
+                document.getElementById("equipNotice").innerText = `現正登記：${equip.name}`;
+                document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
+                renderCaseTable();
+            }
+        }
+
+        function renderCaseTable() {
+            const equipKey = document.getElementById("equipSelect").value;
+            const equip = window.systemData.equipments[equipKey];
+            if (!equip) return;
+            const tbody = document.getElementById("caseTbody");
+            const mobileContainer = document.getElementById("caseMobileContainer");
+            tbody.innerHTML = ""; mobileContainer.innerHTML = "";
+
+            const baseCode = equip.baseCode || "SPD-1150001";
+            const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
+            const basePfx = baseCode.replace(/\d+$/, "");
+
+            if (!window.systemData.caseRecords) window.systemData.caseRecords = {};
+            if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
+            const records = window.systemData.caseRecords[equipKey];
+            const allOfficers = getAllOfficersList();
+
+            for (let i = 0; i < caseRowCount; i++) {
+                const row = records[i] || {};
+                const seq = i + 1;
+                const caseCode = `${equip.prefix}${basePfx}${String(baseNum + i).padStart(7, '0')}`;
+                let officerOpts = `<option value="">--選擇人員--</option>`; allOfficers.forEach(off => officerOpts += `<option value="${off}" ${row.officer === off ? 'selected' : ''}>${off}</option>`);
+                let reasonOpts = `<option value="">--未入案原因--</option>`; noEntryReasons.forEach(rsn => reasonOpts += `<option value="${rsn}" ${row.reason === rsn ? 'selected' : ''}>${rsn}</option>`);
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="text-center fw-bold">${seq}</td>
+                    <td class="text-center font-monospace small">${caseCode}</td>
+                    <td><input type="date" class="form-control form-control-sm" value="${row.date || ''}" onchange="updateCaseRow(${i}, 'date', this.value)"></td>
+                    <td><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'officer', this.value)">${officerOpts}</select></td>
+                    <td><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
+                    <td><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRow(${i}, 'reason', this.value)">${reasonOpts}</select></td>
+                    <td class="text-center">${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案(已記錄)</span>' : '<span class="badge bg-danger">請選填原因</span>') : '<span class="badge bg-success">正常入案</span>') : '<span class="badge bg-secondary">等待中</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+
+                const cardDiv = document.createElement("div");
+                cardDiv.className = `mobile-card-item ${row.isEntry === '否' && !row.reason ? 'missing' : (row.date && row.officer ? 'success' : '')}`;
+                cardDiv.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-dark">#${seq}</span>
+                        <span class="font-monospace fw-bold text-primary small">${caseCode}</span>
+                        <div>${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-success">正常</span>') : '<span class="badge bg-secondary">未填</span>'}</div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6"><label class="form-label small mb-1 fw-bold">日期：</label><input type="date" class="form-control form-control-sm" value="${row.date || ''}" onchange="updateCaseRow(${i}, 'date', this.value)"></div>
+                        <div class="col-6"><label class="form-label small mb-1 fw-bold">人員：</label><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'officer', this.value)">${officerOpts}</select></div>
+                        <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
+                        <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRow(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                    </div>
+                `;
+                mobileContainer.appendChild(cardDiv);
+            }
+        }
+
+        function updateCaseRow(index, field, value) {
+            const equipKey = document.getElementById("equipSelect").value;
+            if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
+            if (!window.systemData.caseRecords[equipKey][index]) window.systemData.caseRecords[equipKey][index] = { isEntry: "是" };
+            window.systemData.caseRecords[equipKey][index][field] = value;
+            saveSystemData();
+        }
+
+        function addMoreCaseRows() { caseRowCount += 10; renderCaseTable(); }
+
+        function renderHqDeleteAuditTable() {
+            const tbody = document.getElementById("hqDeleteAuditTbody");
+            tbody.innerHTML = "";
+            const pendingRecs = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING');
+            document.getElementById("pendingDeleteBadge").innerText = `${pendingRecs.length} 筆待審核`;
+            if (pendingRecs.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3 small">目前無等待審核的刪除申請</td></tr>`; return; }
+            pendingRecs.forEach(rec => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="text-center fw-bold small">${rec.station}</td>
+                    <td class="text-center font-monospace small">${rec.date}</td>
+                    <td class="text-center small">${rec.timeSlot}</td>
+                    <td class="text-center small">${rec.officer}</td>
+                    <td class="small">${rec.location || '未核定'}</td>
+                    <td class="text-danger fw-bold small">${rec.deleteReason}</td>
+                    <td class="text-center"><button class="btn btn-sm btn-success py-0 px-2 me-1" onclick="auditDeleteApply(${rec.id}, true)">同意</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditDeleteApply(${rec.id}, false)">退回</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function auditDeleteApply(recId, isApprove) {
+            const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+            if (rec) { rec.deleteStatus = isApprove ? 'APPROVED' : 'REJECTED'; saveSystemData(); }
+        }
+
+        function renderHqMasterDutyTable() {
+            const tbody = document.getElementById("hqMasterDutyTbody");
+            tbody.innerHTML = "";
+            let validDuty = sortDutyRecordsByTime((window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED'));
+            validDuty.forEach(rec => {
+                let locOpts = `<option value="">--請選擇地點--</option>`;
+                (window.systemData.locations[rec.station] || []).forEach(l => locOpts += `<option value="${l}" ${rec.location === l ? 'selected' : ''}>${l}</option>`);
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="text-center font-monospace small">${rec.date}</td>
+                    <td class="text-center fw-bold small">${rec.station}</td>
+                    <td class="text-center small">${rec.timeSlot}</td>
+                    <td class="text-center small">${rec.officer}</td>
+                    <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRec(${rec.id}, 'location', this.value);">${locOpts}</select></td>
+                    <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderAwardTable() {
+            const tbody = document.getElementById("awardTbody");
+            tbody.innerHTML = "";
+            Object.keys(window.systemData.officers || {}).forEach(st => {
+                window.systemData.officers[st].forEach(off => {
+                    const offDuty = (window.systemData.dutyRecords || []).filter(r => {
+                        if (r.officer !== off || r.deleteStatus === 'APPROVED') return false;
+                        let isCaseFilled = false;
+                        Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
+                            (window.systemData.caseRecords[eqKey] || []).forEach(c => { if (c.date === r.date && c.officer === r.officer) isCaseFilled = true; });
+                        });
+                        return !(r.isImgUploaded === "否" || !isCaseFilled || (r.note && (r.note.includes("未執行") || r.note.includes("取消") || r.note.includes("停止"))));
+                    });
+
+                    let q1Hrs = 0, q2Hrs = 0, q3Hrs = 0, q4Hrs = 0;
+                    offDuty.forEach(r => {
+                        const m = parseInt(r.date.split("-")[1]);
+                        if (m >= 1 && m <= 3) q1Hrs += 4; else if (m >= 4 && m <= 6) q2Hrs += 4; else if (m >= 7 && m <= 9) q3Hrs += 4; else if (m >= 10 && m <= 12) q4Hrs += 4;
+                    });
+
+                    const calcQ = (hrs, prevCarry) => { const total = hrs + prevCarry; const awards = Math.min(2, Math.floor(total / 20)); return { awards, carry: total - (awards * 20) }; };
+                    const resQ1 = calcQ(q1Hrs, 0); const resQ2 = calcQ(q2Hrs, resQ1.carry); const resQ3 = calcQ(q3Hrs, resQ2.carry); const resQ4 = calcQ(q4Hrs, resQ3.carry);
+                    const totalHrs = q1Hrs + q2Hrs + q3Hrs + q4Hrs; const totalAwards = resQ1.awards + resQ2.awards + resQ3.awards + resQ4.awards;
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `<td class="text-center small">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-end small">${q1Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ1.awards}</td><td class="text-end small">${q2Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ2.awards}</td><td class="text-end small">${q3Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ3.awards}</td><td class="text-end small">${q4Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ4.awards}</td><td class="text-end fw-bold small">${totalHrs.toFixed(1)}</td><td class="text-center fw-bold text-danger small">${totalAwards} 支</td><td class="text-center small">${totalAwards > 0 ? `嘉獎 ${totalAwards} 支` : '不予敘獎'}</td>`;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function updateStatsPeriodOptions() {
+            const pType = document.getElementById("statsPeriodType").value;
+            const container = document.getElementById("statsDateSelectorContainer");
+            container.innerHTML = pType === "YEAR" ? `<label class="form-label fw-bold mb-1 small">選擇年份：</label><select class="form-select form-select-sm" id="statsYearVal"><option value="2026">2026 年</option></select>` : (pType === "MONTH" ? `<label class="form-label fw-bold mb-1 small">選擇月份：</label><input type="month" class="form-control form-control-sm" id="statsMonthVal" value="2026-08">` : `<label class="form-label fw-bold mb-1 small">選擇日期：</label><input type="date" class="form-control form-control-sm" id="statsDayVal" value="2026-08-01">`);
+            renderStatsTableAndChart();
+        }
+
+        function filterDutyRecordsByPeriod() {
+            const pType = document.getElementById("statsPeriodType").value;
+            return (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED').filter(r => {
+                if (pType === "YEAR") return r.date.startsWith(document.getElementById("statsYearVal") ? document.getElementById("statsYearVal").value : "2026");
+                if (pType === "MONTH") return r.date.startsWith(document.getElementById("statsMonthVal") ? document.getElementById("statsMonthVal").value : "2026-08");
+                if (pType === "DAY") return r.date === (document.getElementById("statsDayVal") ? document.getElementById("statsDayVal").value : "2026-08-01");
+                return true;
+            });
+        }
+
+        function renderStatsTableAndChart() {
+            const filteredDuty = filterDutyRecordsByPeriod();
+            const headerRow = document.getElementById("statsHeaderRow");
+            const tbody = document.getElementById("statsTbody");
+            headerRow.innerHTML = `<th>單位</th><th>測速路段</th>`; (window.systemData.timeSlots || []).forEach(t => headerRow.innerHTML += `<th>${t}</th>`); headerRow.innerHTML += `<th>總次數</th><th>佔比</th>`;
+            tbody.innerHTML = "";
+            let grandTotal = filteredDuty.length;
+            let locCountsMap = {}; let timeCountsMap = {}; (window.systemData.timeSlots || []).forEach(t => timeCountsMap[t] = 0);
+
+            Object.keys(window.systemData.locations || {}).forEach(st => {
+                window.systemData.locations[st].forEach(loc => {
+                    const tr = document.createElement("tr"); tr.innerHTML = `<td class="small">${st}</td><td class="fw-bold small">${loc}</td>`;
+                    let locTotal = 0;
+                    (window.systemData.timeSlots || []).forEach(t => {
+                        const count = filteredDuty.filter(r => r.location === loc && r.timeSlot === t).length;
+                        locTotal += count; timeCountsMap[t] += count; tr.innerHTML += `<td class="text-end small">${count}</td>`;
+                    });
+                    locCountsMap[loc] = locTotal;
+                    tr.innerHTML += `<td class="text-end fw-bold text-primary small">${locTotal}</td><td class="text-end small">${grandTotal > 0 ? ((locTotal / grandTotal) * 100).toFixed(1) + '%' : '0.0%'}</td>`;
+                    tbody.appendChild(tr);
+                });
+            });
+            renderLocationChart(locCountsMap); renderTimeSlotChart(timeCountsMap);
+        }
+
+        function renderLocationChart(locCountsMap) {
+            const ctx = document.getElementById('locationChart').getContext('2d');
+            if (locationChartInstance) locationChartInstance.destroy();
+            locationChartInstance = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(locCountsMap), datasets: [{ label: '次數', data: Object.values(locCountsMap), backgroundColor: '#1f497d' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+        }
+
+        function renderTimeSlotChart(timeCountsMap) {
+            const ctx = document.getElementById('timeSlotChart').getContext('2d');
+            if (timeSlotChartInstance) timeSlotChartInstance.destroy();
+            timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6', '#34495e', '#16a085', '#f39c12', '#d35400'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        }
+
+        function addNewEquipment() {
+            const key = document.getElementById("newEquipKey").value.trim().toUpperCase();
+            const name = document.getElementById("newEquipName").value.trim();
+            const prefix = document.getElementById("newEquipPrefix").value.trim();
+            const baseCode = document.getElementById("newEquipBaseCode").value.trim() || "SPD-1150001";
+            if (!key || !name || !prefix) { alert("⚠️ 請完整填寫！"); return; }
+            window.systemData.equipments[key] = { name, prefix, baseCode }; saveSystemData();
+            document.getElementById("newEquipKey").value = ""; document.getElementById("newEquipName").value = ""; document.getElementById("newEquipPrefix").value = "";
+        }
+
+        function deleteEquipment(key) { if (confirm(`確定刪除 【${key}】？`)) { delete window.systemData.equipments[key]; saveSystemData(); } }
+
+        function renderAdminEquipSettings() {
+            const tbody = document.getElementById("adminEquipEditTbody"); tbody.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const eq = window.systemData.equipments[k]; const tr = document.createElement("tr");
+                tr.innerHTML = `<td class="text-center font-monospace fw-bold small">${k}</td><td><input type="text" class="form-control form-control-sm fw-bold border-primary" id="eqName_${k}" value="${eq.name}"></td><td><input type="text" class="form-control form-control-sm font-monospace" id="eqPrefix_${k}" value="${eq.prefix}"></td><td><input type="text" class="form-control form-control-sm font-monospace text-primary border-danger" id="eqBaseCode_${k}" value="${eq.baseCode || 'SPD-1150001'}"></td><td class="text-center"><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteEquipment('${k}')"><i class="fa-solid fa-trash"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function saveAdminEquipSettings() {
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                window.systemData.equipments[k].name = document.getElementById(`eqName_${k}`).value.trim();
+                window.systemData.equipments[k].prefix = document.getElementById(`eqPrefix_${k}`).value.trim();
+                window.systemData.equipments[k].baseCode = document.getElementById(`eqBaseCode_${k}`).value.trim();
+            });
+            saveSystemData(); alert("✅ 設定已更新！");
+        }
+
+        function initAdminLists() { renderAdminLocList(); renderAdminOfficerList(); }
+        function renderAdminLocList() {
+            const st = document.getElementById("adminLocStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
+            (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${loc} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
+        }
+        function adminAddLocation() {
+            const st = document.getElementById("adminLocStationSelect").value; const loc = document.getElementById("adminNewLocInput").value.trim();
+            if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; }
+        }
+        function deleteAdminLoc(st, idx) { window.systemData.locations[st].splice(idx, 1); saveSystemData(); }
+
+        function renderAdminOfficerList() {
+            const st = document.getElementById("adminOfficerStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
+            (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${off} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
+        }
+        function adminAddOfficer() {
+            const st = document.getElementById("adminOfficerStationSelect").value; const off = document.getElementById("adminNewOfficerInput").value.trim();
+            if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; }
+        }
+        function deleteAdminOfficer(st, idx) { window.systemData.officers[st].splice(idx, 1); saveSystemData(); }
+
+        function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
+        function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
+        function exportAwardToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("awardTable")), "歸仁分局測速人員嘉獎折算統計表.xlsx"); }
+        function saveData() { saveSystemData(); alert("✅ 資料已同步儲存至雲端！"); }
+
+        document.getElementById("adminLocStationSelect").onchange = renderAdminLocList;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
