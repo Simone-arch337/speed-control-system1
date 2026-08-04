@@ -396,7 +396,7 @@
                         </div>
                     </div>
 
-                    <!-- 4.4 後台設定 (新增時段管理) -->
+                    <!-- 4.4 後台設定 -->
                     <div class="tab-pane fade" id="hq-admin-content" role="tabpanel">
                         <div class="row g-3">
                             <div class="col-12">
@@ -412,7 +412,7 @@
                                 </div>
                             </div>
 
-                            <!-- 管理勤務時段 (新增區塊) -->
+                            <!-- 管理勤務時段 -->
                             <div class="col-12 col-md-4">
                                 <div class="card shadow-sm border-info">
                                     <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-clock me-2"></i>管理勤務選填時段</div>
@@ -720,6 +720,8 @@
 
         function populateEquipDropdown() {
             const select = document.getElementById("equipSelect");
+            if (!select) return;
+            const currentVal = select.value;
             select.innerHTML = "";
             Object.keys(window.systemData.equipments || {}).forEach(k => {
                 const opt = document.createElement("option");
@@ -727,11 +729,16 @@
                 opt.innerText = `${window.systemData.equipments[k].name} (${window.systemData.equipments[k].prefix})`;
                 select.appendChild(opt);
             });
+            if (currentVal && window.systemData.equipments[currentVal]) {
+                select.value = currentVal;
+            }
         }
 
         function populateStationDropdowns() {
             ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect"].forEach(sId => {
                 const el = document.getElementById(sId);
+                if (!el) return;
+                const currentVal = el.value;
                 el.innerHTML = "";
                 (window.systemData.stations || []).forEach(st => {
                     const opt = document.createElement("option");
@@ -739,6 +746,9 @@
                     opt.innerText = st;
                     el.appendChild(opt);
                 });
+                if (currentVal && (window.systemData.stations || []).includes(currentVal)) {
+                    el.value = currentVal;
+                }
             });
         }
 
@@ -777,7 +787,8 @@
 
         function renderStationDutyTable() {
             const tbody = document.getElementById("stationDutyTbody");
-            const st = document.getElementById("stationSelect").value;
+            const stSelect = document.getElementById("stationSelect");
+            const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
             tbody.innerHTML = "";
             let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
             records = sortDutyRecordsByTime(records);
@@ -810,7 +821,8 @@
         }
 
         function addNewStationDutyRow() {
-            const st = document.getElementById("stationSelect").value;
+            const stSelect = document.getElementById("stationSelect");
+            const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
             const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
             if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
             window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
@@ -1086,7 +1098,6 @@
 
         function initAdminLists() { renderAdminTimeSlotList(); renderAdminLocList(); renderAdminOfficerList(); }
 
-        // 後台動態管理時段
         function renderAdminTimeSlotList() {
             const ul = document.getElementById("adminTimeSlotList"); ul.innerHTML = "";
             (window.systemData.timeSlots || []).forEach((t, idx) => {
