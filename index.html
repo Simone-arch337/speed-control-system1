@@ -34,30 +34,34 @@
 
             window.saveSystemDataToCloud = function(data) {
                 if (window.dbRef) {
-                    window.dbRef.set(data).catch((error) => {
+                    window.dbRef.set(data).then(() => {
+                        console.log("雲端資料同步成功");
+                    }).catch((error) => {
                         console.error("雲端資料同步失敗：", error);
+                        alert("⚠️ 雲端資料同步失敗，請檢查網路連線！");
                     });
                 }
             };
 
+            // 監聽雲端資料變更
             window.dbRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     window.systemData = data;
                 } else {
-                    window.saveSystemDataToCloud(window.defaultSystemData);
                     window.systemData = window.defaultSystemData;
+                    window.saveSystemDataToCloud(window.defaultSystemData);
                 }
                 if (window.refreshAllUI) window.refreshAllUI();
                 const statusEl = document.getElementById("cloudStatusBadge");
                 if (statusEl) {
-                    statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端即時同步中';
+                    statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端即時連線中';
                 }
             }, (error) => {
                 console.error("Firebase 連線失敗：", error);
                 const statusEl = document.getElementById("cloudStatusBadge");
                 if (statusEl) {
-                    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i>連線受限/測試中';
+                    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i>連線受限';
                 }
             });
         } catch (e) {
@@ -82,6 +86,7 @@
         .nav-pills .nav-link.active { background-color: var(--primary-navy); font-weight: bold; color: #fff !important; }
         .lock-badge { background-color: #dc3545; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
         .admin-header { background-color: #2c3e50; color: white; font-weight: bold; }
+        .same-above-box { cursor: pointer; user-select: none; }
 
         @media (max-width: 767.98px) {
             body { padding-bottom: 70px; }
@@ -197,7 +202,7 @@
                     </div>
                     <div class="card-body p-0 table-responsive">
                         <div class="alert alert-warning mb-0 py-2 px-3 border-0 rounded-0 small">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i><b>選填須知：</b>預設地點空白等待核定；刪除班次請點擊「申請刪除」填寫原因送審。
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i><b>選填須知：</b>預設地點空白等待核定；完成填寫或申請刪除後請務必點擊右上角<b>「儲存變更」</b>按鈕。
                         </div>
                         <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 800px;">
                             <thead class="table-header sticky-top">
@@ -247,7 +252,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                         <span class="small fw-bold"><i class="fa-solid fa-list-check me-2"></i>案件登記列表</span>
-                        <span class="badge bg-light text-dark d-md-none">手機卡片快速模式</span>
+                        <span class="badge bg-light text-dark d-md-none">手機卡片模式</span>
                     </div>
                     <div class="card-body p-0 table-responsive d-none d-md-block" style="max-height: 550px;">
                         <table class="table table-bordered table-hover align-middle mb-0" id="caseTable">
@@ -255,8 +260,8 @@
                                 <tr>
                                     <th style="width: 55px;">序號</th>
                                     <th style="width: 170px;">案件編號</th>
-                                    <th style="width: 190px;">日期</th>
-                                    <th style="width: 200px;">執勤人員</th>
+                                    <th style="width: 220px;">執勤日期</th>
+                                    <th style="width: 220px;">執勤人員</th>
                                     <th style="width: 110px;">是否入案</th>
                                     <th>備註 / 未入案原因 (選「否」強制必填)</th>
                                     <th style="width: 150px;">狀態稽核</th>
@@ -268,7 +273,7 @@
                     <div class="card-body p-2 d-md-none" id="caseMobileContainer" style="max-height: 550px; overflow-y: auto;"></div>
                     <div class="card-footer d-flex justify-content-between align-items-center p-2">
                         <button class="btn btn-outline-primary btn-sm" onclick="addMoreCaseRows()"><i class="fa-solid fa-plus me-1"></i>新增 10 列</button>
-                        <button class="btn btn-success btn-sm fw-bold" onclick="saveData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存案件資料</button>
+                        <button class="btn btn-success btn-sm fw-bold px-3" onclick="saveCaseData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存案件資料</button>
                     </div>
                 </div>
             </div>
@@ -321,7 +326,7 @@
                         <div class="card shadow-sm">
                             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                                 <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點核定管理表</span>
-                                <button class="btn btn-sm btn-success" onclick="saveSystemData(); alert('✅ 地點核定資料已同步至雲端！');"><i class="fa-solid fa-floppy-disk me-1"></i>儲存結果</button>
+                                <button class="btn btn-sm btn-success fw-bold" onclick="saveHqMasterDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存核定結果</button>
                             </div>
                             <div class="card-body p-0 table-responsive" style="max-height: 500px;">
                                 <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 700px;">
@@ -807,12 +812,12 @@
                 } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
 
                 tr.innerHTML = `
-                    <td><input type="date" class="form-control form-control-sm" value="${rec.date}" onchange="updateDutyRec(${rec.id}, 'date', this.value)"></td>
-                    <td><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
-                    <td><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
+                    <td><input type="date" class="form-control form-control-sm" value="${rec.date}" onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
+                    <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
+                    <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
                     <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly></td>
-                    <td><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-                    <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" onchange="updateDutyRec(${rec.id}, 'note', this.value)"></td>
+                    <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                    <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
                     <td class="text-center">${delBadge}</td>
                     <td class="text-center">${actionBtn}</td>
                 `;
@@ -826,15 +831,18 @@
             const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
             if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
             window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
-            saveSystemData();
+            renderStationDutyTable();
         }
 
-        function updateDutyRec(id, field, value) {
+        function updateDutyRecLocal(id, field, value) {
             const rec = window.systemData.dutyRecords.find(r => r.id === id);
-            if (rec) { rec[field] = value; saveSystemData(); }
+            if (rec) { rec[field] = value; }
         }
 
-        function saveStationDutyData() { saveSystemData(); alert("✅ 變更已同步至雲端！"); }
+        function saveStationDutyData() { 
+            saveSystemData(); 
+            alert("✅ 各所選填變更已成功同步儲存至雲端！"); 
+        }
 
         function openDeleteApplyModal(recId) {
             document.getElementById("deleteApplyRecId").value = recId;
@@ -849,15 +857,19 @@
             const rec = window.systemData.dutyRecords.find(r => r.id === recId);
             if (rec) {
                 rec.deleteStatus = 'PENDING'; rec.deleteReason = reason;
-                saveSystemData();
                 bootstrap.Modal.getInstance(document.getElementById('deleteApplyModal')).hide();
-                alert("已送出申請並同步至雲端！");
+                renderStationDutyTable();
+                alert("已送出申請！請務必點擊右上角「儲存變更」儲存至雲端。");
             }
         }
 
         function revokeDeleteApply(recId) {
             const rec = window.systemData.dutyRecords.find(r => r.id === recId);
-            if (rec && confirm("確定要撤回刪除申請？")) { rec.deleteStatus = 'NORMAL'; rec.deleteReason = ''; saveSystemData(); }
+            if (rec && confirm("確定要撤回刪除申請？")) { 
+                rec.deleteStatus = 'NORMAL'; 
+                rec.deleteReason = ''; 
+                renderStationDutyTable();
+            }
         }
 
         function switchEquipment() {
@@ -870,6 +882,7 @@
             }
         }
 
+        // 3. 案件管制表渲染 (包含同上功能與自由刪除日期)
         function renderCaseTable() {
             const equipKey = document.getElementById("equipSelect").value;
             const equip = window.systemData.equipments[equipKey];
@@ -894,18 +907,35 @@
                 let officerOpts = `<option value="">--選擇人員--</option>`; allOfficers.forEach(off => officerOpts += `<option value="${off}" ${row.officer === off ? 'selected' : ''}>${off}</option>`);
                 let reasonOpts = `<option value="">--未入案原因--</option>`; noEntryReasons.forEach(rsn => reasonOpts += `<option value="${rsn}" ${row.reason === rsn ? 'selected' : ''}>${rsn}</option>`);
 
+                // 桌面版「同上」核取方塊
+                const sameDateCheckbox = i > 0 ? `<div class="form-check form-check-inline same-above-box me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameDate_${i}" onchange="copyAboveCaseField(${i}, 'date')"><label class="form-check-label small text-muted" for="sameDate_${i}">同上</label></div>` : '';
+                const sameOfficerCheckbox = i > 0 ? `<div class="form-check form-check-inline same-above-box me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameOff_${i}" onchange="copyAboveCaseField(${i}, 'officer')"><label class="form-check-label small text-muted" for="sameOff_${i}">同上</label></div>` : '';
+
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td class="text-center fw-bold">${seq}</td>
                     <td class="text-center font-monospace small">${caseCode}</td>
-                    <td><input type="date" class="form-control form-control-sm" value="${row.date || ''}" onchange="updateCaseRow(${i}, 'date', this.value)"></td>
-                    <td><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'officer', this.value)">${officerOpts}</select></td>
-                    <td><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
-                    <td><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRow(${i}, 'reason', this.value)">${reasonOpts}</select></td>
-                    <td class="text-center">${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案(已記錄)</span>' : '<span class="badge bg-danger">請選填原因</span>') : '<span class="badge bg-success">正常入案</span>') : '<span class="badge bg-secondary">等待中</span>'}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            ${sameDateCheckbox}
+                            <input type="date" class="form-control form-control-sm" id="case_date_${i}" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)" onchange="updateCaseRowLocal(${i}, 'date', this.value)">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            ${sameOfficerCheckbox}
+                            <select class="form-select form-select-sm" id="case_off_${i}" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select>
+                        </div>
+                    </td>
+                    <td><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
+                    <td><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></td>
+                    <td class="text-center" id="case_status_${i}">
+                        ${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案(已記錄)</span>' : '<span class="badge bg-danger">請選填原因</span>') : '<span class="badge bg-success">正常入案</span>') : '<span class="badge bg-secondary">等待中</span>'}
+                    </td>
                 `;
                 tbody.appendChild(tr);
 
+                // 手機卡片模式
                 const cardDiv = document.createElement("div");
                 cardDiv.className = `mobile-card-item ${row.isEntry === '否' && !row.reason ? 'missing' : (row.date && row.officer ? 'success' : '')}`;
                 cardDiv.innerHTML = `
@@ -915,22 +945,47 @@
                         <div>${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-success">正常</span>') : '<span class="badge bg-secondary">未填</span>'}</div>
                     </div>
                     <div class="row g-2">
-                        <div class="col-6"><label class="form-label small mb-1 fw-bold">日期：</label><input type="date" class="form-control form-control-sm" value="${row.date || ''}" onchange="updateCaseRow(${i}, 'date', this.value)"></div>
-                        <div class="col-6"><label class="form-label small mb-1 fw-bold">人員：</label><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'officer', this.value)">${officerOpts}</select></div>
-                        <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" onchange="updateCaseRow(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
-                        <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRow(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                        <div class="col-6"><label class="form-label small mb-1 fw-bold">日期：</label><input type="date" class="form-control form-control-sm" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)"></div>
+                        <div class="col-6"><label class="form-label small mb-1 fw-bold">人員：</label><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></div>
+                        <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
+                        <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
                     </div>
                 `;
                 mobileContainer.appendChild(cardDiv);
             }
         }
 
-        function updateCaseRow(index, field, value) {
+        // 複製上一列同上功能
+        function copyAboveCaseField(index, field) {
+            if (index <= 0) return;
+            const equipKey = document.getElementById("equipSelect").value;
+            const records = window.systemData.caseRecords[equipKey] || [];
+            const prevValue = records[index - 1] ? records[index - 1][field] : '';
+
+            if (prevValue) {
+                updateCaseRowLocal(index, field, prevValue);
+                if (field === 'date') {
+                    const el = document.getElementById(`case_date_${index}`);
+                    if (el) el.value = prevValue;
+                } else if (field === 'officer') {
+                    const el = document.getElementById(`case_off_${index}`);
+                    if (el) el.value = prevValue;
+                }
+            } else {
+                alert("⚠️ 上一列尚無資料可複製！");
+            }
+        }
+
+        function updateCaseRowLocal(index, field, value) {
             const equipKey = document.getElementById("equipSelect").value;
             if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
             if (!window.systemData.caseRecords[equipKey][index]) window.systemData.caseRecords[equipKey][index] = { isEntry: "是" };
             window.systemData.caseRecords[equipKey][index][field] = value;
+        }
+
+        function saveCaseData() {
             saveSystemData();
+            alert("✅ 案件管制表資料已成功儲存至雲端！");
         }
 
         function addMoreCaseRows() { caseRowCount += 10; renderCaseTable(); }
@@ -974,11 +1029,16 @@
                     <td class="text-center fw-bold small">${rec.station}</td>
                     <td class="text-center small">${rec.timeSlot}</td>
                     <td class="text-center small">${rec.officer}</td>
-                    <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRec(${rec.id}, 'location', this.value);">${locOpts}</select></td>
-                    <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRec(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                    <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
+                    <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function saveHqMasterDutyData() {
+            saveSystemData();
+            alert("✅ 地點核定結果已儲存至雲端！");
         }
 
         function renderAwardTable() {
@@ -1149,7 +1209,6 @@
         function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
         function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
         function exportAwardToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("awardTable")), "歸仁分局測速人員嘉獎折算統計表.xlsx"); }
-        function saveData() { saveSystemData(); alert("✅ 資料已同步儲存至雲端！"); }
 
         document.getElementById("adminLocStationSelect").onchange = renderAdminLocList;
     </script>
