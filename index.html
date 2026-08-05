@@ -30,7 +30,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
-            window.dbRef = db.ref('guiRenSystemV13DB');
+            window.dbRef = db.ref('guiRenSystemV14DB');
 
             window.saveSystemDataToCloud = function(data) {
                 if (window.dbRef) {
@@ -153,7 +153,7 @@
 <body>
 
 <div id="wrapper" style="display:none;">
-    <!-- 全左側樹狀導覽列 Sidebar -->
+    <!-- 左側樹狀導覽列 Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header d-flex justify-content-between align-items-center sticky-top bg-navy">
             <h6 class="mb-0 fw-bold"><i class="fa-solid fa-shield-halved me-2"></i>歸仁分局測速系統</h6>
@@ -267,7 +267,7 @@
                                     <th style="width: 120px;">勤務時段</th>
                                     <th style="width: 100px;">人員</th>
                                     <th>勤務地點 (權限檢視)</th>
-                                    <th style="width: 220px;">指定測速儀器 (名稱與當前狀態)</th>
+                                    <th style="width: 250px;">指定測速儀器 (名稱與當前狀態)</th>
                                     <th style="width: 100px;">採證影像</th>
                                     <th style="width: 100px;">案件管制</th>
                                     <th style="width: 130px;">備註說明</th>
@@ -306,7 +306,7 @@
                                     <th style="width: 130px;">勤務時段</th>
                                     <th style="width: 120px;">執勤人員</th>
                                     <th>勤務地點 (分局核定)</th>
-                                    <th style="width: 200px;">指定測速儀器 (分局核定)</th>
+                                    <th style="width: 220px;">指定測速儀器 (分局核定)</th>
                                     <th style="width: 110px;">影像上傳</th>
                                     <th style="width: 140px;">備註說明</th>
                                     <th style="width: 120px;">刪除審核</th>
@@ -374,7 +374,7 @@
                 </div>
             </div>
 
-            <!-- 4.1 地點與儀器核定與刪除審核 -->
+            <!-- 4.1 地點與儀器核定與刪除審核 (更新：聯動格式) -->
             <div class="tab-pane fade" id="hq-41-content">
                 <div class="card shadow-sm mb-3 border-danger">
                     <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
@@ -405,7 +405,7 @@
                                     <th style="width: 120px;">時段</th>
                                     <th style="width: 100px;">人員</th>
                                     <th>分局指定勤務地點</th>
-                                    <th style="width: 240px;">分局指定測速儀器 (防呆聯動)</th>
+                                    <th style="width: 270px;">分局指定測速儀器 (名稱與當前狀態)</th>
                                     <th style="width: 110px;">影像上傳狀態</th>
                                 </tr>
                             </thead>
@@ -516,7 +516,7 @@
                 </div>
             </div>
 
-            <!-- 4.4 人員嘉獎統計 -->
+            <!-- 4.4 人員嘉獎統計 (更新：更名為第一季至第四季) -->
             <div class="tab-pane fade" id="hq-44-content">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -524,9 +524,9 @@
                         <button class="btn btn-sm btn-light" onclick="exportAwardToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
                     </div>
                     <div class="card-body p-0 table-responsive" style="max-height: 550px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" id="awardTable" style="min-width: 850px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" id="awardTable" style="min-width: 950px;">
                             <thead class="table-header sticky-top small">
-                                <tr><th>單位</th><th>姓名</th><th>Q1 時數</th><th>Q1 嘉獎</th><th>Q2 時數</th><th>Q2 嘉獎</th><th>Q3 時數</th><th>Q3 嘉獎</th><th>Q4 時數</th><th>Q4 嘉獎</th><th>全年時數</th><th>全年嘉獎</th><th>建議敘獎</th></tr>
+                                <tr><th>單位</th><th>姓名</th><th>第一季時數</th><th>第一季嘉獎</th><th>第二季時數</th><th>第二季嘉獎</th><th>第三季時數</th><th>第三季嘉獎</th><th>第四季時數</th><th>第四季嘉獎</th><th>全年時數</th><th>全年嘉獎</th><th>建議敘獎</th></tr>
                             </thead>
                             <tbody id="awardTbody"></tbody>
                         </table>
@@ -580,8 +580,46 @@
                 </div>
             </div>
 
-            <!-- 4.6.1 管理與帳號審核專區 (更新：可全面修改與審核通過/退回) -->
+            <!-- 4.6.1 管理與帳號審核專區 (新增：分局管理者直接新增人員卡片) -->
             <div class="tab-pane fade" id="hq-46-1-content">
+                <!-- 新增卡片：分局管理者直接新增人員帳號權限 -->
+                <div class="card shadow-sm border-primary mb-3">
+                    <div class="card-header bg-primary text-white fw-bold small"><i class="fa-solid fa-user-plus me-2"></i>分局管理者直接新增人員帳號權限 (由分局主管/承辦人建立)</div>
+                    <div class="card-body bg-light p-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-bold small mb-1">真實姓名：</label>
+                                <input type="text" class="form-control form-control-sm" id="adminAddName" placeholder="例如: 王大明">
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-bold small mb-1">所屬單位：</label>
+                                <select class="form-select form-select-sm" id="adminAddStation"></select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-bold small mb-1">身分權限：</label>
+                                <select class="form-select form-select-sm" id="adminAddRole">
+                                    <option value="duty_officer">勤務執行人員</option>
+                                    <option value="equipment_custodian">儀器保管人</option>
+                                    <option value="station_supervisor">派出所主管</option>
+                                    <option value="hq_business">分局業務承辦人</option>
+                                    <option value="hq_supervisor">分局主管</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-bold small mb-1">帳號：</label>
+                                <input type="text" class="form-control form-control-sm font-monospace" id="adminAddUsername" placeholder="帳號名稱">
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-bold small mb-1">預設密碼：</label>
+                                <input type="password" class="form-control form-control-sm font-monospace" id="adminAddPassword" placeholder="密碼">
+                            </div>
+                            <div class="col-12 col-md-1">
+                                <button class="btn btn-sm btn-primary w-100 fw-bold" onclick="adminDirectAddUser()"><i class="fa-solid fa-plus me-1"></i>新增</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm border-warning mb-3">
                     <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-user-check me-2"></i>權限申請審核清單 (業務承辦人與分局主管專用)</div>
                     <div class="card-body p-0 table-responsive">
@@ -660,8 +698,20 @@
                 </div>
             </div>
 
-            <!-- 4.6.5 測速儀器設定 (依規定順序排列: LASER-1至6, RADAR-1至2) -->
+            <!-- 4.6.5 測速儀器設定 (新增：裝備狀態選項卡片) -->
             <div class="tab-pane fade" id="hq-46-5-content">
+                <!-- 新增卡片：裝備當前狀態下拉選單維護 -->
+                <div class="card shadow-sm border-info mb-3">
+                    <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-tags me-2"></i>裝備狀態下拉選項維護 (連動4.2與4.6.5下拉選單)</div>
+                    <div class="card-body bg-light">
+                        <div class="input-group input-group-sm mb-3" style="max-width: 500px;">
+                            <input type="text" class="form-control" id="newEquipStatusOptionInput" placeholder="輸入新裝備狀態選項 (例如: 停用、送修(廠商))">
+                            <button class="btn btn-primary fw-bold" onclick="adminAddEquipStatusOption()"><i class="fa-solid fa-plus me-1"></i>新增狀態選項</button>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2" id="equipStatusOptionBadgeGroup"></div>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm border-danger">
                     <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
                         <span class="small"><i class="fa-solid fa-video me-2"></i>4.6.5 測速儀器設備設定 (自動排序)</span>
@@ -699,7 +749,7 @@
     </div>
 </div>
 
-<!-- 登入與權限申請 Modal (完全無提示空白欄位) -->
+<!-- 登入與權限申請 Modal -->
 <div class="modal fade" id="loginModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered px-3">
         <div class="modal-content shadow-lg">
@@ -790,16 +840,7 @@
                 </div>
                 <div class="mb-2">
                     <label class="form-label fw-bold small">裝備狀態備註：</label>
-                    <select class="form-select form-select-sm fw-bold text-primary" id="modalLogStatusSelect">
-                        <option value="送檢">送檢</option>
-                        <option value="送修">送修</option>
-                        <option value="分局(保管)">分局(保管)</option>
-                        <option value="仁德所(保管)">仁德所(保管)</option>
-                        <option value="文賢所(保管)">文賢所(保管)</option>
-                        <option value="歸仁所(保管)">歸仁所(保管)</option>
-                        <option value="關廟所(保管)">關廟所(保管)</option>
-                        <option value="其他">其他</option>
-                    </select>
+                    <select class="form-select form-select-sm fw-bold text-primary" id="modalLogStatusSelect"></select>
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6">
@@ -840,7 +881,7 @@
         "RADAR-2": { name: "文賢所雷達測速儀", baseCode: "SPD-1150001", currentStatus: "文賢所(保管)" }
     };
 
-    const KEEPER_STATUS_OPTIONS = [
+    const DEFAULT_KEEPER_STATUS_OPTIONS = [
         "送檢", "送修", "分局(保管)", "仁德所(保管)", "文賢所(保管)", "歸仁所(保管)", "關廟所(保管)", "其他"
     ];
 
@@ -860,7 +901,7 @@
             "admin": { password: "Kg@2394175", role: "hq_supervisor", station: "歸仁分局", name: "分局長官", status: "approved" }
         },
         accountRequests: [],
-        rejectedRequests: {}, // { username: "退回原因" }
+        rejectedRequests: {},
         officers: {
             "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
             "仁德分駐所": ["方士翔", "李昱宏", "王英鑫"],
@@ -886,6 +927,7 @@
             "龍崎分駐所": ["龍崎區市道182線"]
         },
         equipments: DEFAULT_EQUIPMENTS,
+        equipStatusOptions: DEFAULT_KEEPER_STATUS_OPTIONS,
         equipKeepers: {
             "LASER-1": { station: "歸仁分局", name: "分局辦理", title: "巡佐", startDate: "2026-01-01", endDate: "2026-12-31" },
             "LASER-2": { station: "歸仁分局", name: "分局辦理", title: "巡佐", startDate: "2026-01-01", endDate: "2026-12-31" },
@@ -915,12 +957,25 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
-        const applyStSelect = document.getElementById('applyStation');
-        STATION_ORDER.forEach(st => {
-            const opt = document.createElement('option');
-            opt.value = st; opt.innerText = st;
-            applyStSelect.appendChild(opt);
+        
+        // Populate station dropdowns for admin & apply form
+        ["applyStation", "adminAddStation"].forEach(sId => {
+            const el = document.getElementById(sId);
+            if (el) {
+                el.innerHTML = "";
+                STATION_ORDER.forEach(st => {
+                    const opt = document.createElement('option');
+                    opt.value = st; opt.innerText = st;
+                    el.appendChild(opt);
+                });
+                if (sId === "adminAddStation") {
+                    const optHq = document.createElement('option');
+                    optHq.value = "歸仁分局"; optHq.innerText = "歸仁分局";
+                    el.appendChild(optHq);
+                }
+            }
         });
+
         checkLoginState();
     });
 
@@ -941,7 +996,6 @@
         const p = document.getElementById('loginPassword').value.trim();
         const errEl = document.getElementById('loginErrorMsg');
 
-        // 檢查是否被退回
         if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
             const rsn = window.systemData.rejectedRequests[u];
             alert(`⚠️ 您的權限申請已被退回！\n退回原因：【${rsn}】\n請重新進行權限申請。`);
@@ -1097,6 +1151,7 @@
 
     window.refreshAllUI = function() {
         ensureEquipmentOrdering();
+        ensureStatusOptions();
         populateEquipDropdown();
         populateStationDropdowns();
         renderHomeDutyTable();
@@ -1115,6 +1170,12 @@
             renderAdminEquipSettings();
         }
     };
+
+    function ensureStatusOptions() {
+        if (!window.systemData.equipStatusOptions || window.systemData.equipStatusOptions.length === 0) {
+            window.systemData.equipStatusOptions = DEFAULT_KEEPER_STATUS_OPTIONS;
+        }
+    }
 
     function ensureEquipmentOrdering() {
         if (!window.systemData.equipments) window.systemData.equipments = DEFAULT_EQUIPMENTS;
@@ -1511,6 +1572,7 @@
         return false;
     }
 
+    // 1. 4.1 核心更新：測速儀器下拉清單格式同步顯示當前狀態
     function renderHqMasterDutyTable() {
         const tbody = document.getElementById("hqMasterDutyTbody");
         tbody.innerHTML = "";
@@ -1523,9 +1585,13 @@
             let equipOpts = `<option value="">--請指定測速儀器--</option>`;
             Object.keys(window.systemData.equipments || {}).forEach(k => {
                 const eq = window.systemData.equipments[k];
+                const currentStatus = eq ? (eq.currentStatus || "分局(保管)") : "未指定";
                 const isBusy = isEquipmentBusyOnSlot(k, rec.date, rec.timeSlot, rec.id);
                 const busyLabel = isBusy ? " ⚠️ (該時段已指派)" : "";
-                equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''} ${isBusy && rec.assignedEquip !== k ? 'disabled' : ''}>${eq.name} (${k})${busyLabel}</option>`;
+                
+                // 格式：雷射測速槍 1號機 (分局(保管))
+                const displayText = `${eq.name} (${currentStatus})${busyLabel}`;
+                equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''} ${isBusy && rec.assignedEquip !== k ? 'disabled' : ''}>${displayText}</option>`;
             });
 
             const tr = document.createElement("tr");
@@ -1561,6 +1627,7 @@
         tbody.innerHTML = "";
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
         const allOfficers = getAllOfficersList();
+        ensureStatusOptions();
 
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             const eq = window.systemData.equipments[k];
@@ -1575,7 +1642,7 @@
             officerOpts += `<option value="分局辦理" ${keeper.name === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
 
             let statusOpts = '';
-            KEEPER_STATUS_OPTIONS.forEach(stOpt => {
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
                 statusOpts += `<option value="${stOpt}" ${eq.currentStatus === stOpt ? 'selected' : ''}>${stOpt}</option>`;
             });
 
@@ -1637,6 +1704,18 @@
     function openAddKeeperLogModal() {
         populateEquipDropdown();
         populateStationDropdowns();
+        ensureStatusOptions();
+
+        const logStatEl = document.getElementById('modalLogStatusSelect');
+        if (logStatEl) {
+            logStatEl.innerHTML = "";
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
+                const opt = document.createElement('option');
+                opt.value = stOpt; opt.innerText = stOpt;
+                logStatEl.appendChild(opt);
+            });
+        }
+
         document.getElementById('modalLogStartDate').value = '';
         document.getElementById('modalLogEndDate').value = '';
         document.getElementById('modalLogNote').value = '';
@@ -1678,6 +1757,7 @@
         if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
 
         let hasLogs = false;
+        ensureStatusOptions();
 
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             const eq = window.systemData.equipments[k];
@@ -1689,7 +1769,7 @@
                 stationOpts += `<option value="歸仁分局" ${lg.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
                 let statusOpts = '';
-                KEEPER_STATUS_OPTIONS.forEach(stOpt => {
+                (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
                     statusOpts += `<option value="${stOpt}" ${lg.status === stOpt ? 'selected' : ''}>${stOpt}</option>`;
                 });
 
@@ -1847,6 +1927,7 @@
         }
     }
 
+    // 4. 4.4 人員嘉獎統計：更新標頭為 第一季至第四季
     function renderAwardTable() {
         const tbody = document.getElementById("awardTbody");
         tbody.innerHTML = "";
@@ -1959,7 +2040,39 @@
         timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6', '#34495e', '#16a085', '#f39c12', '#d35400'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
-    // 3. 4.6.1 管理與帳號審核更新（欄位可編輯、身分權限更名、審核通過/退回與退回原因）
+    // 3. 4.6.1 核心更新：管理者直接新增人員帳號
+    function adminDirectAddUser() {
+        const name = document.getElementById('adminAddName').value.trim();
+        const station = document.getElementById('adminAddStation').value;
+        const role = document.getElementById('adminAddRole').value;
+        const username = document.getElementById('adminAddUsername').value.trim();
+        const password = document.getElementById('adminAddPassword').value.trim();
+
+        if (!name || !username || !password) {
+            alert("⚠️ 請完整填寫姓名、帳號與密碼！");
+            return;
+        }
+
+        if (window.systemData.users && window.systemData.users[username]) {
+            alert(`⚠️ 帳號 【${username}】 已存在，請使用其他帳號！`);
+            return;
+        }
+
+        if (!window.systemData.users) window.systemData.users = {};
+        window.systemData.users[username] = {
+            name, station, role, password, status: 'approved'
+        };
+
+        saveSystemData();
+        renderAccountRequestsUI();
+
+        document.getElementById('adminAddName').value = '';
+        document.getElementById('adminAddUsername').value = '';
+        document.getElementById('adminAddPassword').value = '';
+
+        alert(`✅ 已成功由管理者新增同仁 【${name}】 (${username}) 之權限！`);
+    }
+
     function renderAccountRequestsUI() {
         const reqTbody = document.getElementById('accountRequestsTbody');
         reqTbody.innerHTML = "";
@@ -2104,6 +2217,35 @@
         }
     }
 
+    // 2. 4.6.5 核心更新：新增與管理裝備狀態選項
+    function adminAddEquipStatusOption() {
+        const val = document.getElementById("newEquipStatusOptionInput").value.trim();
+        if (!val) { alert("⚠️ 請輸入狀態名稱！"); return; }
+
+        ensureStatusOptions();
+        if (window.systemData.equipStatusOptions.includes(val)) {
+            alert("⚠️ 該狀態選項已存在！");
+            return;
+        }
+
+        window.systemData.equipStatusOptions.push(val);
+        saveSystemData();
+        document.getElementById("newEquipStatusOptionInput").value = "";
+        renderAdminEquipSettings();
+        renderKeeperBaseTable();
+        alert(`✅ 已成功新增狀態選項 【${val}】！`);
+    }
+
+    function adminDeleteEquipStatusOption(optVal) {
+        if (confirm(`確定要刪除裝備狀態選項 【${optVal}】？`)) {
+            ensureStatusOptions();
+            window.systemData.equipStatusOptions = window.systemData.equipStatusOptions.filter(o => o !== optVal);
+            saveSystemData();
+            renderAdminEquipSettings();
+            renderKeeperBaseTable();
+        }
+    }
+
     function addNewEquipment() {
         const key = document.getElementById("newEquipKey").value.trim().toUpperCase();
         const name = document.getElementById("newEquipName").value.trim();
@@ -2132,13 +2274,30 @@
 
     function renderAdminEquipSettings() {
         ensureEquipmentOrdering();
+        ensureStatusOptions();
+
+        // 渲染狀態標籤組
+        const badgeGroup = document.getElementById("equipStatusOptionBadgeGroup");
+        if (badgeGroup) {
+            badgeGroup.innerHTML = "";
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(opt => {
+                const badge = document.createElement("span");
+                badge.className = "badge bg-white text-dark border p-2 d-flex align-items-center gap-2";
+                badge.innerHTML = `
+                    <span class="fw-bold">${opt}</span>
+                    <button class="btn btn-sm btn-link text-danger p-0 border-0" onclick="adminDeleteEquipStatusOption('${opt}')"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                badgeGroup.appendChild(badge);
+            });
+        }
+
         const tbody = document.getElementById("adminEquipEditTbody"); tbody.innerHTML = "";
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             const eq = window.systemData.equipments[k];
             const tr = document.createElement("tr");
 
             let statusOpts = '';
-            KEEPER_STATUS_OPTIONS.forEach(stOpt => {
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
                 statusOpts += `<option value="${stOpt}" ${eq.currentStatus === stOpt ? 'selected' : ''}>${stOpt}</option>`;
             });
 
