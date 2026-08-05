@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- 使用 Firebase 傳統 Compat SDK (相容性最高、載入最穩定) -->
+    <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -43,7 +43,6 @@
                 }
             };
 
-            // 監聽雲端資料變更
             window.dbRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -55,7 +54,7 @@
                 if (window.refreshAllUI) window.refreshAllUI();
                 const statusEl = document.getElementById("cloudStatusBadge");
                 if (statusEl) {
-                    statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端即時連線中';
+                    statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端連線中';
                 }
             }, (error) => {
                 console.error("Firebase 連線失敗：", error);
@@ -72,110 +71,125 @@
     <style>
         :root {
             --primary-navy: #1f497d;
-            --accent-blue: #0d6efd;
+            --sidebar-width: 260px;
             --bg-gray: #f4f6f9;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-gray); -webkit-tap-highlight-color: transparent; }
-        .navbar-dark { background-color: var(--primary-navy); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-gray); overflow-x: hidden; }
+        
+        #wrapper { display: flex; width: 100%; min-height: 100vh; }
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-navy);
+            color: #fff;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+        #sidebar .sidebar-header { padding: 15px; background: rgba(0,0,0,0.15); }
+        #sidebar ul.components { padding: 10px 0; }
+        #sidebar ul li a {
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            display: block;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            border-left: 4px solid transparent;
+        }
+        #sidebar ul li a:hover, #sidebar ul li a.active {
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+            border-left-color: #0d6efd;
+            font-weight: bold;
+        }
+        #content { width: 100%; padding: 15px; transition: all 0.3s; }
+        
         .card-header-main { background-color: var(--primary-navy); color: white; font-weight: bold; }
         .card-header-hq { background-color: #2c3e50; color: white; font-weight: bold; }
         .table-header { background-color: var(--primary-navy); color: white; text-align: center; }
-        .table-header-hq { background-color: #2c3e50; color: white; text-align: center; }
         .alert-missing { background-color: #fce4d6 !important; color: #c00000; font-weight: bold; }
-        .badge-alert { font-size: 0.85em; }
-        .nav-pills .nav-link.active { background-color: var(--primary-navy); font-weight: bold; color: #fff !important; }
         .lock-badge { background-color: #dc3545; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
         .admin-header { background-color: #2c3e50; color: white; font-weight: bold; }
-        .same-above-box { cursor: pointer; user-select: none; }
-
-        @media (max-width: 767.98px) {
-            body { padding-bottom: 70px; }
-            .navbar-brand { font-size: 1.1rem !important; font-weight: bold; }
-            .mobile-bottom-nav {
-                position: fixed; bottom: 0; left: 0; right: 0;
-                background-color: #ffffff; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                z-index: 1030; display: flex !important; justify-content: space-around;
-                padding: 6px 0; border-top: 1px solid #dee2e6;
-            }
-            .mobile-bottom-nav .nav-link {
-                color: #6c757d; font-size: 0.75rem; padding: 4px 0;
-                text-align: center; flex: 1; border: none !important; background: none !important;
-            }
-            .mobile-bottom-nav .nav-link.active { color: var(--primary-navy) !important; font-weight: bold; }
-            .mobile-bottom-nav .nav-link i { font-size: 1.25rem; display: block; margin-bottom: 2px; }
-            .desktop-main-pills { display: none !important; }
-            .card-body { padding: 0.75rem; }
-            .form-control, .form-select, .btn { font-size: 0.95rem; padding: 0.45rem 0.6rem; }
-            .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.875rem; }
-            .mobile-card-item {
-                background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;
-                padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            }
-            .mobile-card-item.missing { border-left: 4px solid #dc3545; background-color: #fff8f8; }
-            .mobile-card-item.success { border-left: 4px solid #198754; }
+        
+        @media (max-width: 991.98px) {
+            #sidebar { margin-left: calc(-1 * var(--sidebar-width)); position: fixed; height: 100%; }
+            #sidebar.active { margin-left: 0; }
+            #content { padding: 10px; }
         }
-        @media (min-width: 768px) { .mobile-bottom-nav { display: none !important; } }
+        .mobile-card-item {
+            background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .mobile-card-item.missing { border-left: 4px solid #dc3545; background-color: #fff8f8; }
+        .mobile-card-item.success { border-left: 4px solid #198754; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm mb-2 mb-md-3">
-        <div class="container-fluid px-3">
-            <a class="navbar-brand text-truncate" style="max-width: 80%;" href="#">
-                <i class="fa-solid fa-shield-halved me-2"></i>歸仁分局測速勤務暨案件管制資訊系統
-            </a>
-            <span class="navbar-text text-white-50 small" id="cloudStatusBadge">
-                <i class="fa-solid fa-cloud-arrow-up me-1"></i>連線中...
-            </span>
+<div id="wrapper">
+    <!-- 左側導覽列 Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold"><i class="fa-solid fa-shield-halved me-2"></i>歸仁分局測速系統</h6>
+            <button class="btn btn-sm text-white d-lg-none" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <ul class="list-unstyled components">
+            <li>
+                <a href="#" class="active" id="nav-home" onclick="switchNav('home')"><i class="fa-solid fa-house me-2"></i>首頁 (當月總表)</a>
+            </li>
+            <li>
+                <a href="#" id="nav-station" onclick="switchNav('station')"><i class="fa-solid fa-building me-2"></i>各所選填勤務</a>
+            </li>
+            <li>
+                <a href="#" id="nav-case" onclick="switchNav('case')"><i class="fa-solid fa-gun me-2"></i>測速案件管制表</a>
+            </li>
+            <li class="mt-3 border-top border-secondary pt-2">
+                <a href="#" class="text-warning fw-bold" id="nav-hq" onclick="openHqAuthModal()"><i class="fa-solid fa-user-shield me-2"></i>分局權限 <span class="lock-badge" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>需密碼</span></a>
+            </li>
+        </ul>
+        <div class="p-3 text-white-50 small">
+            <div id="cloudStatusBadge"><i class="fa-solid fa-cloud-arrow-up me-1"></i>連線中...</div>
         </div>
     </nav>
 
-    <div class="container-fluid px-2 px-md-4">
-        <ul class="nav nav-pills mb-3 fs-5 bg-white p-2 rounded shadow-sm desktop-main-pills" id="mainPills" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" id="home-pill" data-bs-toggle="pill" data-bs-target="#home-content" type="button" onclick="switchMainTab('home')"><i class="fa-solid fa-house me-2"></i>首頁 (當月完整勤務表)</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="station-pill" data-bs-toggle="pill" data-bs-target="#station-content" type="button" onclick="switchMainTab('station')"><i class="fa-solid fa-building me-2"></i>各所選填勤務</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="case-pill" data-bs-toggle="pill" data-bs-target="#case-content" type="button" onclick="switchMainTab('case')"><i class="fa-solid fa-gun me-2"></i>測速案件管制表</button>
-            </li>
-            <li class="nav-item ms-auto d-flex align-items-center">
-                <button class="nav-link text-danger fw-bold me-2" id="hq-lock-btn" onclick="openHqAuthModal()"><i class="fa-solid fa-user-shield me-2"></i>分局權限 <span class="lock-badge" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>需密碼</span></button>
-                <button class="btn btn-outline-danger btn-sm fw-bold d-none" id="hqLogoutBtn" onclick="logoutHq()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出</button>
-            </li>
-        </ul>
+    <!-- 主內容區 Content -->
+    <div id="content">
+        <div class="d-flex align-items-center mb-3">
+            <button type="button" id="sidebarCollapse" class="btn btn-primary d-lg-none me-2" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h5 class="mb-0 fw-bold text-navy" id="pageTitle">首頁 (當月完整勤務總表)</h5>
+            <button class="btn btn-outline-danger btn-sm fw-bold ms-auto d-none" id="hqLogoutBtn" onclick="logoutHq()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出權限</button>
+        </div>
 
         <div class="tab-content" id="mainTabContent">
             
-            <!-- 1. 首頁 -->
-            <div class="tab-pane fade show active" id="home-content" role="tabpanel">
+            <!-- 1. 首頁 (總表) -->
+            <div class="tab-pane fade show active" id="home-content">
                 <div class="card shadow-sm mb-3">
                     <div class="card-header card-header-main d-flex flex-wrap justify-content-between align-items-center gap-2">
                         <span><i class="fa-solid fa-table-list me-2"></i>當月全分局測速勤務總表彙整</span>
-                        <div class="d-flex align-items-center gap-2 w-100 w-md-auto justify-content-end">
+                        <div class="d-flex align-items-center gap-2">
                             <select class="form-select form-select-sm w-auto" id="homeMonthSelect" onchange="renderHomeDutyTable()">
                                 <option value="2026-08">2026 年 8 月</option>
                                 <option value="2026-07">2026 年 7 月</option>
                                 <option value="2026-09">2026 年 9 月</option>
                             </select>
-                            <button class="btn btn-sm btn-light" onclick="exportHomeDutyToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出</button>
+                            <button class="btn btn-sm btn-light" onclick="exportHomeDutyToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
                         </div>
                     </div>
-                    <div class="card-body p-0 table-responsive" style="max-height: 600px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 750px;">
+                    <div class="card-body p-0 table-responsive" style="max-height: 650px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 800px;">
                             <thead class="table-header sticky-top">
                                 <tr>
                                     <th style="width: 100px;">執勤日期</th>
                                     <th style="width: 110px;">單位</th>
                                     <th style="width: 120px;">勤務時段</th>
                                     <th style="width: 100px;">人員</th>
-                                    <th>勤務地點 (分局核定)</th>
-                                    <th style="width: 120px;">採證影像</th>
-                                    <th style="width: 120px;">案件管制表</th>
-                                    <th style="width: 120px;">執行狀態</th>
-                                    <th style="width: 140px;">備註說明</th>
+                                    <th>勤務地點 (權限檢視)</th>
+                                    <th style="width: 110px;">採證影像</th>
+                                    <th style="width: 110px;">案件管制表</th>
+                                    <th style="width: 130px;">管制表填寫警示</th>
+                                    <th style="width: 130px;">備註說明</th>
                                 </tr>
                             </thead>
                             <tbody id="homeDutyTbody"></tbody>
@@ -185,7 +199,7 @@
             </div>
 
             <!-- 2. 各所選填勤務 -->
-            <div class="tab-pane fade" id="station-content" role="tabpanel">
+            <div class="tab-pane fade" id="station-content">
                 <div class="card shadow-sm mb-3">
                     <div class="card-header bg-primary text-white">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -202,7 +216,7 @@
                     </div>
                     <div class="card-body p-0 table-responsive">
                         <div class="alert alert-warning mb-0 py-2 px-3 border-0 rounded-0 small">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i><b>選填須知：</b>預設地點空白等待核定；完成填寫或申請刪除後請務必點擊右上角<b>「儲存變更」</b>按鈕。
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i><b>選填須知：</b>預設地點空白等待分局核定；選填變更後請點擊右上角<b>「儲存變更」</b>。
                         </div>
                         <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 800px;">
                             <thead class="table-header sticky-top">
@@ -224,7 +238,7 @@
             </div>
 
             <!-- 3. 測速案件管制表 -->
-            <div class="tab-pane fade" id="case-content" role="tabpanel">
+            <div class="tab-pane fade" id="case-content">
                 <div class="card shadow-sm mb-3">
                     <div class="card-header card-header-main d-flex flex-wrap justify-content-between align-items-center gap-2">
                         <span><i class="fa-solid fa-sliders me-2"></i>測速裝備選擇與登錄</span>
@@ -252,7 +266,7 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                         <span class="small fw-bold"><i class="fa-solid fa-list-check me-2"></i>案件登記列表</span>
-                        <span class="badge bg-light text-dark d-md-none">手機卡片模式</span>
+                        <button class="btn btn-success btn-sm fw-bold px-3" onclick="saveCaseData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存案件資料</button>
                     </div>
                     <div class="card-body p-0 table-responsive d-none d-md-block" style="max-height: 550px;">
                         <table class="table table-bordered table-hover align-middle mb-0" id="caseTable">
@@ -278,36 +292,33 @@
                 </div>
             </div>
 
-            <!-- 4. 分局權限 -->
-            <div class="tab-pane fade" id="hq-content" role="tabpanel">
+            <!-- 4. 分局權限 (4.1~4.4, 後台包含 4.4.1~4.4.4) -->
+            <div class="tab-pane fade" id="hq-content">
                 <div class="card shadow-sm mb-3">
-                    <div class="card-header card-header-hq d-flex justify-content-between align-items-center">
-                        <span class="text-truncate"><i class="fa-solid fa-user-shield me-2"></i>分局長官權限專區</span>
-                        <div>
-                            <span class="badge bg-success me-1"><i class="fa-solid fa-lock-open me-1"></i>已解鎖</span>
-                            <button class="btn btn-sm btn-outline-light fw-bold" onclick="logoutHq()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出</button>
-                        </div>
+                    <div class="card-header card-header-hq">
+                        <span class="text-truncate fw-bold"><i class="fa-solid fa-user-shield me-2"></i>分局長官權限專區</span>
                     </div>
                     <div class="card-body p-2 bg-light">
                         <ul class="nav nav-tabs fs-6 flex-nowrap overflow-auto" id="hqSubTabs" role="tablist" style="white-space: nowrap;">
                             <li class="nav-item">
-                                <button class="nav-link active fw-bold py-2 px-3" id="hq-master-tab" data-bs-toggle="tab" data-bs-target="#hq-master-content" type="button"><i class="fa-solid fa-map-pin me-1"></i>4.1 地點核定與刪除審核</button>
+                                <button class="nav-link active fw-bold py-2 px-3" id="hq-41-tab" data-bs-toggle="tab" data-bs-target="#hq-41-content" type="button"><i class="fa-solid fa-map-pin me-1"></i>4.1 地點核定與刪除審核</button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link fw-bold py-2 px-3" id="hq-award-tab" data-bs-toggle="tab" data-bs-target="#hq-award-content" type="button"><i class="fa-solid fa-award me-1"></i>4.2 人員嘉獎統計</button>
+                                <button class="nav-link fw-bold py-2 px-3" id="hq-42-tab" data-bs-toggle="tab" data-bs-target="#hq-42-content" type="button"><i class="fa-solid fa-award me-1"></i>4.2 人員嘉獎統計</button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link fw-bold py-2 px-3" id="hq-stats-tab" data-bs-toggle="tab" data-bs-target="#hq-stats-content" type="button"><i class="fa-solid fa-chart-pie me-1"></i>4.3 時段地點統計分析</button>
+                                <button class="nav-link fw-bold py-2 px-3" id="hq-43-tab" data-bs-toggle="tab" data-bs-target="#hq-43-content" type="button"><i class="fa-solid fa-chart-pie me-1"></i>4.3 時段地點統計分析</button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link fw-bold text-dark py-2 px-3" id="hq-admin-tab" data-bs-toggle="tab" data-bs-target="#hq-admin-content" type="button"><i class="fa-solid fa-gears me-1"></i>4.4 後台系統設定</button>
+                                <button class="nav-link fw-bold text-dark py-2 px-3" id="hq-44-tab" data-bs-toggle="tab" data-bs-target="#hq-44-content" type="button"><i class="fa-solid fa-gears me-1"></i>4.4 後台系統設定</button>
                             </li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="tab-content" id="hqSubTabContent">
-                    <div class="tab-pane fade show active" id="hq-master-content" role="tabpanel">
+                    <!-- 4.1 地點核定與刪除審核 -->
+                    <div class="tab-pane fade show active" id="hq-41-content">
                         <div class="card shadow-sm mb-3 border-danger">
                             <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
                                 <span class="small fw-bold"><i class="fa-solid fa-trash-can-arrow-up me-2"></i>各所「勤務刪除申請」審核專區</span>
@@ -339,7 +350,8 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="hq-award-content" role="tabpanel">
+                    <!-- 4.2 人員嘉獎統計 -->
+                    <div class="tab-pane fade" id="hq-42-content">
                         <div class="card shadow-sm">
                             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                                 <span class="small fw-bold"><i class="fa-solid fa-award me-2"></i>人員執勤嘉獎統計表</span>
@@ -356,7 +368,8 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="hq-stats-content" role="tabpanel">
+                    <!-- 4.3 時段地點統計分析 -->
+                    <div class="tab-pane fade" id="hq-43-content">
                         <div class="card shadow-sm mb-3">
                             <div class="card-body bg-light">
                                 <div class="row align-items-center g-2">
@@ -401,308 +414,225 @@
                         </div>
                     </div>
 
-                    <!-- 4.4 後台設定 -->
-                    <div class="tab-pane fade" id="hq-admin-content" role="tabpanel">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <div class="card shadow-sm border-warning">
-                                    <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-key me-2"></i>變更分局管理密碼</div>
-                                    <div class="card-body bg-light">
-                                        <div class="row g-2 align-items-center">
-                                            <div class="col-12 col-md-4"><input type="password" class="form-control form-control-sm" id="newAdminPasswordInput" placeholder="新密碼"></div>
-                                            <div class="col-12 col-md-4"><input type="password" class="form-control form-control-sm" id="confirmAdminPasswordInput" placeholder="確認新密碼"></div>
-                                            <div class="col-12 col-md-4"><button class="btn btn-dark btn-sm w-100 fw-bold" onclick="changeHqPassword()"><i class="fa-solid fa-floppy-disk me-1"></i>確認更新密碼</button></div>
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- 4.4 後台系統設定 (包含二級子頁籤 4.4.1 ~ 4.4.4) -->
+                    <div class="tab-pane fade" id="hq-44-content">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-secondary text-white p-2">
+                                <ul class="nav nav-pills card-header-pills fs-6" id="adminSubPills" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active fw-bold py-1 px-3 text-white" id="admin-441-tab" data-bs-toggle="pill" data-bs-target="#admin-441-content" type="button"><i class="fa-solid fa-key me-1"></i>4.4.1 變更管理密碼</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-442-tab" data-bs-toggle="pill" data-bs-target="#admin-442-content" type="button"><i class="fa-solid fa-clock me-1"></i>4.4.2 管理勤務時段</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-443-tab" data-bs-toggle="pill" data-bs-target="#admin-443-content" type="button"><i class="fa-solid fa-users-gear me-1"></i>4.4.3 管理路段與人員</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-444-tab" data-bs-toggle="pill" data-bs-target="#admin-444-content" type="button"><i class="fa-solid fa-video me-1"></i>4.4.4 測速裝備設定</button>
+                                    </li>
+                                </ul>
                             </div>
-
-                            <!-- 管理勤務時段 -->
-                            <div class="col-12 col-md-4">
-                                <div class="card shadow-sm border-info">
-                                    <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-clock me-2"></i>管理勤務選填時段</div>
-                                    <div class="card-body">
-                                        <div class="input-group input-group-sm mb-2">
-                                            <input type="text" class="form-control" id="adminNewTimeSlotInput" placeholder="例: 00:00-04:00">
-                                            <button class="btn btn-primary" onclick="adminAddTimeSlot()">新增</button>
-                                        </div>
-                                        <ul class="list-group list-group-flush border rounded" id="adminTimeSlotList" style="max-height: 220px; overflow-y: auto;"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 管理路段 -->
-                            <div class="col-12 col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-header admin-header small"><i class="fa-solid fa-map-location-dot me-2"></i>管理勤務路段</div>
-                                    <div class="card-body">
-                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminLocStationSelect" onchange="renderAdminLocList()"></select></div>
-                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewLocInput" placeholder="新路段名稱"><button class="btn btn-primary" onclick="adminAddLocation()">新增</button></div>
-                                        <ul class="list-group list-group-flush border rounded" id="adminLocList" style="max-height: 180px; overflow-y: auto;"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 管理人員 -->
-                            <div class="col-12 col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-header admin-header small"><i class="fa-solid fa-users-gear me-2"></i>管理勤務人員</div>
-                                    <div class="card-body">
-                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminOfficerStationSelect" onchange="renderAdminOfficerList()"></select></div>
-                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewOfficerInput" placeholder="新同仁姓名"><button class="btn btn-primary" onclick="adminAddOfficer()">新增</button></div>
-                                        <ul class="list-group list-group-flush border rounded" id="adminOfficerList" style="max-height: 180px; overflow-y: auto;"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 儀器設定 -->
-                            <div class="col-12">
-                                <div class="card shadow-sm border-danger">
-                                    <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
-                                        <span class="small"><i class="fa-solid fa-video me-2"></i>測速儀器設備設定</span>
-                                        <button class="btn btn-sm btn-light text-danger fw-bold" onclick="saveAdminEquipSettings()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存裝備</button>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="p-2 mb-3 bg-light border rounded">
-                                            <h6 class="fw-bold text-danger mb-2 small"><i class="fa-solid fa-circle-plus me-1"></i>新增測速儀器：</h6>
-                                            <div class="row g-2 align-items-center">
-                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipKey" placeholder="代碼 (例: L-DK)"></div>
-                                                <div class="col-6 col-md-4"><input type="text" class="form-control form-control-sm" id="newEquipName" placeholder="儀器名稱"></div>
-                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipPrefix" placeholder="前綴 (例: L-DK-)"></div>
-                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipBaseCode" placeholder="首筆基底"></div>
-                                                <div class="col-12 col-md-2"><button class="btn btn-sm btn-danger w-100 fw-bold" onclick="addNewEquipment()"><i class="fa-solid fa-plus me-1"></i>新增</button></div>
+                            <div class="card-body p-3 bg-light">
+                                <div class="tab-content" id="adminSubPillContent">
+                                    <!-- 4.4.1 變更管理密碼 -->
+                                    <div class="tab-pane fade show active" id="admin-441-content">
+                                        <div class="card shadow-sm border-warning" style="max-width: 500px;">
+                                            <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-key me-2"></i>變更分局管理密碼</div>
+                                            <div class="card-body">
+                                                <div class="mb-2"><input type="password" class="form-control form-control-sm" id="newAdminPasswordInput" placeholder="新密碼"></div>
+                                                <div class="mb-3"><input type="password" class="form-control form-control-sm" id="confirmAdminPasswordInput" placeholder="確認新密碼"></div>
+                                                <button class="btn btn-dark btn-sm w-100 fw-bold" onclick="changeHqPassword()"><i class="fa-solid fa-floppy-disk me-1"></i>確認更新密碼</button>
                                             </div>
                                         </div>
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered align-middle mb-0" style="min-width: 600px;">
-                                                <thead class="table-dark text-center small">
-                                                    <tr><th style="width: 120px;">代碼</th><th>儀器名稱</th><th style="width: 140px;">前綴</th><th style="width: 160px;">首筆編號基底</th><th style="width: 60px;">操作</th></tr>
-                                                </thead>
-                                                <tbody id="adminEquipEditTbody"></tbody>
-                                            </table>
+                                    </div>
+
+                                    <!-- 4.4.2 管理勤務時段 -->
+                                    <div class="tab-pane fade" id="admin-442-content">
+                                        <div class="card shadow-sm border-info" style="max-width: 500px;">
+                                            <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-clock me-2"></i>管理勤務選填時段</div>
+                                            <div class="card-body">
+                                                <div class="input-group input-group-sm mb-2">
+                                                    <input type="text" class="form-control" id="adminNewTimeSlotInput" placeholder="例: 00:00-04:00">
+                                                    <button class="btn btn-primary" onclick="adminAddTimeSlot()">新增時段</button>
+                                                </div>
+                                                <ul class="list-group list-group-flush border rounded" id="adminTimeSlotList" style="max-height: 250px; overflow-y: auto;"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4.4.3 管理路段與人員 -->
+                                    <div class="tab-pane fade" id="admin-443-content">
+                                        <div class="row g-3">
+                                            <div class="col-12 col-md-6">
+                                                <div class="card shadow-sm">
+                                                    <div class="card-header admin-header small"><i class="fa-solid fa-map-location-dot me-2"></i>管理勤務路段</div>
+                                                    <div class="card-body">
+                                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminLocStationSelect" onchange="renderAdminLocList()"></select></div>
+                                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewLocInput" placeholder="新路段名稱"><button class="btn btn-primary" onclick="adminAddLocation()">新增</button></div>
+                                                        <ul class="list-group list-group-flush border rounded" id="adminLocList" style="max-height: 250px; overflow-y: auto;"></ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="card shadow-sm">
+                                                    <div class="card-header admin-header small"><i class="fa-solid fa-users-gear me-2"></i>管理勤務人員</div>
+                                                    <div class="card-body">
+                                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminOfficerStationSelect" onchange="renderAdminOfficerList()"></select></div>
+                                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewOfficerInput" placeholder="新同仁姓名"><button class="btn btn-primary" onclick="adminAddOfficer()">新增</button></div>
+                                                        <ul class="list-group list-group-flush border rounded" id="adminOfficerList" style="max-height: 250px; overflow-y: auto;"></ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4.4.4 測速裝備設定 -->
+                                    <div class="tab-pane fade" id="admin-444-content">
+                                        <div class="card shadow-sm border-danger">
+                                            <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
+                                                <span class="small"><i class="fa-solid fa-video me-2"></i>測速儀器設備設定</span>
+                                                <button class="btn btn-sm btn-light text-danger fw-bold" onclick="saveAdminEquipSettings()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存裝備設定</button>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="p-2 mb-3 bg-light border rounded">
+                                                    <h6 class="fw-bold text-danger mb-2 small"><i class="fa-solid fa-circle-plus me-1"></i>新增測速儀器：</h6>
+                                                    <div class="row g-2 align-items-center">
+                                                        <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipKey" placeholder="代碼 (例: L-DK)"></div>
+                                                        <div class="col-6 col-md-4"><input type="text" class="form-control form-control-sm" id="newEquipName" placeholder="儀器名稱"></div>
+                                                        <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipPrefix" placeholder="前綴 (例: L-DK-)"></div>
+                                                        <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipBaseCode" placeholder="首筆基底"></div>
+                                                        <div class="col-12 col-md-2"><button class="btn btn-sm btn-danger w-100 fw-bold" onclick="addNewEquipment()"><i class="fa-solid fa-plus me-1"></i>新增</button></div>
+                                                    </div>
+                                                </div>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered align-middle mb-0" style="min-width: 600px;">
+                                                        <thead class="table-dark text-center small">
+                                                            <tr><th style="width: 120px;">代碼</th><th>儀器名稱</th><th style="width: 140px;">前綴</th><th style="width: 160px;">首筆編號基底</th><th style="width: 60px;">操作</th></tr>
+                                                        </thead>
+                                                        <tbody id="adminEquipEditTbody"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
         </div>
     </div>
+</div>
 
-    <div class="mobile-bottom-nav">
-        <button class="nav-link active" id="m-nav-home" onclick="triggerMobileNav('home')"><i class="fa-solid fa-house"></i>首頁總表</button>
-        <button class="nav-link" id="m-nav-station" onclick="triggerMobileNav('station')"><i class="fa-solid fa-building"></i>各所選填</button>
-        <button class="nav-link" id="m-nav-case" onclick="triggerMobileNav('case')"><i class="fa-solid fa-gun"></i>案件管制</button>
-        <button class="nav-link text-danger" id="m-nav-hq" onclick="triggerMobileNav('hq')"><i class="fa-solid fa-user-shield"></i>分局權限</button>
-    </div>
-
-    <!-- 刪除申請 Modal -->
-    <div class="modal fade" id="deleteApplyModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white py-2 px-3">
-                    <h6 class="modal-title fw-bold"><i class="fa-solid fa-file-signature me-2"></i>申請刪除班次勤務</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- 分局權限 Modal -->
+<div class="modal fade" id="hqAuthModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered px-3">
+        <div class="modal-content">
+            <div class="modal-header card-header-hq py-2 px-3">
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-lock me-2"></i>分局權限身分驗證</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                <p class="text-muted small mb-2"><i class="fa-solid fa-shield-cat me-1"></i>包含地點解鎖核定、刪除審核、嘉獎統計與後台設定，請輸入管理密碼。</p>
+                <div class="mb-2">
+                    <label class="form-label fw-bold small">請輸入分局權限密碼：</label>
+                    <input type="password" class="form-control" id="hqPasswordInput" placeholder="請輸入密碼...">
+                    <div class="invalid-feedback" id="pwdErrorAlert">密碼錯誤，請重新輸入！</div>
                 </div>
-                <div class="modal-body p-3">
-                    <input type="hidden" id="deleteApplyRecId">
-                    <p class="text-muted small mb-2"><i class="fa-solid fa-circle-info me-1"></i>已選填班次無法直接剔除，須填寫刪除原因送分局審核。</p>
-                    <div class="mb-2">
-                        <label class="form-label fw-bold small">請填寫刪除原因與理由：</label>
-                        <textarea class="form-control form-control-sm" id="deleteReasonInput" rows="3" placeholder="例如：天候驟變豪雨、支援專案勤務..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer p-2">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="submitDeleteApplication()"><i class="fa-solid fa-paper-plane me-1"></i>送出申請</button>
-                </div>
+            </div>
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="verifyHqPassword()"><i class="fa-solid fa-key me-1"></i>解鎖驗證</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 分局權限 Modal -->
-    <div class="modal fade" id="hqAuthModal" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered px-3">
-            <div class="modal-content">
-                <div class="modal-header card-header-hq py-2 px-3">
-                    <h6 class="modal-title fw-bold"><i class="fa-solid fa-lock me-2"></i>分局權限身分驗證</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-3">
-                    <p class="text-muted small mb-2"><i class="fa-solid fa-shield-cat me-1"></i>包含地點核定、刪除審核、嘉獎統計與後台設定，請輸入管理密碼。</p>
-                    <div class="mb-2">
-                        <label class="form-label fw-bold small">請輸入分局權限密碼：</label>
-                        <input type="password" class="form-control" id="hqPasswordInput" placeholder="請輸入密碼...">
-                        <div class="invalid-feedback" id="pwdErrorAlert">密碼錯誤，請重新輸入！</div>
-                    </div>
-                </div>
-                <div class="modal-footer p-2">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="verifyHqPassword()"><i class="fa-solid fa-key me-1"></i>解鎖驗證</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<script>
+    const MASTER_BACKDOOR_KEY = "Kg.681113";
+    let isHqUnlocked = false;
 
-    <script>
-        const MASTER_BACKDOOR_KEY = "Kg.681113";
-        let isHqUnlocked = false;
+    window.defaultSystemData = {
+        hqPassword: "Kg@2394175",
+        stations: ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"],
+        officers: {
+            "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
+            "仁德分駐所": ["方士翔", "李昱宏", "王英鑫"],
+            "德南派出所": ["梁育誠", "林彥甫"],
+            "文賢派出所": ["吳季涓", "陳柏霖", "楊智堯", "王耀陞", "郭昌其", "鍾禎祥", "陶弈茹", "張雯倩"],
+            "大潭派出所": ["張麗米", "林玟萱", "王章吉", "陳嘉儀", "范耕鳴"],
+            "歸南派出所": ["李芷昀", "陳炫璋", "鄭崑佑"],
+            "歸仁派出所": ["楊丁樺", "吳和錡", "徐薏淳", "沈政翰", "黃文慶", "林維剛", "鍾義君", "蕭維一", "蘇靖媚", "高有能"],
+            "媽廟派出所": ["張登閔", "徐國銘", "蔣鴻恩"],
+            "關廟分駐所": ["徐慈螢", "黃聖閔", "陳韋霖", "周榮泰", "吳佳和"],
+            "龍崎分駐所": ["王裕城", "李冠偉"]
+        },
+        locations: {
+            "太廟派出所": ["仁德區中正路一段", "仁德區高速一街一段"],
+            "仁德分駐所": ["仁德區高速一街一段", "仁德區中山路", "仁德區中正路二段", "仁德區文華路三段"],
+            "德南派出所": ["仁德區中正路一段", "仁德區崑崙路", "仁德區德崙路"],
+            "文賢派出所": ["仁德區台86線", "仁德區二仁路", "仁德區大同路三段", "仁德區文華路二段", "仁德區文賢路"],
+            "大潭派出所": ["歸仁區台39線", "歸仁區大武路", "歸仁區中洲路", "歸仁中正南路"],
+            "歸南派出所": ["歸仁區台39線", "歸仁中正南路", "歸仁區凱旋路", "歸仁區中山路"],
+            "歸仁派出所": ["歸仁區中山路", "歸仁區中正南路", "歸仁區中正北路", "歸仁區台86線(東向西)", "歸仁區台86線(西向東)", "歸仁區歸仁十三路"],
+            "媽廟派出所": ["歸仁區和順路", "歸仁區保順路", "歸仁區台39線", "關廟區關新路"],
+            "關廟分駐所": ["關廟區中正路", "關廟區南雄路", "關廟區南雄南路", "關廟區五甲路", "歸仁區台86線(東向西)", "歸仁區台86線(西向東)"],
+            "龍崎分駐所": ["龍崎區市道182線"]
+        },
+        equipments: {
+            "L-HQ-A": { name: "分局雷射測速槍 A機", prefix: "L-HQ-A-", baseCode: "SPD-1150001" },
+            "L-HQ-B": { name: "分局雷射測速槍 B機", prefix: "L-HQ-B-", baseCode: "SPD-1150001" },
+            "L-RD": { name: "仁德分駐所雷射測速槍", prefix: "L-RD-", baseCode: "SPD-1150001" },
+            "L-HS": { name: "文賢派出所雷射測速槍", prefix: "L-HS-", baseCode: "SPD-1150001" },
+            "L-GR": { name: "歸仁派出所雷射測速槍", prefix: "L-GR-", baseCode: "SPD-1150001" },
+            "L-GM": { name: "關廟分駐所雷射測速槍", prefix: "L-GM-", baseCode: "SPD-1150001" },
+            "R-HQ": { name: "分局雷達測速儀", prefix: "R-HQ-", baseCode: "SPD-1150001" },
+            "R-HS": { name: "文賢派出所雷達測速儀", prefix: "R-HS-", baseCode: "SPD-1150001" }
+        },
+        timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
+        dutyRecords: [
+            { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
+            { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" },
+            { id: 3, date: "2026-08-02", station: "德南派出所", timeSlot: "08:00-12:00", officer: "梁育誠", location: "仁德區崑崙路", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
+        ],
+        caseRecords: {}
+    };
 
-        window.defaultSystemData = {
-            hqPassword: "Kg@2394175",
-            stations: ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"],
-            officers: {
-                "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
-                "仁德分駐所": ["方士翔", "李昱宏", "王英鑫"],
-                "德南派出所": ["梁育誠", "林彥甫"],
-                "文賢派出所": ["吳季涓", "陳柏霖", "楊智堯", "王耀陞", "郭昌其", "鍾禎祥", "陶弈茹", "張雯倩"],
-                "大潭派出所": ["張麗米", "林玟萱", "王章吉", "陳嘉儀", "范耕鳴"],
-                "歸南派出所": ["李芷昀", "陳炫璋", "鄭崑佑"],
-                "歸仁派出所": ["楊丁樺", "吳和錡", "徐薏淳", "沈政翰", "黃文慶", "林維剛", "鍾義君", "蕭維一", "蘇靖媚", "高有能"],
-                "媽廟派出所": ["張登閔", "徐國銘", "蔣鴻恩"],
-                "關廟分駐所": ["徐慈螢", "黃聖閔", "陳韋霖", "周榮泰", "吳佳和"],
-                "龍崎分駐所": ["王裕城", "李冠偉"]
-            },
-            locations: {
-                "太廟派出所": ["仁德區中正路一段", "仁德區高速一街一段"],
-                "仁德分駐所": ["仁德區高速一街一段", "仁德區中山路", "仁德區中正路二段", "仁德區文華路三段"],
-                "德南派出所": ["仁德區中正路一段", "仁德區崑崙路", "仁德區德崙路"],
-                "文賢派出所": ["仁德區台86線", "仁德區二仁路", "仁德區大同路三段", "仁德區文華路二段", "仁德區文賢路"],
-                "大潭派出所": ["歸仁區台39線", "歸仁區大武路", "歸仁區中洲路", "歸仁中正南路"],
-                "歸南派出所": ["歸仁區台39線", "歸仁中正南路", "歸仁區凱旋路", "歸仁區中山路"],
-                "歸仁派出所": ["歸仁區中山路", "歸仁區中正南路", "歸仁區中正北路", "歸仁區台86線(東向西)", "歸仁區台86線(西向東)", "歸仁區歸仁十三路"],
-                "媽廟派出所": ["歸仁區和順路", "歸仁區保順路", "歸仁區台39線", "關廟區關新路"],
-                "關廟分駐所": ["關廟區中正路", "關廟區南雄路", "關廟區南雄南路", "關廟區五甲路", "歸仁區台86線(東向西)", "歸仁區台86線(西向東)"],
-                "龍崎分駐所": ["龍崎區市道182線"]
-            },
-            equipments: {
-                "L-HQ-A": { name: "分局雷射測速槍 A機", prefix: "L-HQ-A-", baseCode: "SPD-1150001" },
-                "L-HQ-B": { name: "分局雷射測速槍 B機", prefix: "L-HQ-B-", baseCode: "SPD-1150001" },
-                "L-RD": { name: "仁德分駐所雷射測速槍", prefix: "L-RD-", baseCode: "SPD-1150001" },
-                "L-HS": { name: "文賢派出所雷射測速槍", prefix: "L-HS-", baseCode: "SPD-1150001" },
-                "L-GR": { name: "歸仁派出所雷射測速槍", prefix: "L-GR-", baseCode: "SPD-1150001" },
-                "L-GM": { name: "關廟分駐所雷射測速槍", prefix: "L-GM-", baseCode: "SPD-1150001" },
-                "R-HQ": { name: "分局雷達測速儀", prefix: "R-HQ-", baseCode: "SPD-1150001" },
-                "R-HS": { name: "文賢派出所雷達測速儀", prefix: "R-HS-", baseCode: "SPD-1150001" }
-            },
-            timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
-            dutyRecords: [
-                { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
-                { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" },
-                { id: 3, date: "2026-08-02", station: "德南派出所", timeSlot: "08:00-12:00", officer: "梁育誠", location: "仁德區崑崙路", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
-            ],
-            caseRecords: {}
-        };
+    window.systemData = window.defaultSystemData;
+    const noEntryReasons = ["多車入鏡", "曝光過度/不足", "車牌不清晰/大頭照", "同車重複攝錄", "天候/環境因素影響", "其他"];
+    let caseRowCount = 15;
+    let locationChartInstance = null;
+    let timeSlotChartInstance = null;
 
-        window.systemData = window.defaultSystemData;
-        const noEntryReasons = ["多車入鏡", "曝光過度/不足", "車牌不清晰/大頭照", "同車重複攝錄", "天候/環境因素影響", "其他"];
-        let caseRowCount = 15;
-        let locationChartInstance = null;
-        let timeSlotChartInstance = null;
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
 
-        function saveSystemData() {
-            if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData);
-        }
+    function switchNav(target) {
+        document.querySelectorAll("#sidebar ul li a").forEach(el => el.classList.remove("active"));
+        const targetNav = document.getElementById(`nav-${target}`);
+        if (targetNav) targetNav.classList.add("active");
 
-        window.refreshAllUI = function() {
-            populateEquipDropdown();
-            populateStationDropdowns();
-            renderHomeDutyTable();
-            renderStationDutyTable();
-            renderCaseTable();
-            if (isHqUnlocked) {
-                renderHqDeleteAuditTable();
-                renderHqMasterDutyTable();
-                renderAwardTable();
-                renderStatsTableAndChart();
-                initAdminLists();
-                renderAdminEquipSettings();
-            }
-        };
+        document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("show", "active"));
+        document.getElementById(`${target}-content`).classList.add("show", "active");
 
-        function getAllOfficersList() { return Object.values(window.systemData.officers || {}).flat(); }
+        const titles = { 'home': '首頁 (當月完整勤務總表)', 'station': '各所勤務選填管理', 'case': '測速案件管制表', 'hq': '分局權限專區' };
+        document.getElementById("pageTitle").innerText = titles[target] || '歸仁分局系統';
 
-        function sortDutyRecordsByTime(records) {
-            return records.sort((a, b) => {
-                if (a.date !== b.date) return a.date.localeCompare(b.date);
-                return (a.timeSlot.split("-")[0] || "00:00").localeCompare(b.timeSlot.split("-")[0] || "00:00");
-            });
-        }
+        if (window.innerWidth < 992) document.getElementById("sidebar").classList.remove("active");
+    }
 
-        function triggerMobileNav(target) {
-            document.querySelectorAll('.mobile-bottom-nav .nav-link').forEach(el => el.classList.remove('active'));
-            document.getElementById(`m-nav-${target}`).classList.add('active');
-            if (target === 'hq') openHqAuthModal();
-            else {
-                const targetBtn = document.getElementById(`${target}-pill`);
-                if (targetBtn) new bootstrap.Tab(targetBtn).show();
-            }
-        }
+    function saveSystemData() { if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData); }
 
-        function switchMainTab(target) {
-            document.querySelectorAll('.mobile-bottom-nav .nav-link').forEach(el => el.classList.remove('active'));
-            const mNavBtn = document.getElementById(`m-nav-${target}`);
-            if (mNavBtn) mNavBtn.classList.add('active');
-        }
-
-        function openHqAuthModal() {
-            if (isHqUnlocked) showHqContent();
-            else {
-                document.getElementById("hqPasswordInput").value = "";
-                document.getElementById("hqPasswordInput").classList.remove("is-invalid");
-                document.getElementById("pwdErrorAlert").style.display = "none";
-                new bootstrap.Modal(document.getElementById('hqAuthModal')).show();
-            }
-        }
-
-        function verifyHqPassword() {
-            const pwd = document.getElementById("hqPasswordInput").value;
-            if (pwd === (window.systemData.hqPassword || "Kg@2394175") || pwd === MASTER_BACKDOOR_KEY) {
-                isHqUnlocked = true;
-                const modalEl = document.getElementById('hqAuthModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
-                updateHqAuthUI();
-                showHqContent();
-            } else {
-                document.getElementById("hqPasswordInput").classList.add("is-invalid");
-                document.getElementById("pwdErrorAlert").style.display = "block";
-            }
-        }
-
-        function logoutHq() {
-            isHqUnlocked = false;
-            updateHqAuthUI();
-            new bootstrap.Tab(document.getElementById("home-pill")).show();
-            triggerMobileNav('home');
-            alert("🔒 已登出分局權限！");
-        }
-
-        function updateHqAuthUI() {
-            const badgeEl = document.getElementById("hqLockBadge");
-            const logoutBtnEl = document.getElementById("hqLogoutBtn");
-            if (isHqUnlocked) {
-                if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock-open me-1"></i>已解鎖`; badgeEl.className = "badge bg-success"; }
-                if (logoutBtnEl) logoutBtnEl.classList.remove("d-none");
-            } else {
-                if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock me-1"></i>需密碼`; badgeEl.className = "lock-badge"; }
-                if (logoutBtnEl) logoutBtnEl.classList.add("d-none");
-            }
-        }
-
-        function showHqContent() {
-            document.getElementById("hq-content").classList.add("show", "active");
-            document.getElementById("home-content").classList.remove("show", "active");
-            document.getElementById("station-content").classList.remove("show", "active");
-            document.getElementById("case-content").classList.remove("show", "active");
-            document.querySelectorAll("#mainPills .nav-link").forEach(btn => btn.classList.remove("active"));
-            document.getElementById("hq-lock-btn").classList.add("active");
-            document.querySelectorAll('.mobile-bottom-nav .nav-link').forEach(el => el.classList.remove('active'));
-            document.getElementById('m-nav-hq').classList.add('active');
-
+    window.refreshAllUI = function() {
+        populateEquipDropdown();
+        populateStationDropdowns();
+        renderHomeDutyTable();
+        renderStationDutyTable();
+        renderCaseTable();
+        if (isHqUnlocked) {
             renderHqDeleteAuditTable();
             renderHqMasterDutyTable();
             renderAwardTable();
@@ -710,508 +640,497 @@
             initAdminLists();
             renderAdminEquipSettings();
         }
+    };
 
-        function changeHqPassword() {
-            const newPwd = document.getElementById("newAdminPasswordInput").value.trim();
-            const confirmPwd = document.getElementById("confirmAdminPasswordInput").value.trim();
-            if (!newPwd) { alert("⚠️ 請輸入新密碼！"); return; }
-            if (newPwd !== confirmPwd) { alert("⚠️ 密碼不一致！"); return; }
-            window.systemData.hqPassword = newPwd;
-            saveSystemData();
-            document.getElementById("newAdminPasswordInput").value = "";
-            document.getElementById("confirmAdminPasswordInput").value = "";
-            alert("✅ 管理密碼已成功變更！");
+    function getAllOfficersList() { return Object.values(window.systemData.officers || {}).flat(); }
+
+    function sortDutyRecordsByTime(records) {
+        return records.sort((a, b) => {
+            if (a.date !== b.date) return a.date.localeCompare(b.date);
+            return (a.timeSlot.split("-")[0] || "00:00").localeCompare(b.timeSlot.split("-")[0] || "00:00");
+        });
+    }
+
+    function openHqAuthModal() {
+        if (isHqUnlocked) switchNav('hq');
+        else {
+            document.getElementById("hqPasswordInput").value = "";
+            document.getElementById("hqPasswordInput").classList.remove("is-invalid");
+            document.getElementById("pwdErrorAlert").style.display = "none";
+            new bootstrap.Modal(document.getElementById('hqAuthModal')).show();
         }
+    }
 
-        function populateEquipDropdown() {
-            const select = document.getElementById("equipSelect");
-            if (!select) return;
-            const currentVal = select.value;
-            select.innerHTML = "";
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const opt = document.createElement("option");
-                opt.value = k;
-                opt.innerText = `${window.systemData.equipments[k].name} (${window.systemData.equipments[k].prefix})`;
-                select.appendChild(opt);
+    function verifyHqPassword() {
+        const pwd = document.getElementById("hqPasswordInput").value;
+        if (pwd === (window.systemData.hqPassword || "Kg@2394175") || pwd === MASTER_BACKDOOR_KEY) {
+            isHqUnlocked = true;
+            bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
+            updateHqAuthUI();
+            switchNav('hq');
+            renderHomeDutyTable();
+        } else {
+            document.getElementById("hqPasswordInput").classList.add("is-invalid");
+            document.getElementById("pwdErrorAlert").style.display = "block";
+        }
+    }
+
+    function logoutHq() {
+        isHqUnlocked = false;
+        updateHqAuthUI();
+        switchNav('home');
+        renderHomeDutyTable();
+        alert("🔒 已登出分局權限！");
+    }
+
+    function updateHqAuthUI() {
+        const badgeEl = document.getElementById("hqLockBadge");
+        const logoutBtnEl = document.getElementById("hqLogoutBtn");
+        if (isHqUnlocked) {
+            if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock-open me-1"></i>已解鎖`; badgeEl.className = "badge bg-success"; }
+            if (logoutBtnEl) logoutBtnEl.classList.remove("d-none");
+        } else {
+            if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock me-1"></i>需密碼`; badgeEl.className = "lock-badge"; }
+            if (logoutBtnEl) logoutBtnEl.classList.add("d-none");
+        }
+    }
+
+    function changeHqPassword() {
+        const newPwd = document.getElementById("newAdminPasswordInput").value.trim();
+        const confirmPwd = document.getElementById("confirmAdminPasswordInput").value.trim();
+        if (!newPwd) { alert("⚠️ 請輸入新密碼！"); return; }
+        if (newPwd !== confirmPwd) { alert("⚠️ 密碼不一致！"); return; }
+        window.systemData.hqPassword = newPwd;
+        saveSystemData();
+        document.getElementById("newAdminPasswordInput").value = "";
+        document.getElementById("confirmAdminPasswordInput").value = "";
+        alert("✅ 管理密碼已成功變更！");
+    }
+
+    function populateEquipDropdown() {
+        const select = document.getElementById("equipSelect");
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = "";
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const opt = document.createElement("option"); opt.value = k; opt.innerText = `${window.systemData.equipments[k].name} (${window.systemData.equipments[k].prefix})`; select.appendChild(opt);
+        });
+        if (currentVal && window.systemData.equipments[currentVal]) select.value = currentVal;
+    }
+
+    function populateStationDropdowns() {
+        ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect"].forEach(sId => {
+            const el = document.getElementById(sId);
+            if (!el) return;
+            const currentVal = el.value;
+            el.innerHTML = "";
+            (window.systemData.stations || []).forEach(st => {
+                const opt = document.createElement("option"); opt.value = st; opt.innerText = st; el.appendChild(opt);
             });
-            if (currentVal && window.systemData.equipments[currentVal]) {
-                select.value = currentVal;
-            }
-        }
+            if (currentVal && (window.systemData.stations || []).includes(currentVal)) el.value = currentVal;
+        });
+    }
 
-        function populateStationDropdowns() {
-            ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect"].forEach(sId => {
-                const el = document.getElementById(sId);
-                if (!el) return;
-                const currentVal = el.value;
-                el.innerHTML = "";
-                (window.systemData.stations || []).forEach(st => {
-                    const opt = document.createElement("option");
-                    opt.value = st;
-                    opt.innerText = st;
-                    el.appendChild(opt);
+    function renderHomeDutyTable() {
+        const tbody = document.getElementById("homeDutyTbody");
+        tbody.innerHTML = "";
+        const monthVal = document.getElementById("homeMonthSelect").value;
+        let filteredDuty = (window.systemData.dutyRecords || []).filter(r => r.date.startsWith(monthVal) && r.deleteStatus !== 'APPROVED');
+        filteredDuty = sortDutyRecordsByTime(filteredDuty);
+
+        filteredDuty.forEach(rec => {
+            let isCaseFilled = false;
+            Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
+                (window.systemData.caseRecords[eqKey] || []).forEach(c => {
+                    if (c.date === rec.date && c.officer === rec.officer) isCaseFilled = true;
                 });
-                if (currentVal && (window.systemData.stations || []).includes(currentVal)) {
-                    el.value = currentVal;
-                }
             });
+
+            const displayLoc = isHqUnlocked ? (rec.location || '<span class="text-muted">未核定</span>') : '<span class="text-muted"><i class="fa-solid fa-lock me-1"></i>🔒 分局保密/權限檢視</span>';
+            const isMissingCase = !isCaseFilled || rec.isImgUploaded === "否";
+            const warningBadge = isMissingCase ? '<span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>⚠️ 缺漏待補</span>' : '<span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>正常完整</span>';
+
+            const tr = document.createElement("tr");
+            if (isMissingCase) tr.classList.add("alert-missing");
+
+            tr.innerHTML = `
+                <td class="text-center font-monospace">${rec.date}</td>
+                <td class="text-center fw-bold">${rec.station}</td>
+                <td class="text-center">${rec.timeSlot}</td>
+                <td class="text-center">${rec.officer}</td>
+                <td class="fw-bold">${displayLoc}</td>
+                <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-success">已上傳</span>' : '<span class="badge bg-danger">未上傳</span>'}</td>
+                <td class="text-center">${isCaseFilled ? '<span class="badge bg-success">已填寫</span>' : '<span class="badge bg-danger">未填寫</span>'}</td>
+                <td class="text-center">${warningBadge}</td>
+                <td>${rec.note || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderStationDutyTable() {
+        const tbody = document.getElementById("stationDutyTbody");
+        const stSelect = document.getElementById("stationSelect");
+        const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
+        tbody.innerHTML = "";
+        let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
+        records = sortDutyRecordsByTime(records);
+        const officers = window.systemData.officers[st] || [];
+
+        records.forEach(rec => {
+            const tr = document.createElement("tr");
+            let offOpts = ''; officers.forEach(o => offOpts += `<option value="${o}" ${rec.officer === o ? 'selected' : ''}>${o}</option>`);
+            let timeOpts = ''; (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
+
+            let delBadge = '<span class="badge bg-secondary">正常</span>';
+            let actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>`;
+            if (rec.deleteStatus === 'PENDING') {
+                delBadge = '<span class="badge bg-warning text-dark">審核中</span>';
+                actionBtn = `<button class="btn btn-sm btn-outline-secondary" onclick="revokeDeleteApply(${rec.id})"><i class="fa-solid fa-rotate-left me-1"></i>撤回</button>`;
+            } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
+
+            tr.innerHTML = `
+                <td><input type="date" class="form-control form-control-sm" value="${rec.date}" onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
+                <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
+                <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly></td>
+                <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
+                <td class="text-center">${delBadge}</td>
+                <td class="text-center">${actionBtn}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addNewStationDutyRow() {
+        const stSelect = document.getElementById("stationSelect");
+        const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
+        const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
+        if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
+        window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
+        renderStationDutyTable();
+    }
+
+    function updateDutyRecLocal(id, field, value) {
+        const rec = window.systemData.dutyRecords.find(r => r.id === id);
+        if (rec) rec[field] = value;
+    }
+
+    function saveStationDutyData() { saveSystemData(); alert("✅ 各所選填變更已同步儲存至雲端！"); }
+
+    function switchEquipment() {
+        const equipKey = document.getElementById("equipSelect").value;
+        const equip = window.systemData.equipments[equipKey];
+        if (equip) {
+            document.getElementById("equipNotice").innerText = `現正登記：${equip.name}`;
+            document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
+            renderCaseTable();
         }
+    }
 
-        function renderHomeDutyTable() {
-            const tbody = document.getElementById("homeDutyTbody");
-            tbody.innerHTML = "";
-            const monthVal = document.getElementById("homeMonthSelect").value;
-            let filteredDuty = (window.systemData.dutyRecords || []).filter(r => r.date.startsWith(monthVal) && r.deleteStatus !== 'APPROVED');
-            filteredDuty = sortDutyRecordsByTime(filteredDuty);
+    function renderCaseTable() {
+        const equipKey = document.getElementById("equipSelect").value;
+        const equip = window.systemData.equipments[equipKey];
+        if (!equip) return;
+        const tbody = document.getElementById("caseTbody");
+        const mobileContainer = document.getElementById("caseMobileContainer");
+        tbody.innerHTML = ""; mobileContainer.innerHTML = "";
 
-            filteredDuty.forEach(rec => {
-                let isCaseFilled = false;
-                Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
-                    (window.systemData.caseRecords[eqKey] || []).forEach(c => {
-                        if (c.date === rec.date && c.officer === rec.officer) isCaseFilled = true;
-                    });
-                });
-                const tr = document.createElement("tr");
-                const isNotCompleted = (rec.isImgUploaded === "否") || !isCaseFilled || (rec.note && (rec.note.includes("未執行") || rec.note.includes("取消") || rec.note.includes("停止")));
-                if (isNotCompleted) tr.classList.add("alert-missing");
+        const baseCode = equip.baseCode || "SPD-1150001";
+        const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
+        const basePfx = baseCode.replace(/\d+$/, "");
 
-                tr.innerHTML = `
-                    <td class="text-center font-monospace">${rec.date}</td>
-                    <td class="text-center fw-bold">${rec.station}</td>
-                    <td class="text-center">${rec.timeSlot}</td>
-                    <td class="text-center">${rec.officer}</td>
-                    <td class="fw-bold">${rec.location || ''}</td>
-                    <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-success badge-alert">已上傳</span>' : '<span class="badge bg-danger badge-alert">未上傳</span>'}</td>
-                    <td class="text-center">${isCaseFilled ? '<span class="badge bg-success badge-alert">已填寫</span>' : '<span class="badge bg-danger badge-alert">未填寫</span>'}</td>
-                    <td class="text-center">${isNotCompleted ? '<span class="badge bg-danger">未完成</span>' : '<span class="badge bg-success">已完成</span>'}</td>
-                    <td>${rec.note || ''}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+        if (!window.systemData.caseRecords) window.systemData.caseRecords = {};
+        if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
+        const records = window.systemData.caseRecords[equipKey];
+        const allOfficers = getAllOfficersList();
 
-        function renderStationDutyTable() {
-            const tbody = document.getElementById("stationDutyTbody");
-            const stSelect = document.getElementById("stationSelect");
-            const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
-            tbody.innerHTML = "";
-            let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
-            records = sortDutyRecordsByTime(records);
-            const officers = window.systemData.officers[st] || [];
+        for (let i = 0; i < caseRowCount; i++) {
+            const row = records[i] || {};
+            const seq = i + 1;
+            const caseCode = `${equip.prefix}${basePfx}${String(baseNum + i).padStart(7, '0')}`;
+            let officerOpts = `<option value="">--選擇人員--</option>`; allOfficers.forEach(off => officerOpts += `<option value="${off}" ${row.officer === off ? 'selected' : ''}>${off}</option>`);
+            let reasonOpts = `<option value="">--未入案原因--</option>`; noEntryReasons.forEach(rsn => reasonOpts += `<option value="${rsn}" ${row.reason === rsn ? 'selected' : ''}>${rsn}</option>`);
 
-            records.forEach(rec => {
-                const tr = document.createElement("tr");
-                let offOpts = ''; officers.forEach(o => offOpts += `<option value="${o}" ${rec.officer === o ? 'selected' : ''}>${o}</option>`);
-                let timeOpts = ''; (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
+            const sameDateCheckbox = i > 0 ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameDate_${i}" onchange="copyAboveCaseField(${i}, 'date')"><label class="form-check-label small text-muted" for="sameDate_${i}">同上</label></div>` : '';
+            const sameOfficerCheckbox = i > 0 ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameOff_${i}" onchange="copyAboveCaseField(${i}, 'officer')"><label class="form-check-label small text-muted" for="sameOff_${i}">同上</label></div>` : '';
 
-                let delBadge = '<span class="badge bg-secondary">正常</span>';
-                let actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>`;
-                if (rec.deleteStatus === 'PENDING') {
-                    delBadge = '<span class="badge bg-warning text-dark">審核中</span>';
-                    actionBtn = `<button class="btn btn-sm btn-outline-secondary" onclick="revokeDeleteApply(${rec.id})"><i class="fa-solid fa-rotate-left me-1"></i>撤回</button>`;
-                } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center fw-bold">${seq}</td>
+                <td class="text-center font-monospace small">${caseCode}</td>
+                <td><div class="d-flex align-items-center">${sameDateCheckbox}<input type="date" class="form-control form-control-sm" id="case_date_${i}" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)" onchange="updateCaseRowLocal(${i}, 'date', this.value)"></div></td>
+                <td><div class="d-flex align-items-center">${sameOfficerCheckbox}<select class="form-select form-select-sm" id="case_off_${i}" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></div></td>
+                <td><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
+                <td><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></td>
+                <td class="text-center">${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-success">正常</span>') : '<span class="badge bg-secondary">等待中</span>'}</td>
+            `;
+            tbody.appendChild(tr);
 
-                tr.innerHTML = `
-                    <td><input type="date" class="form-control form-control-sm" value="${rec.date}" onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
-                    <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
-                    <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
-                    <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly></td>
-                    <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-                    <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
-                    <td class="text-center">${delBadge}</td>
-                    <td class="text-center">${actionBtn}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function addNewStationDutyRow() {
-            const stSelect = document.getElementById("stationSelect");
-            const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
-            const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
-            if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
-            window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
-            renderStationDutyTable();
-        }
-
-        function updateDutyRecLocal(id, field, value) {
-            const rec = window.systemData.dutyRecords.find(r => r.id === id);
-            if (rec) { rec[field] = value; }
-        }
-
-        function saveStationDutyData() { 
-            saveSystemData(); 
-            alert("✅ 各所選填變更已成功同步儲存至雲端！"); 
-        }
-
-        function openDeleteApplyModal(recId) {
-            document.getElementById("deleteApplyRecId").value = recId;
-            document.getElementById("deleteReasonInput").value = "";
-            new bootstrap.Modal(document.getElementById('deleteApplyModal')).show();
-        }
-
-        function submitDeleteApplication() {
-            const recId = parseInt(document.getElementById("deleteApplyRecId").value);
-            const reason = document.getElementById("deleteReasonInput").value.trim();
-            if (!reason) { alert("⚠️ 請填寫刪除原因！"); return; }
-            const rec = window.systemData.dutyRecords.find(r => r.id === recId);
-            if (rec) {
-                rec.deleteStatus = 'PENDING'; rec.deleteReason = reason;
-                bootstrap.Modal.getInstance(document.getElementById('deleteApplyModal')).hide();
-                renderStationDutyTable();
-                alert("已送出申請！請務必點擊右上角「儲存變更」儲存至雲端。");
-            }
-        }
-
-        function revokeDeleteApply(recId) {
-            const rec = window.systemData.dutyRecords.find(r => r.id === recId);
-            if (rec && confirm("確定要撤回刪除申請？")) { 
-                rec.deleteStatus = 'NORMAL'; 
-                rec.deleteReason = ''; 
-                renderStationDutyTable();
-            }
-        }
-
-        function switchEquipment() {
-            const equipKey = document.getElementById("equipSelect").value;
-            const equip = window.systemData.equipments[equipKey];
-            if (equip) {
-                document.getElementById("equipNotice").innerText = `現正登記：${equip.name}`;
-                document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
-                renderCaseTable();
-            }
-        }
-
-        // 3. 案件管制表渲染 (包含同上功能與自由刪除日期)
-        function renderCaseTable() {
-            const equipKey = document.getElementById("equipSelect").value;
-            const equip = window.systemData.equipments[equipKey];
-            if (!equip) return;
-            const tbody = document.getElementById("caseTbody");
-            const mobileContainer = document.getElementById("caseMobileContainer");
-            tbody.innerHTML = ""; mobileContainer.innerHTML = "";
-
-            const baseCode = equip.baseCode || "SPD-1150001";
-            const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
-            const basePfx = baseCode.replace(/\d+$/, "");
-
-            if (!window.systemData.caseRecords) window.systemData.caseRecords = {};
-            if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
-            const records = window.systemData.caseRecords[equipKey];
-            const allOfficers = getAllOfficersList();
-
-            for (let i = 0; i < caseRowCount; i++) {
-                const row = records[i] || {};
-                const seq = i + 1;
-                const caseCode = `${equip.prefix}${basePfx}${String(baseNum + i).padStart(7, '0')}`;
-                let officerOpts = `<option value="">--選擇人員--</option>`; allOfficers.forEach(off => officerOpts += `<option value="${off}" ${row.officer === off ? 'selected' : ''}>${off}</option>`);
-                let reasonOpts = `<option value="">--未入案原因--</option>`; noEntryReasons.forEach(rsn => reasonOpts += `<option value="${rsn}" ${row.reason === rsn ? 'selected' : ''}>${rsn}</option>`);
-
-                // 桌面版「同上」核取方塊
-                const sameDateCheckbox = i > 0 ? `<div class="form-check form-check-inline same-above-box me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameDate_${i}" onchange="copyAboveCaseField(${i}, 'date')"><label class="form-check-label small text-muted" for="sameDate_${i}">同上</label></div>` : '';
-                const sameOfficerCheckbox = i > 0 ? `<div class="form-check form-check-inline same-above-box me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameOff_${i}" onchange="copyAboveCaseField(${i}, 'officer')"><label class="form-check-label small text-muted" for="sameOff_${i}">同上</label></div>` : '';
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="text-center fw-bold">${seq}</td>
-                    <td class="text-center font-monospace small">${caseCode}</td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            ${sameDateCheckbox}
-                            <input type="date" class="form-control form-control-sm" id="case_date_${i}" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)" onchange="updateCaseRowLocal(${i}, 'date', this.value)">
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            ${sameOfficerCheckbox}
-                            <select class="form-select form-select-sm" id="case_off_${i}" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select>
-                        </div>
-                    </td>
-                    <td><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
-                    <td><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></td>
-                    <td class="text-center" id="case_status_${i}">
-                        ${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案(已記錄)</span>' : '<span class="badge bg-danger">請選填原因</span>') : '<span class="badge bg-success">正常入案</span>') : '<span class="badge bg-secondary">等待中</span>'}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-
-                // 手機卡片模式
-                const cardDiv = document.createElement("div");
-                cardDiv.className = `mobile-card-item ${row.isEntry === '否' && !row.reason ? 'missing' : (row.date && row.officer ? 'success' : '')}`;
-                cardDiv.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-dark">#${seq}</span>
-                        <span class="font-monospace fw-bold text-primary small">${caseCode}</span>
-                        <div>${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-success">正常</span>') : '<span class="badge bg-secondary">未填</span>'}</div>
+            const cardDiv = document.createElement("div");
+            cardDiv.className = `mobile-card-item ${row.isEntry === '否' && !row.reason ? 'missing' : (row.date && row.officer ? 'success' : '')}`;
+            cardDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-dark">#${seq}</span>
+                    <span class="font-monospace fw-bold text-primary small">${caseCode}</span>
+                    <div>${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-success">正常</span>') : '<span class="badge bg-secondary">未填</span>'}</div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-12 col-sm-6">
+                        <div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label small mb-0 fw-bold">日期：</label>${i > 0 ? `<button class="btn btn-link btn-sm p-0 text-decoration-none small" onclick="copyAboveCaseField(${i}, 'date')">同上一筆</button>` : ''}</div>
+                        <input type="date" class="form-control form-control-sm" id="m_case_date_${i}" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)">
                     </div>
-                    <div class="row g-2">
-                        <div class="col-6"><label class="form-label small mb-1 fw-bold">日期：</label><input type="date" class="form-control form-control-sm" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)"></div>
-                        <div class="col-6"><label class="form-label small mb-1 fw-bold">人員：</label><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></div>
-                        <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
-                        <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                    <div class="col-12 col-sm-6">
+                        <div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label small mb-0 fw-bold">人員：</label>${i > 0 ? `<button class="btn btn-link btn-sm p-0 text-decoration-none small" onclick="copyAboveCaseField(${i}, 'officer')">同上一筆</button>` : ''}</div>
+                        <select class="form-select form-select-sm" id="m_case_off_${i}" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select>
                     </div>
-                `;
-                mobileContainer.appendChild(cardDiv);
+                    <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
+                    <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                </div>
+            `;
+            mobileContainer.appendChild(cardDiv);
+        }
+    }
+
+    function copyAboveCaseField(index, field) {
+        if (index <= 0) return;
+        const equipKey = document.getElementById("equipSelect").value;
+        const records = window.systemData.caseRecords[equipKey] || [];
+        const prevValue = records[index - 1] ? records[index - 1][field] : '';
+
+        if (prevValue !== undefined) {
+            updateCaseRowLocal(index, field, prevValue);
+            if (field === 'date') {
+                const el = document.getElementById(`case_date_${index}`); if (el) el.value = prevValue;
+                const mEl = document.getElementById(`m_case_date_${index}`); if (mEl) mEl.value = prevValue;
+            } else if (field === 'officer') {
+                const el = document.getElementById(`case_off_${index}`); if (el) el.value = prevValue;
+                const mEl = document.getElementById(`m_case_off_${index}`); if (mEl) mEl.value = prevValue;
             }
-        }
+        } else alert("⚠️ 上一列尚無資料可複製！");
+    }
 
-        // 複製上一列同上功能
-        function copyAboveCaseField(index, field) {
-            if (index <= 0) return;
-            const equipKey = document.getElementById("equipSelect").value;
-            const records = window.systemData.caseRecords[equipKey] || [];
-            const prevValue = records[index - 1] ? records[index - 1][field] : '';
+    function updateCaseRowLocal(index, field, value) {
+        const equipKey = document.getElementById("equipSelect").value;
+        if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
+        if (!window.systemData.caseRecords[equipKey][index]) window.systemData.caseRecords[equipKey][index] = { isEntry: "是" };
+        window.systemData.caseRecords[equipKey][index][field] = value;
+    }
 
-            if (prevValue) {
-                updateCaseRowLocal(index, field, prevValue);
-                if (field === 'date') {
-                    const el = document.getElementById(`case_date_${index}`);
-                    if (el) el.value = prevValue;
-                } else if (field === 'officer') {
-                    const el = document.getElementById(`case_off_${index}`);
-                    if (el) el.value = prevValue;
-                }
-            } else {
-                alert("⚠️ 上一列尚無資料可複製！");
-            }
-        }
+    function saveCaseData() { saveSystemData(); alert("✅ 案件管制表資料已成功儲存至雲端！"); }
+    function addMoreCaseRows() { caseRowCount += 10; renderCaseTable(); }
 
-        function updateCaseRowLocal(index, field, value) {
-            const equipKey = document.getElementById("equipSelect").value;
-            if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
-            if (!window.systemData.caseRecords[equipKey][index]) window.systemData.caseRecords[equipKey][index] = { isEntry: "是" };
-            window.systemData.caseRecords[equipKey][index][field] = value;
-        }
+    function renderHqDeleteAuditTable() {
+        const tbody = document.getElementById("hqDeleteAuditTbody");
+        tbody.innerHTML = "";
+        const pendingRecs = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING');
+        document.getElementById("pendingDeleteBadge").innerText = `${pendingRecs.length} 筆待審核`;
+        if (pendingRecs.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3 small">目前無等待審核的刪除申請</td></tr>`; return; }
+        pendingRecs.forEach(rec => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center fw-bold small">${rec.station}</td>
+                <td class="text-center font-monospace small">${rec.date}</td>
+                <td class="text-center small">${rec.timeSlot}</td>
+                <td class="text-center small">${rec.officer}</td>
+                <td class="small">${rec.location || '未核定'}</td>
+                <td class="text-danger fw-bold small">${rec.deleteReason}</td>
+                <td class="text-center"><button class="btn btn-sm btn-success py-0 px-2 me-1" onclick="auditDeleteApply(${rec.id}, true)">同意</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditDeleteApply(${rec.id}, false)">退回</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
 
-        function saveCaseData() {
-            saveSystemData();
-            alert("✅ 案件管制表資料已成功儲存至雲端！");
-        }
+    function auditDeleteApply(recId, isApprove) {
+        const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+        if (rec) { rec.deleteStatus = isApprove ? 'APPROVED' : 'REJECTED'; saveSystemData(); }
+    }
 
-        function addMoreCaseRows() { caseRowCount += 10; renderCaseTable(); }
+    function renderHqMasterDutyTable() {
+        const tbody = document.getElementById("hqMasterDutyTbody");
+        tbody.innerHTML = "";
+        let validDuty = sortDutyRecordsByTime((window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED'));
+        validDuty.forEach(rec => {
+            let locOpts = `<option value="">--請選擇地點--</option>`;
+            (window.systemData.locations[rec.station] || []).forEach(l => locOpts += `<option value="${l}" ${rec.location === l ? 'selected' : ''}>${l}</option>`);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center font-monospace small">${rec.date}</td>
+                <td class="text-center fw-bold small">${rec.station}</td>
+                <td class="text-center small">${rec.timeSlot}</td>
+                <td class="text-center small">${rec.officer}</td>
+                <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
+                <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
 
-        function renderHqDeleteAuditTable() {
-            const tbody = document.getElementById("hqDeleteAuditTbody");
-            tbody.innerHTML = "";
-            const pendingRecs = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING');
-            document.getElementById("pendingDeleteBadge").innerText = `${pendingRecs.length} 筆待審核`;
-            if (pendingRecs.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3 small">目前無等待審核的刪除申請</td></tr>`; return; }
-            pendingRecs.forEach(rec => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="text-center fw-bold small">${rec.station}</td>
-                    <td class="text-center font-monospace small">${rec.date}</td>
-                    <td class="text-center small">${rec.timeSlot}</td>
-                    <td class="text-center small">${rec.officer}</td>
-                    <td class="small">${rec.location || '未核定'}</td>
-                    <td class="text-danger fw-bold small">${rec.deleteReason}</td>
-                    <td class="text-center"><button class="btn btn-sm btn-success py-0 px-2 me-1" onclick="auditDeleteApply(${rec.id}, true)">同意</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditDeleteApply(${rec.id}, false)">退回</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+    function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點核定結果已儲存至雲端！"); }
 
-        function auditDeleteApply(recId, isApprove) {
-            const rec = window.systemData.dutyRecords.find(r => r.id === recId);
-            if (rec) { rec.deleteStatus = isApprove ? 'APPROVED' : 'REJECTED'; saveSystemData(); }
-        }
-
-        function renderHqMasterDutyTable() {
-            const tbody = document.getElementById("hqMasterDutyTbody");
-            tbody.innerHTML = "";
-            let validDuty = sortDutyRecordsByTime((window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED'));
-            validDuty.forEach(rec => {
-                let locOpts = `<option value="">--請選擇地點--</option>`;
-                (window.systemData.locations[rec.station] || []).forEach(l => locOpts += `<option value="${l}" ${rec.location === l ? 'selected' : ''}>${l}</option>`);
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="text-center font-monospace small">${rec.date}</td>
-                    <td class="text-center fw-bold small">${rec.station}</td>
-                    <td class="text-center small">${rec.timeSlot}</td>
-                    <td class="text-center small">${rec.officer}</td>
-                    <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
-                    <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function saveHqMasterDutyData() {
-            saveSystemData();
-            alert("✅ 地點核定結果已儲存至雲端！");
-        }
-
-        function renderAwardTable() {
-            const tbody = document.getElementById("awardTbody");
-            tbody.innerHTML = "";
-            Object.keys(window.systemData.officers || {}).forEach(st => {
-                window.systemData.officers[st].forEach(off => {
-                    const offDuty = (window.systemData.dutyRecords || []).filter(r => {
-                        if (r.officer !== off || r.deleteStatus === 'APPROVED') return false;
-                        let isCaseFilled = false;
-                        Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
-                            (window.systemData.caseRecords[eqKey] || []).forEach(c => { if (c.date === r.date && c.officer === r.officer) isCaseFilled = true; });
-                        });
-                        return !(r.isImgUploaded === "否" || !isCaseFilled || (r.note && (r.note.includes("未執行") || r.note.includes("取消") || r.note.includes("停止"))));
+    function renderAwardTable() {
+        const tbody = document.getElementById("awardTbody");
+        tbody.innerHTML = "";
+        Object.keys(window.systemData.officers || {}).forEach(st => {
+            window.systemData.officers[st].forEach(off => {
+                const offDuty = (window.systemData.dutyRecords || []).filter(r => {
+                    if (r.officer !== off || r.deleteStatus === 'APPROVED') return false;
+                    let isCaseFilled = false;
+                    Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
+                        (window.systemData.caseRecords[eqKey] || []).forEach(c => { if (c.date === r.date && c.officer === r.officer) isCaseFilled = true; });
                     });
-
-                    let q1Hrs = 0, q2Hrs = 0, q3Hrs = 0, q4Hrs = 0;
-                    offDuty.forEach(r => {
-                        const m = parseInt(r.date.split("-")[1]);
-                        if (m >= 1 && m <= 3) q1Hrs += 4; else if (m >= 4 && m <= 6) q2Hrs += 4; else if (m >= 7 && m <= 9) q3Hrs += 4; else if (m >= 10 && m <= 12) q4Hrs += 4;
-                    });
-
-                    const calcQ = (hrs, prevCarry) => { const total = hrs + prevCarry; const awards = Math.min(2, Math.floor(total / 20)); return { awards, carry: total - (awards * 20) }; };
-                    const resQ1 = calcQ(q1Hrs, 0); const resQ2 = calcQ(q2Hrs, resQ1.carry); const resQ3 = calcQ(q3Hrs, resQ2.carry); const resQ4 = calcQ(q4Hrs, resQ3.carry);
-                    const totalHrs = q1Hrs + q2Hrs + q3Hrs + q4Hrs; const totalAwards = resQ1.awards + resQ2.awards + resQ3.awards + resQ4.awards;
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `<td class="text-center small">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-end small">${q1Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ1.awards}</td><td class="text-end small">${q2Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ2.awards}</td><td class="text-end small">${q3Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ3.awards}</td><td class="text-end small">${q4Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ4.awards}</td><td class="text-end fw-bold small">${totalHrs.toFixed(1)}</td><td class="text-center fw-bold text-danger small">${totalAwards} 支</td><td class="text-center small">${totalAwards > 0 ? `嘉獎 ${totalAwards} 支` : '不予敘獎'}</td>`;
-                    tbody.appendChild(tr);
+                    return !(r.isImgUploaded === "否" || !isCaseFilled || (r.note && (r.note.includes("未執行") || r.note.includes("取消") || r.note.includes("停止"))));
                 });
-            });
-        }
 
-        function updateStatsPeriodOptions() {
-            const pType = document.getElementById("statsPeriodType").value;
-            const container = document.getElementById("statsDateSelectorContainer");
-            container.innerHTML = pType === "YEAR" ? `<label class="form-label fw-bold mb-1 small">選擇年份：</label><select class="form-select form-select-sm" id="statsYearVal"><option value="2026">2026 年</option></select>` : (pType === "MONTH" ? `<label class="form-label fw-bold mb-1 small">選擇月份：</label><input type="month" class="form-control form-control-sm" id="statsMonthVal" value="2026-08">` : `<label class="form-label fw-bold mb-1 small">選擇日期：</label><input type="date" class="form-control form-control-sm" id="statsDayVal" value="2026-08-01">`);
-            renderStatsTableAndChart();
-        }
-
-        function filterDutyRecordsByPeriod() {
-            const pType = document.getElementById("statsPeriodType").value;
-            return (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED').filter(r => {
-                if (pType === "YEAR") return r.date.startsWith(document.getElementById("statsYearVal") ? document.getElementById("statsYearVal").value : "2026");
-                if (pType === "MONTH") return r.date.startsWith(document.getElementById("statsMonthVal") ? document.getElementById("statsMonthVal").value : "2026-08");
-                if (pType === "DAY") return r.date === (document.getElementById("statsDayVal") ? document.getElementById("statsDayVal").value : "2026-08-01");
-                return true;
-            });
-        }
-
-        function renderStatsTableAndChart() {
-            const filteredDuty = filterDutyRecordsByPeriod();
-            const headerRow = document.getElementById("statsHeaderRow");
-            const tbody = document.getElementById("statsTbody");
-            headerRow.innerHTML = `<th>單位</th><th>測速路段</th>`; (window.systemData.timeSlots || []).forEach(t => headerRow.innerHTML += `<th>${t}</th>`); headerRow.innerHTML += `<th>總次數</th><th>佔比</th>`;
-            tbody.innerHTML = "";
-            let grandTotal = filteredDuty.length;
-            let locCountsMap = {}; let timeCountsMap = {}; (window.systemData.timeSlots || []).forEach(t => timeCountsMap[t] = 0);
-
-            Object.keys(window.systemData.locations || {}).forEach(st => {
-                window.systemData.locations[st].forEach(loc => {
-                    const tr = document.createElement("tr"); tr.innerHTML = `<td class="small">${st}</td><td class="fw-bold small">${loc}</td>`;
-                    let locTotal = 0;
-                    (window.systemData.timeSlots || []).forEach(t => {
-                        const count = filteredDuty.filter(r => r.location === loc && r.timeSlot === t).length;
-                        locTotal += count; timeCountsMap[t] += count; tr.innerHTML += `<td class="text-end small">${count}</td>`;
-                    });
-                    locCountsMap[loc] = locTotal;
-                    tr.innerHTML += `<td class="text-end fw-bold text-primary small">${locTotal}</td><td class="text-end small">${grandTotal > 0 ? ((locTotal / grandTotal) * 100).toFixed(1) + '%' : '0.0%'}</td>`;
-                    tbody.appendChild(tr);
+                let q1Hrs = 0, q2Hrs = 0, q3Hrs = 0, q4Hrs = 0;
+                offDuty.forEach(r => {
+                    const m = parseInt(r.date.split("-")[1]);
+                    if (m >= 1 && m <= 3) q1Hrs += 4; else if (m >= 4 && m <= 6) q2Hrs += 4; else if (m >= 7 && m <= 9) q3Hrs += 4; else if (m >= 10 && m <= 12) q4Hrs += 4;
                 });
-            });
-            renderLocationChart(locCountsMap); renderTimeSlotChart(timeCountsMap);
-        }
 
-        function renderLocationChart(locCountsMap) {
-            const ctx = document.getElementById('locationChart').getContext('2d');
-            if (locationChartInstance) locationChartInstance.destroy();
-            locationChartInstance = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(locCountsMap), datasets: [{ label: '次數', data: Object.values(locCountsMap), backgroundColor: '#1f497d' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
-        }
+                const calcQ = (hrs, prevCarry) => { const total = hrs + prevCarry; const awards = Math.min(2, Math.floor(total / 20)); return { awards, carry: total - (awards * 20) }; };
+                const resQ1 = calcQ(q1Hrs, 0); const resQ2 = calcQ(q2Hrs, resQ1.carry); const resQ3 = calcQ(q3Hrs, resQ2.carry); const resQ4 = calcQ(q4Hrs, resQ3.carry);
+                const totalHrs = q1Hrs + q2Hrs + q3Hrs + q4Hrs; const totalAwards = resQ1.awards + resQ2.awards + resQ3.awards + resQ4.awards;
 
-        function renderTimeSlotChart(timeCountsMap) {
-            const ctx = document.getElementById('timeSlotChart').getContext('2d');
-            if (timeSlotChartInstance) timeSlotChartInstance.destroy();
-            timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6', '#34495e', '#16a085', '#f39c12', '#d35400'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-        }
-
-        function addNewEquipment() {
-            const key = document.getElementById("newEquipKey").value.trim().toUpperCase();
-            const name = document.getElementById("newEquipName").value.trim();
-            const prefix = document.getElementById("newEquipPrefix").value.trim();
-            const baseCode = document.getElementById("newEquipBaseCode").value.trim() || "SPD-1150001";
-            if (!key || !name || !prefix) { alert("⚠️ 請完整填寫！"); return; }
-            window.systemData.equipments[key] = { name, prefix, baseCode }; saveSystemData();
-            document.getElementById("newEquipKey").value = ""; document.getElementById("newEquipName").value = ""; document.getElementById("newEquipPrefix").value = "";
-        }
-
-        function deleteEquipment(key) { if (confirm(`確定刪除 【${key}】？`)) { delete window.systemData.equipments[key]; saveSystemData(); } }
-
-        function renderAdminEquipSettings() {
-            const tbody = document.getElementById("adminEquipEditTbody"); tbody.innerHTML = "";
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const eq = window.systemData.equipments[k]; const tr = document.createElement("tr");
-                tr.innerHTML = `<td class="text-center font-monospace fw-bold small">${k}</td><td><input type="text" class="form-control form-control-sm fw-bold border-primary" id="eqName_${k}" value="${eq.name}"></td><td><input type="text" class="form-control form-control-sm font-monospace" id="eqPrefix_${k}" value="${eq.prefix}"></td><td><input type="text" class="form-control form-control-sm font-monospace text-primary border-danger" id="eqBaseCode_${k}" value="${eq.baseCode || 'SPD-1150001'}"></td><td class="text-center"><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteEquipment('${k}')"><i class="fa-solid fa-trash"></i></button></td>`;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td class="text-center small">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-end small">${q1Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ1.awards}</td><td class="text-end small">${q2Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ2.awards}</td><td class="text-end small">${q3Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ3.awards}</td><td class="text-end small">${q4Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ4.awards}</td><td class="text-end fw-bold small">${totalHrs.toFixed(1)}</td><td class="text-center fw-bold text-danger small">${totalAwards} 支</td><td class="text-center small">${totalAwards > 0 ? `嘉獎 ${totalAwards} 支` : '不予敘獎'}</td>`;
                 tbody.appendChild(tr);
             });
-        }
+        });
+    }
 
-        function saveAdminEquipSettings() {
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                window.systemData.equipments[k].name = document.getElementById(`eqName_${k}`).value.trim();
-                window.systemData.equipments[k].prefix = document.getElementById(`eqPrefix_${k}`).value.trim();
-                window.systemData.equipments[k].baseCode = document.getElementById(`eqBaseCode_${k}`).value.trim();
+    function updateStatsPeriodOptions() {
+        const pType = document.getElementById("statsPeriodType").value;
+        const container = document.getElementById("statsDateSelectorContainer");
+        container.innerHTML = pType === "YEAR" ? `<label class="form-label fw-bold mb-1 small">選擇年份：</label><select class="form-select form-select-sm" id="statsYearVal"><option value="2026">2026 年</option></select>` : (pType === "MONTH" ? `<label class="form-label fw-bold mb-1 small">選擇月份：</label><input type="month" class="form-control form-control-sm" id="statsMonthVal" value="2026-08">` : `<label class="form-label fw-bold mb-1 small">選擇日期：</label><input type="date" class="form-control form-control-sm" id="statsDayVal" value="2026-08-01">`);
+        renderStatsTableAndChart();
+    }
+
+    function filterDutyRecordsByPeriod() {
+        const pType = document.getElementById("statsPeriodType").value;
+        return (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED').filter(r => {
+            if (pType === "YEAR") return r.date.startsWith(document.getElementById("statsYearVal") ? document.getElementById("statsYearVal").value : "2026");
+            if (pType === "MONTH") return r.date.startsWith(document.getElementById("statsMonthVal") ? document.getElementById("statsMonthVal").value : "2026-08");
+            if (pType === "DAY") return r.date === (document.getElementById("statsDayVal") ? document.getElementById("statsDayVal").value : "2026-08-01");
+            return true;
+        });
+    }
+
+    function renderStatsTableAndChart() {
+        const filteredDuty = filterDutyRecordsByPeriod();
+        const headerRow = document.getElementById("statsHeaderRow");
+        const tbody = document.getElementById("statsTbody");
+        headerRow.innerHTML = `<th>單位</th><th>測速路段</th>`; (window.systemData.timeSlots || []).forEach(t => headerRow.innerHTML += `<th>${t}</th>`); headerRow.innerHTML += `<th>總次數</th><th>佔比</th>`;
+        tbody.innerHTML = "";
+        let grandTotal = filteredDuty.length;
+        let locCountsMap = {}; let timeCountsMap = {}; (window.systemData.timeSlots || []).forEach(t => timeCountsMap[t] = 0);
+
+        Object.keys(window.systemData.locations || {}).forEach(st => {
+            window.systemData.locations[st].forEach(loc => {
+                const tr = document.createElement("tr"); tr.innerHTML = `<td class="small">${st}</td><td class="fw-bold small">${loc}</td>`;
+                let locTotal = 0;
+                (window.systemData.timeSlots || []).forEach(t => {
+                    const count = filteredDuty.filter(r => r.location === loc && r.timeSlot === t).length;
+                    locTotal += count; timeCountsMap[t] += count; tr.innerHTML += `<td class="text-end small">${count}</td>`;
+                });
+                locCountsMap[loc] = locTotal;
+                tr.innerHTML += `<td class="text-end fw-bold text-primary small">${locTotal}</td><td class="text-end small">${grandTotal > 0 ? ((locTotal / grandTotal) * 100).toFixed(1) + '%' : '0.0%'}</td>`;
+                tbody.appendChild(tr);
             });
-            saveSystemData(); alert("✅ 設定已更新！");
-        }
+        });
+        renderLocationChart(locCountsMap); renderTimeSlotChart(timeCountsMap);
+    }
 
-        function initAdminLists() { renderAdminTimeSlotList(); renderAdminLocList(); renderAdminOfficerList(); }
+    function renderLocationChart(locCountsMap) {
+        const ctx = document.getElementById('locationChart').getContext('2d');
+        if (locationChartInstance) locationChartInstance.destroy();
+        locationChartInstance = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(locCountsMap), datasets: [{ label: '次數', data: Object.values(locCountsMap), backgroundColor: '#1f497d' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+    }
 
-        function renderAdminTimeSlotList() {
-            const ul = document.getElementById("adminTimeSlotList"); ul.innerHTML = "";
-            (window.systemData.timeSlots || []).forEach((t, idx) => {
-                ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small"><span class="font-monospace fw-bold">${t}</span> <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminTimeSlot(${idx})"><i class="fa-solid fa-xmark"></i></button></li>`;
-            });
-        }
+    function renderTimeSlotChart(timeCountsMap) {
+        const ctx = document.getElementById('timeSlotChart').getContext('2d');
+        if (timeSlotChartInstance) timeSlotChartInstance.destroy();
+        timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6', '#34495e', '#16a085', '#f39c12', '#d35400'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+    }
 
-        function adminAddTimeSlot() {
-            const slot = document.getElementById("adminNewTimeSlotInput").value.trim();
-            if (slot) {
-                if (!window.systemData.timeSlots) window.systemData.timeSlots = [];
-                if (!window.systemData.timeSlots.includes(slot)) {
-                    window.systemData.timeSlots.push(slot);
-                    saveSystemData();
-                    document.getElementById("adminNewTimeSlotInput").value = '';
-                } else {
-                    alert("⚠️ 該時段已存在！");
-                }
-            }
-        }
+    function addNewEquipment() {
+        const key = document.getElementById("newEquipKey").value.trim().toUpperCase();
+        const name = document.getElementById("newEquipName").value.trim();
+        const prefix = document.getElementById("newEquipPrefix").value.trim();
+        const baseCode = document.getElementById("newEquipBaseCode").value.trim() || "SPD-1150001";
+        if (!key || !name || !prefix) { alert("⚠️ 請完整填寫！"); return; }
+        window.systemData.equipments[key] = { name, prefix, baseCode }; saveSystemData();
+        document.getElementById("newEquipKey").value = ""; document.getElementById("newEquipName").value = ""; document.getElementById("newEquipPrefix").value = "";
+    }
 
-        function deleteAdminTimeSlot(idx) {
-            if (confirm("確定要刪除這個時段選項？")) {
-                window.systemData.timeSlots.splice(idx, 1);
-                saveSystemData();
-            }
-        }
+    function deleteEquipment(key) { if (confirm(`確定刪除 【${key}】？`)) { delete window.systemData.equipments[key]; saveSystemData(); } }
 
-        function renderAdminLocList() {
-            const st = document.getElementById("adminLocStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
-            (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${loc} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
-        }
-        function adminAddLocation() {
-            const st = document.getElementById("adminLocStationSelect").value; const loc = document.getElementById("adminNewLocInput").value.trim();
-            if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; }
-        }
-        function deleteAdminLoc(st, idx) { window.systemData.locations[st].splice(idx, 1); saveSystemData(); }
+    function renderAdminEquipSettings() {
+        const tbody = document.getElementById("adminEquipEditTbody"); tbody.innerHTML = "";
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const eq = window.systemData.equipments[k]; const tr = document.createElement("tr");
+            tr.innerHTML = `<td class="text-center font-monospace fw-bold small">${k}</td><td><input type="text" class="form-control form-control-sm fw-bold border-primary" id="eqName_${k}" value="${eq.name}"></td><td><input type="text" class="form-control form-control-sm font-monospace" id="eqPrefix_${k}" value="${eq.prefix}"></td><td><input type="text" class="form-control form-control-sm font-monospace text-primary border-danger" id="eqBaseCode_${k}" value="${eq.baseCode || 'SPD-1150001'}"></td><td class="text-center"><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteEquipment('${k}')"><i class="fa-solid fa-trash"></i></button></td>`;
+            tbody.appendChild(tr);
+        });
+    }
 
-        function renderAdminOfficerList() {
-            const st = document.getElementById("adminOfficerStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
-            (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${off} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
-        }
-        function adminAddOfficer() {
-            const st = document.getElementById("adminOfficerStationSelect").value; const off = document.getElementById("adminNewOfficerInput").value.trim();
-            if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; }
-        }
-        function deleteAdminOfficer(st, idx) { window.systemData.officers[st].splice(idx, 1); saveSystemData(); }
+    function saveAdminEquipSettings() {
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            window.systemData.equipments[k].name = document.getElementById(`eqName_${k}`).value.trim();
+            window.systemData.equipments[k].prefix = document.getElementById(`eqPrefix_${k}`).value.trim();
+            window.systemData.equipments[k].baseCode = document.getElementById(`eqBaseCode_${k}`).value.trim();
+        });
+        saveSystemData(); alert("✅ 設定已更新！");
+    }
 
-        function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
-        function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
-        function exportAwardToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("awardTable")), "歸仁分局測速人員嘉獎折算統計表.xlsx"); }
+    function initAdminLists() { renderAdminTimeSlotList(); renderAdminLocList(); renderAdminOfficerList(); }
 
-        document.getElementById("adminLocStationSelect").onchange = renderAdminLocList;
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    function renderAdminTimeSlotList() {
+        const ul = document.getElementById("adminTimeSlotList"); ul.innerHTML = "";
+        (window.systemData.timeSlots || []).forEach((t, idx) => {
+            ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small"><span class="font-monospace fw-bold">${t}</span> <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminTimeSlot(${idx})"><i class="fa-solid fa-xmark"></i></button></li>`;
+        });
+    }
+
+    function adminAddTimeSlot() {
+        const slot = document.getElementById("adminNewTimeSlotInput").value.trim();
+        if (slot) {
+            if (!window.systemData.timeSlots) window.systemData.timeSlots = [];
+            if (!window.systemData.timeSlots.includes(slot)) {
+                window.systemData.timeSlots.push(slot); saveSystemData(); document.getElementById("adminNewTimeSlotInput").value = '';
+            } else alert("⚠️ 該時段已存在！");
+        }
+    }
+
+    function deleteAdminTimeSlot(idx) { if (confirm("確定要刪除這個時段選項？")) { window.systemData.timeSlots.splice(idx, 1); saveSystemData(); } }
+
+    function renderAdminLocList() {
+        const st = document.getElementById("adminLocStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
+        (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${loc} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
+    }
+    function adminAddLocation() {
+        const st = document.getElementById("adminLocStationSelect").value; const loc = document.getElementById("adminNewLocInput").value.trim();
+        if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; }
+    }
+    function deleteAdminLoc(st, idx) { window.systemData.locations[st].splice(idx, 1); saveSystemData(); }
+
+    function renderAdminOfficerList() {
+        const st = document.getElementById("adminOfficerStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
+        (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${off} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
+    }
+    function adminAddOfficer() {
+        const st = document.getElementById("adminOfficerStationSelect").value; const off = document.getElementById("adminNewOfficerInput").value.trim();
+        if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; }
+    }
+    function deleteAdminOfficer(st, idx) { window.systemData.officers[st].splice(idx, 1); saveSystemData(); }
+
+    function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
+    function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
+    function exportAwardToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("awardTable")), "歸仁分局測速人員嘉獎折算統計表.xlsx"); }
+
+    document.getElementById("adminLocStationSelect").onchange = renderAdminLocList;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
