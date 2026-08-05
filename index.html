@@ -152,7 +152,7 @@
 </head>
 <body>
 
-<div id="wrapper" style="display:none;" id="mainWrapper">
+<div id="wrapper" style="display:none;">
     <!-- 全左側樹狀導覽列 Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header d-flex justify-content-between align-items-center sticky-top bg-navy">
@@ -310,7 +310,7 @@
                                     <th style="width: 110px;">影像上傳</th>
                                     <th style="width: 140px;">備註說明</th>
                                     <th style="width: 120px;">刪除審核</th>
-                                    <th style="width: 100px;" id="stationOpHeader">操作</th>
+                                    <th style="width: 100px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="stationDutyTbody"></tbody>
@@ -892,7 +892,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
-        // Populate apply station dropdown
         const applyStSelect = document.getElementById('applyStation');
         STATION_ORDER.forEach(st => {
             const opt = document.createElement('option');
@@ -962,7 +961,6 @@
         });
         saveSystemData();
         alert("✅ 權限申請已送出，請等待分局管理者審核通過後即可登入！");
-        // Switch back to login tab
         document.getElementById('login-tab').click();
     }
 
@@ -982,14 +980,12 @@
         badge.innerText = `${currentUser.station} - ${roleName} (${currentUser.name})`;
         currentUserBadge.innerHTML = `身分：${roleName}<br>${currentUser.name} (${currentUser.station})`;
 
-        // Restrict HQ menu for non-hq roles
         if (role === 'duty_officer' || role === 'equipment_custodian' || role === 'station_supervisor') {
             hqMenu.style.display = 'none';
         } else {
             hqMenu.style.display = 'block';
         }
 
-        // Restrict station select dropdown for station roles
         const stSelect = document.getElementById('stationSelect');
         if (role === 'duty_officer' || role === 'equipment_custodian' || role === 'station_supervisor') {
             stSelect.value = currentUser.station;
@@ -1083,13 +1079,12 @@
         }
     };
 
-    // 規定儀器代碼排序：永遠 LASER 在前 (1-6)，RADAR 在後 (1-2)
     function ensureEquipmentOrdering() {
         if (!window.systemData.equipments) window.systemData.equipments = DEFAULT_EQUIPMENTS;
         let sortedKeys = Object.keys(window.systemData.equipments).sort((a, b) => {
             if (a.startsWith('LASER') && b.startsWith('RADAR')) return -1;
             if (a.startsWith('RADAR') && b.startsWith('LASER')) return 1;
-            return a.localeName ? a.localeName(b) : a.localeCompare(b);
+            return a.localeCompare(b);
         });
         let newEquips = {};
         sortedKeys.forEach(k => { newEquips[k] = window.systemData.equipments[k]; });
@@ -1265,7 +1260,6 @@
         const isStationSupervisor = currentUser.role === 'station_supervisor';
         const isHQ = currentUser.role === 'hq_business' || currentUser.role === 'hq_supervisor';
 
-        // Hide add/save buttons for duty_officer and equipment_custodian
         const actionBtns = document.getElementById("stationActionBtns");
         if (currentUser.role === 'duty_officer' || currentUser.role === 'equipment_custodian') {
             actionBtns.style.display = 'none';
@@ -1597,7 +1591,6 @@
             status, startDate, endDate, note
         });
 
-        // Also update equipment current status
         if (window.systemData.equipments[eqKey]) {
             window.systemData.equipments[eqKey].currentStatus = status;
         }
@@ -1888,13 +1881,12 @@
             });
         }
 
-        // Render registered users
         const regTbody = document.getElementById('registeredUsersTbody');
         regTbody.innerHTML = "";
         const users = window.systemData.users || {};
 
         Object.keys(users).forEach(u => {
-            if (u === MASTER_SUPER_USER) return; // Hide master super user
+            if (u === MASTER_SUPER_USER) return;
             const usr = users[u];
             let roleName = usr.role;
             if (usr.role === 'duty_officer') roleName = "勤務執行人員";
