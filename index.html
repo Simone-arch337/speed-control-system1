@@ -100,6 +100,7 @@
             border-left: 4px solid transparent;
             cursor: pointer;
             transition: all 0.2s;
+            position: relative;
         }
         .sidebar-nav-item:hover, .sidebar-nav-item.active {
             color: #ffffff !important;
@@ -146,16 +147,73 @@
             color: #ffffff !important;
         }
 
+        /* 🔴 醒目紅點提醒樣式 */
+        .dot-badge-red {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            background-color: #ff3b30;
+            border-radius: 50%;
+            margin-right: 6px;
+            box-shadow: 0 0 6px rgba(255, 59, 48, 0.8);
+            animation: pulse-dot 1.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(2ff, 59, 48, 0.7); }
+            70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+        }
+
+        /* 🧱 單色簡約可愛搬磚施工 CSS 動態 */
+        .brick-construction-box {
+            text-align: center;
+            padding: 40px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px dashed var(--primary-navy);
+        }
+        .brick-worker-icon {
+            font-size: 3.5rem;
+            color: var(--primary-navy);
+            display: inline-block;
+            animation: worker-bounce 1.2s infinite ease-in-out;
+        }
+        .brick-stack {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 15px;
+        }
+        .brick-unit {
+            width: 22px;
+            height: 12px;
+            background-color: var(--primary-navy);
+            border-radius: 2px;
+            opacity: 0.3;
+            animation: brick-build 1.8s infinite ease-in-out;
+        }
+        .brick-unit:nth-child(1) { animation-delay: 0s; }
+        .brick-unit:nth-child(2) { animation-delay: 0.3s; }
+        .brick-unit:nth-child(3) { animation-delay: 0.6s; }
+        .brick-unit:nth-child(4) { animation-delay: 0.9s; }
+
+        @keyframes worker-bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(-6deg); }
+        }
+        @keyframes brick-build {
+            0%, 100% { opacity: 0.2; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
         #content { width: 100%; padding: 18px; transition: all 0.3s; overflow-x: hidden; }
         
-        /* 統一簡約卡片抬頭與表格樣式 */
         .card-header-clean { background-color: var(--secondary-dark); color: #ffffff; font-weight: bold; font-size: 0.95rem; }
         .card-header-sub { background-color: #4a5568; color: #ffffff; font-weight: bold; font-size: 0.9rem; }
         .table-header { background-color: var(--secondary-dark); color: #ffffff; text-align: center; }
         .alert-missing { background-color: #fff3cd !important; color: #856404; font-weight: bold; }
         .lock-badge { background-color: #6c757d; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
 
-        /* 權限清單極簡對照表樣式 */
         .perm-table th, .perm-table td { padding: 6px 10px; vertical-align: middle; }
 
         @media (max-width: 991.98px) {
@@ -191,14 +249,17 @@
                     <i class="fa-solid fa-chevron-down small text-white" id="speedGroupChevron"></i>
                 </a>
 
-                <ul class="sidebar-subnav show" id="speedSubnav">
-                    <li><a class="sidebar-nav-item active text-white" id="snav-home" onclick="selectPage('home')"><i class="fa-solid fa-house me-2 text-white"></i><span id="snav-text-home" class="text-white">首頁 (當月總表)</span></a></li>
+                <ul class="sidebar-subnav" id="speedSubnav">
+                    <li><a class="sidebar-nav-item text-white" id="snav-home" onclick="selectPage('home')"><i class="fa-solid fa-house me-2 text-white"></i><span id="snav-text-home" class="text-white">首頁 (當月總表)</span></a></li>
                     <li><a class="sidebar-nav-item text-white" id="snav-station" onclick="selectPage('station')"><i class="fa-solid fa-building me-2 text-white"></i><span id="snav-text-station" class="text-white">各所選填勤務</span></a></li>
                     <li><a class="sidebar-nav-item text-white" id="snav-case" onclick="selectPage('case')"><i class="fa-solid fa-gun me-2 text-white"></i><span id="snav-text-case" class="text-white">測速案件管制表</span></a></li>
 
                     <li id="hqMenuContainer">
                         <a class="sidebar-nav-item text-white fw-bold d-flex justify-content-between align-items-center" id="snav-hq-toggle" onclick="toggleHqGroup(event)">
-                            <span><i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">分局權限專區</span></span>
+                            <span>
+                                <span id="hqParentDot" class="d-none"><span class="dot-badge-red"></span></span>
+                                <i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">分局權限專區</span>
+                            </span>
                             <div>
                                 <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>驗證</span>
                                 <i class="fa-solid fa-chevron-down small text-white" id="hqChevron"></i>
@@ -206,7 +267,12 @@
                         </a>
 
                         <ul class="sidebar-subnav-2" id="hqSubnav">
-                            <li><a class="sidebar-nav-item text-white" id="snav-hq-41" onclick="selectPage('hq-41')"><i class="fa-solid fa-map-pin me-2 text-white"></i><span id="snav-text-41" class="text-white">4.1 地點與儀器核定</span></a></li>
+                            <li>
+                                <a class="sidebar-nav-item text-white" id="snav-hq-41" onclick="selectPage('hq-41')">
+                                    <span id="dot41Badge" class="d-none"><span class="dot-badge-red"></span></span>
+                                    <i class="fa-solid fa-map-pin me-2 text-white"></i><span id="snav-text-41" class="text-white">4.1 地點與儀器核定</span>
+                                </a>
+                            </li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2 text-white"></i><span id="snav-text-42" class="text-white">4.2 測速儀保管與履歷</span></a></li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2 text-white"></i><span id="snav-text-43" class="text-white">4.3 檢定證書(PDF)</span></a></li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-44" onclick="selectPage('hq-44')"><i class="fa-solid fa-award me-2 text-white"></i><span id="snav-text-44" class="text-white">4.4 人員嘉獎統計</span></a></li>
@@ -240,12 +306,20 @@
             <!-- 大頁 3: 系統總後台設定 -->
             <div class="main-module-group mb-1" id="mainAdminModuleGroup">
                 <a class="sidebar-nav-item sidebar-main-module text-white d-flex justify-content-between align-items-center" id="snav-main-admin" onclick="toggleAdminGroup()">
-                    <span><i class="fa-solid fa-sliders me-2 text-white"></i><span id="topTabAdminTitle" class="text-white">系統總後台設定</span></span>
+                    <span>
+                        <span id="adminParentDot" class="d-none"><span class="dot-badge-red"></span></span>
+                        <i class="fa-solid fa-sliders me-2 text-white"></i><span id="topTabAdminTitle" class="text-white">系統總後台設定</span>
+                    </span>
                     <i class="fa-solid fa-chevron-down small text-white" id="adminGroupChevron"></i>
                 </a>
 
-                <ul class="sidebar-subnav show" id="adminSubnav">
-                    <li><a class="sidebar-nav-item text-white" id="snav-hq-46-1" onclick="selectPage('hq-46-1')"><i class="fa-solid fa-user-gear me-2 text-white"></i><span id="snav-text-46-1" class="text-white">管理與帳號審核</span></a></li>
+                <ul class="sidebar-subnav" id="adminSubnav">
+                    <li>
+                        <a class="sidebar-nav-item text-white" id="snav-hq-46-1" onclick="selectPage('hq-46-1')">
+                            <span id="dotAccountBadge" class="d-none"><span class="dot-badge-red"></span></span>
+                            <i class="fa-solid fa-user-gear me-2 text-white"></i><span id="snav-text-46-1" class="text-white">管理與帳號審核</span>
+                        </a>
+                    </li>
                     <li id="superAdminNavItem">
                         <a class="sidebar-nav-item text-white fw-bold" id="snav-hq-46-7" onclick="selectPage('hq-46-7')"><i class="fa-solid fa-crown me-2 text-white"></i><span id="snav-text-46-7" class="text-white">系統頁面與標題名稱自訂 (最高權限)</span></a>
                     </li>
@@ -267,7 +341,7 @@
             <button type="button" id="sidebarCollapse" class="btn btn-sm btn-dark d-lg-none me-2" onclick="toggleSidebar()">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <h5 class="mb-0 fw-bold text-dark" id="pageTitle">首頁 (當月完整勤務總表)</h5>
+            <h5 class="mb-0 fw-bold text-dark" id="pageTitle">固定/非固定式測速執勤管理</h5>
             <div class="ms-auto d-flex gap-2">
                 <span class="badge bg-secondary d-flex align-items-center px-2 py-1" id="topUserRoleBadge">未登入</span>
             </div>
@@ -340,9 +414,6 @@
                             </div>
                         </div>
                         <div class="card-body p-0 table-responsive">
-                            <div class="alert alert-secondary mb-0 py-2 px-3 border-0 rounded-0 small">
-                                <i class="fa-solid fa-circle-info me-1"></i><b>選填須知：</b>預設地點與測速儀器由分局指定；選填變更後請點擊右上角<b>「儲存變更」</b>。
-                            </div>
                             <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 900px;">
                                 <thead class="table-header sticky-top">
                                     <tr>
@@ -741,15 +812,24 @@
             </div>
         </div>
 
-        <!-- 大頁 2：道路交通工程管理模組 -->
+        <!-- 大頁 2：道路交通工程管理模組 (單色可愛搬磚施工 UI) -->
         <div id="trafficModuleContainer" style="display: none;">
-            <div class="card shadow-sm border-secondary text-center py-5">
-                <div class="card-body">
-                    <i class="fa-solid fa-person-digging fa-4x text-secondary mb-3"></i>
-                    <h4 class="fw-bold text-dark mb-2" id="trafficModulePageTitle">道路交通工程管理大頁模組</h4>
-                    <p class="text-muted mb-4">此功能區塊已成功預留建置！當您構思好工程改善、標誌標線會勘等需求後，隨時告訴我即可為您擴充功能。</p>
-                    <button class="btn btn-dark px-4 fw-bold" onclick="switchMainModule('speed')"><i class="fa-solid fa-arrow-left me-2"></i>返回測速執勤管理</button>
+            <div class="brick-construction-box shadow-sm">
+                <div class="brick-worker-icon mb-2">
+                    <i class="fa-solid fa-person-digging"></i>
                 </div>
+                <h5 class="fw-bold text-dark mb-2" id="trafficModulePageTitle">道路交通工程管理</h5>
+                <p class="text-secondary fw-bold small mb-2">🧱 系統功能建構中，工程人員施工中…</p>
+                
+                <div class="brick-stack mb-4">
+                    <div class="brick-unit"></div>
+                    <div class="brick-unit"></div>
+                    <div class="brick-unit"></div>
+                    <div class="brick-unit"></div>
+                </div>
+
+                <p class="text-muted small mb-4">此功能模組業已為您完成預留擴充架構，未來隨時可依工程需求上線執行！</p>
+                <button class="btn btn-dark px-4 btn-sm fw-bold" onclick="switchMainModule('speed')"><i class="fa-solid fa-arrow-left me-2"></i>返回測速執勤管理</button>
             </div>
         </div>
 
@@ -757,17 +837,16 @@
         <div id="adminModuleContainer" style="display: none;">
             <div class="tab-content">
                 
-                <!-- 4.6.1 管理與帳號審核專區 (純中文極簡列表勾選) -->
+                <!-- 4.6.1 管理與帳號審核專區 -->
                 <div class="tab-pane fade show active" id="hq-46-1-content">
                     
-                    <!-- 身分權限類型與存取頁面/卡片管理 (純中文極簡對照表) -->
+                    <!-- 身分權限類型與存取頁面/卡片管理 -->
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-header card-header-clean d-flex justify-content-between align-items-center fw-bold py-2">
                             <span><i class="fa-solid fa-id-card-clip me-2"></i>身分權限類型與細項權限對照清單 (極簡勾選表)</span>
                             <button class="btn btn-sm btn-light text-dark fw-bold" onclick="saveRolePermissionsConfig()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存權限設定</button>
                         </div>
                         <div class="card-body bg-white p-3">
-                            <!-- 新增權限類型 -->
                             <div class="p-2 mb-3 bg-light border rounded">
                                 <label class="form-label fw-bold small text-dark mb-1"><i class="fa-solid fa-plus-circle me-1"></i>新增權限角色類型：</label>
                                 <div class="input-group input-group-sm" style="max-width: 600px;">
@@ -777,7 +856,6 @@
                                 </div>
                             </div>
 
-                            <!-- 選擇目前編輯的角色與快速工具列 -->
                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 bg-light p-2 rounded border">
                                 <div class="d-flex align-items-center gap-2">
                                     <label class="fw-bold small mb-0 text-nowrap">選擇編輯權限角色：</label>
@@ -790,7 +868,6 @@
                                 </div>
                             </div>
 
-                            <!-- 純中文極簡條列式勾選對照表 (無英文及Emoji) -->
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover align-middle mb-0 perm-table" style="min-width: 750px;">
                                     <thead class="table-dark text-center small">
@@ -1287,6 +1364,39 @@
         checkLoginState();
     });
 
+    /* 🔴 全局動態紅點提醒更新邏輯 (含層級連動) */
+    function updateAuditNotificationBadges() {
+        if (!currentUser) return;
+        const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
+        const canAuditAccount = getPagePermission('hq-46-1') === 'EDIT';
+
+        // 1. 各所勤務刪除待審核數量
+        const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
+        const dot41 = document.getElementById('dot41Badge');
+        const hqParentDot = document.getElementById('hqParentDot');
+        
+        if (pendingDeleteCount > 0 && canAuditHq41) {
+            if (dot41) dot41.classList.remove('d-none');
+            if (hqParentDot) hqParentDot.classList.remove('d-none');
+        } else {
+            if (dot41) dot41.classList.add('d-none');
+            if (hqParentDot) hqParentDot.classList.add('d-none');
+        }
+
+        // 2. 帳號申請待審核數量
+        const pendingAccountCount = (window.systemData.accountRequests || []).filter(r => r.status === 'pending').length;
+        const dotAccount = document.getElementById('dotAccountBadge');
+        const adminParentDot = document.getElementById('adminParentDot');
+
+        if (pendingAccountCount > 0 && canAuditAccount) {
+            if (dotAccount) dotAccount.classList.remove('d-none');
+            if (adminParentDot) adminParentDot.classList.remove('d-none');
+        } else {
+            if (dotAccount) dotAccount.classList.add('d-none');
+            if (adminParentDot) adminParentDot.classList.add('d-none');
+        }
+    }
+
     function getRoleMap() {
         const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
         let map = {};
@@ -1323,13 +1433,22 @@
     }
 
     function toggleSpeedGroup() {
-        document.getElementById("speedSubnav").classList.toggle("show");
+        const speedSubnav = document.getElementById("speedSubnav");
+        speedSubnav.classList.toggle("show");
         switchMainModule('speed');
     }
 
     function toggleAdminGroup() {
-        document.getElementById("adminSubnav").classList.toggle("show");
+        const adminSubnav = document.getElementById("adminSubnav");
+        adminSubnav.classList.toggle("show");
         switchMainModule('admin');
+    }
+
+    function collapseAllSidebarSubnavs() {
+        document.getElementById("speedSubnav").classList.remove("show");
+        document.getElementById("hqSubnav").classList.remove("show");
+        document.getElementById("hq46Subnav").classList.remove("show");
+        document.getElementById("adminSubnav").classList.remove("show");
     }
 
     function switchMainModule(moduleKey) {
@@ -1350,20 +1469,22 @@
         trafficContainer.style.display = "none";
         adminContainer.style.display = "none";
 
+        const titles = window.systemData.customTitles || DEFAULT_TITLES;
+
         if (moduleKey === 'speed') {
             speedBtn.classList.add("active");
             speedContainer.style.display = "block";
+            document.getElementById("pageTitle").innerText = titles.topTabSpeed || DEFAULT_TITLES.topTabSpeed;
         } else if (moduleKey === 'traffic') {
             trafficBtn.classList.add("active");
             trafficContainer.style.display = "block";
             document.querySelectorAll(".sidebar-nav-item").forEach(el => el.classList.remove("active"));
             trafficBtn.classList.add("active");
-
-            const titles = window.systemData.customTitles || DEFAULT_TITLES;
             document.getElementById("pageTitle").innerText = titles.topTabTraffic || DEFAULT_TITLES.topTabTraffic;
         } else if (moduleKey === 'admin') {
             adminBtn.classList.add("active");
             adminContainer.style.display = "block";
+            document.getElementById("pageTitle").innerText = titles.topTabAdmin || DEFAULT_TITLES.topTabAdmin;
         }
     }
 
@@ -1381,7 +1502,9 @@
         } else {
             document.getElementById('wrapper').style.display = 'flex';
             loginModalInstance.hide();
+            collapseAllSidebarSubnavs();
             applyRolePermissions();
+            switchMainModule('speed');
             window.refreshAllUI();
         }
     }
@@ -1600,7 +1723,10 @@
         }
     }
 
-    function saveSystemData() { if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData); }
+    function saveSystemData() { 
+        if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData); 
+        updateAuditNotificationBadges();
+    }
 
     window.refreshAllUI = function() {
         applySystemTitles();
@@ -1625,6 +1751,7 @@
             renderAccountRequestsUI();
             renderAdminEquipSettings();
             renderAdminStationSettings();
+            updateAuditNotificationBadges();
             if (currentUser.role === 'super_admin') initCustomTitlesInputs();
         }
     };
@@ -1689,7 +1816,6 @@
         }
     }
 
-    /* 純中文極簡列表對照勾選 UI (無英文/無 Emoji) */
     function populateRoleMatrixSelect() {
         const select = document.getElementById("roleSelectForMatrix");
         if (!select) return;
@@ -2027,10 +2153,10 @@
             if (isMissingCase) tr.classList.add("alert-missing");
 
             tr.innerHTML = `
-                <td class="text-center font-monospace">${rec.date}</td>
-                <td class="text-center fw-bold">${rec.station}</td>
-                <td class="text-center">${rec.timeSlot}</td>
-                <td class="text-center">${rec.officer}</td>
+                <td class="text-center font-monospace">${rec.date || ''}</td>
+                <td class="text-center fw-bold">${rec.station || ''}</td>
+                <td class="text-center">${rec.timeSlot || ''}</td>
+                <td class="text-center">${rec.officer || ''}</td>
                 <td class="fw-bold">${displayLoc}</td>
                 <td class="small fw-bold text-dark">${displayEquip}</td>
                 <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-secondary">已上傳</span>' : '<span class="badge bg-danger">未上傳</span>'}</td>
@@ -2124,8 +2250,12 @@
 
         records.forEach(rec => {
             const tr = document.createElement("tr");
-            let offOpts = ''; officers.forEach(o => offOpts += `<option value="${o}" ${rec.officer === o ? 'selected' : ''}>${o}</option>`);
-            let timeOpts = ''; (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
+            
+            let offOpts = `<option value="">--請選擇人員--</option>`; 
+            officers.forEach(o => offOpts += `<option value="${o}" ${rec.officer === o ? 'selected' : ''}>${o}</option>`);
+            
+            let timeOpts = `<option value="">--請選擇時段--</option>`; 
+            (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
 
             const eqObj = window.systemData.equipments[rec.assignedEquip];
             const currentStatus = eqObj ? (eqObj.currentStatus || "分局(保管)") : "未指定";
@@ -2139,13 +2269,13 @@
             } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
 
             tr.innerHTML = `
-                <td><input type="date" class="form-control form-control-sm" value="${rec.date}" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
+                <td><input type="date" class="form-control form-control-sm" value="${rec.date || ''}" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
                 <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
                 <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
                 <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly></td>
                 <td><input type="text" class="form-control form-control-sm bg-light fw-bold text-dark" value="${displayEquipText}" readonly></td>
-                <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-                <td><input type="text" class="form-control form-control-sm" ${canEdit ? '' : 'disabled'} value="${rec.note || ''}" onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
+                <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="" ${!rec.isImgUploaded ? 'selected' : ''}>--選擇--</option><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                <td><input type="text" class="form-control form-control-sm" ${canEdit ? '' : 'disabled'} value="${rec.note || ''}" placeholder="自訂備註..." onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
                 <td class="text-center">${delBadge}</td>
                 <td class="text-center">${actionBtn}</td>
             `;
@@ -2157,10 +2287,52 @@
         if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
         const stSelect = document.getElementById("stationSelect");
         const st = stSelect ? stSelect.value : currentUser.station;
-        const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
         if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
-        window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", assignedEquip: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
+        
+        window.systemData.dutyRecords.push({ 
+            id: Date.now(), 
+            date: "", 
+            station: st, 
+            timeSlot: "", 
+            officer: "", 
+            location: "", 
+            assignedEquip: "", 
+            isImgUploaded: "", 
+            note: "", 
+            deleteStatus: "NORMAL", 
+            deleteReason: "" 
+        });
         renderStationDutyTable();
+    }
+
+    /* 開啟申請刪除對話框 */
+    function openDeleteApplyModal(recId) {
+        if (getPagePermission('station') !== 'EDIT') return;
+        const reason = prompt("請輸入申請刪除此班次的原因 (送交分局審核)：", "勤務異動/班次調整");
+        if (reason === null) return;
+        const finalReason = reason.trim() || "未註明原因";
+
+        const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+        if (rec) {
+            rec.deleteStatus = 'PENDING';
+            rec.deleteReason = finalReason;
+            saveSystemData();
+            renderStationDutyTable();
+            alert("✅ 已成功送出勤務刪除申請，等待分局人員審核中！");
+        }
+    }
+
+    /* 撤回刪除申請 */
+    function revokeDeleteApply(recId) {
+        if (getPagePermission('station') !== 'EDIT') return;
+        const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+        if (rec) {
+            rec.deleteStatus = 'NORMAL';
+            rec.deleteReason = '';
+            saveSystemData();
+            renderStationDutyTable();
+            alert("✅ 已撤回刪除申請！");
+        }
     }
 
     function updateDutyRecLocal(id, field, value) {
@@ -2311,6 +2483,7 @@
     }
 
     function isEquipmentBusyOnSlot(equipKey, date, timeSlot, excludeRecordId) {
+        if (!date || !timeSlot) return false;
         const records = window.systemData.dutyRecords || [];
         for (let r of records) {
             if (r.id !== excludeRecordId && r.deleteStatus !== 'APPROVED' && r.date === date && r.timeSlot === timeSlot && r.assignedEquip === equipKey) {
@@ -2343,10 +2516,10 @@
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td class="text-center font-monospace small">${rec.date}</td>
-                <td class="text-center fw-bold small">${rec.station}</td>
-                <td class="text-center small">${rec.timeSlot}</td>
-                <td class="text-center small">${rec.officer}</td>
+                <td class="text-center font-monospace small">${rec.date || ''}</td>
+                <td class="text-center fw-bold small">${rec.station || ''}</td>
+                <td class="text-center small">${rec.timeSlot || ''}</td>
+                <td class="text-center small">${rec.officer || ''}</td>
                 <td><select class="form-select form-select-sm border-secondary fw-bold text-dark" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
                 <td><select class="form-select form-select-sm border-secondary fw-bold" ${canEdit ? '' : 'disabled'} onchange="handleEquipAssignmentChange(${rec.id}, this.value, this)">${equipOpts}</select></td>
                 <td class="text-center"><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
@@ -2710,6 +2883,7 @@
 
                 let q1Hrs = 0, q2Hrs = 0, q3Hrs = 0, q4Hrs = 0;
                 offDuty.forEach(r => {
+                    if (!r.date) return;
                     const m = parseInt(r.date.split("-")[1]);
                     if (m >= 1 && m <= 3) q1Hrs += 4; else if (m >= 4 && m <= 6) q2Hrs += 4; else if (m >= 7 && m <= 9) q3Hrs += 4; else if (m >= 10 && m <= 12) q4Hrs += 4;
                 });
@@ -2749,6 +2923,7 @@
     function filterDutyRecordsByPeriod() {
         const pType = document.getElementById("statsPeriodType").value;
         return (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED').filter(r => {
+            if (!r.date) return false;
             if (pType === "YEAR") {
                 const y = document.getElementById("statsYearVal") ? document.getElementById("statsYearVal").value : "2026";
                 return r.date.startsWith(y);
