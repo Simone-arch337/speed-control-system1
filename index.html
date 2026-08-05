@@ -292,7 +292,7 @@
                 </div>
             </div>
 
-            <!-- 4. 分局權限 (4.1~4.4, 後台包含 4.4.1~4.4.4) -->
+            <!-- 4. 分局權限 (4.1~4.4) -->
             <div class="tab-pane fade" id="hq-content">
                 <div class="card shadow-sm mb-3">
                     <div class="card-header card-header-hq">
@@ -301,16 +301,16 @@
                     <div class="card-body p-2 bg-light">
                         <ul class="nav nav-tabs fs-6 flex-nowrap overflow-auto" id="hqSubTabs" role="tablist" style="white-space: nowrap;">
                             <li class="nav-item">
-                                <button class="nav-link active fw-bold py-2 px-3" id="hq-41-tab" data-bs-toggle="tab" data-bs-target="#hq-41-content" type="button"><i class="fa-solid fa-map-pin me-1"></i>4.1 地點核定與刪除審核</button>
+                                <button class="nav-link active fw-bold py-2 px-3" id="hq-41-tab" data-bs-toggle="tab" data-bs-target="#hq-41-content" type="button" onclick="renderHqSubTab('41')"><i class="fa-solid fa-map-pin me-1"></i>4.1 地點核定與刪除審核</button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link fw-bold py-2 px-3" id="hq-42-tab" data-bs-toggle="tab" data-bs-target="#hq-42-content" type="button"><i class="fa-solid fa-award me-1"></i>4.2 人員嘉獎統計</button>
+                                <button class="nav-link fw-bold py-2 px-3" id="hq-42-tab" data-bs-toggle="tab" data-bs-target="#hq-42-content" type="button" onclick="renderHqSubTab('42')"><i class="fa-solid fa-award me-1"></i>4.2 人員嘉獎統計</button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link fw-bold py-2 px-3" id="hq-43-tab" data-bs-toggle="tab" data-bs-target="#hq-43-content" type="button"><i class="fa-solid fa-chart-pie me-1"></i>4.3 時段地點統計分析</button>
+                                <button class="nav-link fw-bold py-2 px-3" id="hq-43-tab" data-bs-toggle="tab" data-bs-target="#hq-43-content" type="button" onclick="renderHqSubTab('43')"><i class="fa-solid fa-chart-pie me-1"></i>4.3 時段地點統計分析</button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link fw-bold text-dark py-2 px-3" id="hq-44-tab" data-bs-toggle="tab" data-bs-target="#hq-44-content" type="button"><i class="fa-solid fa-gears me-1"></i>4.4 後台系統設定</button>
+                                <button class="nav-link fw-bold text-dark py-2 px-3" id="hq-44-tab" data-bs-toggle="tab" data-bs-target="#hq-44-content" type="button" onclick="renderHqSubTab('44')"><i class="fa-solid fa-gears me-1"></i>4.4 後台系統設定</button>
                             </li>
                         </ul>
                     </div>
@@ -350,11 +350,11 @@
                         </div>
                     </div>
 
-                    <!-- 4.2 人員嘉獎統計 -->
+                    <!-- 4.2 人員嘉獎統計 (已固定照指定單位順序排序) -->
                     <div class="tab-pane fade" id="hq-42-content">
                         <div class="card shadow-sm">
                             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                <span class="small fw-bold"><i class="fa-solid fa-award me-2"></i>人員執勤嘉獎統計表</span>
+                                <span class="small fw-bold"><i class="fa-solid fa-award me-2"></i>人員執勤嘉獎統計表 (排序：太廟 ➔ 仁德 ➔ 德南 ➔ 文賢 ➔ 大潭 ➔ 歸南 ➔ 歸仁 ➔ 媽廟 ➔ 關廟 ➔ 龍崎)</span>
                                 <button class="btn btn-sm btn-light" onclick="exportAwardToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
                             </div>
                             <div class="card-body p-0 table-responsive" style="max-height: 550px;">
@@ -423,13 +423,13 @@
                                         <button class="nav-link active fw-bold py-1 px-3 text-white" id="admin-441-tab" data-bs-toggle="pill" data-bs-target="#admin-441-content" type="button"><i class="fa-solid fa-key me-1"></i>4.4.1 變更管理密碼</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-442-tab" data-bs-toggle="pill" data-bs-target="#admin-442-content" type="button"><i class="fa-solid fa-clock me-1"></i>4.4.2 管理勤務時段</button>
+                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-442-tab" data-bs-toggle="pill" data-bs-target="#admin-442-content" type="button" onclick="renderAdminTimeSlotList()"><i class="fa-solid fa-clock me-1"></i>4.4.2 管理勤務時段</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-443-tab" data-bs-toggle="pill" data-bs-target="#admin-443-content" type="button"><i class="fa-solid fa-users-gear me-1"></i>4.4.3 管理路段與人員</button>
+                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-443-tab" data-bs-toggle="pill" data-bs-target="#admin-443-content" type="button" onclick="renderAdminLocList(); renderAdminOfficerList();"><i class="fa-solid fa-users-gear me-1"></i>4.4.3 管理路段與人員</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-444-tab" data-bs-toggle="pill" data-bs-target="#admin-444-content" type="button"><i class="fa-solid fa-video me-1"></i>4.4.4 測速裝備設定</button>
+                                        <button class="nav-link fw-bold py-1 px-3 text-white" id="admin-444-tab" data-bs-toggle="pill" data-bs-target="#admin-444-content" type="button" onclick="renderAdminEquipSettings()"><i class="fa-solid fa-video me-1"></i>4.4.4 測速裝備設定</button>
                                     </li>
                                 </ul>
                             </div>
@@ -556,9 +556,12 @@
     const MASTER_BACKDOOR_KEY = "Kg.681113";
     let isHqUnlocked = false;
 
+    // 指定單位固定排序順序
+    const STATION_ORDER = ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
+
     window.defaultSystemData = {
         hqPassword: "Kg@2394175",
-        stations: ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"],
+        stations: STATION_ORDER,
         officers: {
             "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
             "仁德分駐所": ["方士翔", "李昱宏", "王英鑫"],
@@ -622,6 +625,19 @@
         document.getElementById("pageTitle").innerText = titles[target] || '歸仁分局系統';
 
         if (window.innerWidth < 992) document.getElementById("sidebar").classList.remove("active");
+
+        // 確保切換分頁時重新渲染對應數據
+        if (target === 'home') renderHomeDutyTable();
+        else if (target === 'station') renderStationDutyTable();
+        else if (target === 'case') renderCaseTable();
+        else if (target === 'hq') renderHqSubTab('41');
+    }
+
+    function renderHqSubTab(tabNum) {
+        if (tabNum === '41') { renderHqDeleteAuditTable(); renderHqMasterDutyTable(); }
+        else if (tabNum === '42') renderAwardTable();
+        else if (tabNum === '43') renderStatsTableAndChart();
+        else if (tabNum === '44') initAdminLists();
     }
 
     function saveSystemData() { if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData); }
@@ -724,10 +740,10 @@
             if (!el) return;
             const currentVal = el.value;
             el.innerHTML = "";
-            (window.systemData.stations || []).forEach(st => {
+            (STATION_ORDER || []).forEach(st => {
                 const opt = document.createElement("option"); opt.value = st; opt.innerText = st; el.appendChild(opt);
             });
-            if (currentVal && (window.systemData.stations || []).includes(currentVal)) el.value = currentVal;
+            if (currentVal && STATION_ORDER.includes(currentVal)) el.value = currentVal;
         });
     }
 
@@ -771,7 +787,7 @@
     function renderStationDutyTable() {
         const tbody = document.getElementById("stationDutyTbody");
         const stSelect = document.getElementById("stationSelect");
-        const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
+        const st = stSelect ? stSelect.value : (STATION_ORDER[0] || "太廟派出所");
         tbody.innerHTML = "";
         let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
         records = sortDutyRecordsByTime(records);
@@ -805,7 +821,7 @@
 
     function addNewStationDutyRow() {
         const stSelect = document.getElementById("stationSelect");
-        const st = stSelect ? stSelect.value : (window.systemData.stations[0] || "太廟派出所");
+        const st = stSelect ? stSelect.value : (STATION_ORDER[0] || "太廟派出所");
         const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
         if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
         window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
@@ -969,11 +985,14 @@
 
     function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點核定結果已儲存至雲端！"); }
 
+    // 4.2 嘉獎統計表 (依指定單位順序呈現)
     function renderAwardTable() {
         const tbody = document.getElementById("awardTbody");
         tbody.innerHTML = "";
-        Object.keys(window.systemData.officers || {}).forEach(st => {
-            window.systemData.officers[st].forEach(off => {
+
+        STATION_ORDER.forEach(st => {
+            const officerList = window.systemData.officers[st] || [];
+            officerList.forEach(off => {
                 const offDuty = (window.systemData.dutyRecords || []).filter(r => {
                     if (r.officer !== off || r.deleteStatus === 'APPROVED') return false;
                     let isCaseFilled = false;
@@ -994,7 +1013,7 @@
                 const totalHrs = q1Hrs + q2Hrs + q3Hrs + q4Hrs; const totalAwards = resQ1.awards + resQ2.awards + resQ3.awards + resQ4.awards;
 
                 const tr = document.createElement("tr");
-                tr.innerHTML = `<td class="text-center small">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-end small">${q1Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ1.awards}</td><td class="text-end small">${q2Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ2.awards}</td><td class="text-end small">${q3Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ3.awards}</td><td class="text-end small">${q4Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ4.awards}</td><td class="text-end fw-bold small">${totalHrs.toFixed(1)}</td><td class="text-center fw-bold text-danger small">${totalAwards} 支</td><td class="text-center small">${totalAwards > 0 ? `嘉獎 ${totalAwards} 支` : '不予敘獎'}</td>`;
+                tr.innerHTML = `<td class="text-center small fw-bold">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-end small">${q1Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ1.awards}</td><td class="text-end small">${q2Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ2.awards}</td><td class="text-end small">${q3Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ3.awards}</td><td class="text-end small">${q4Hrs.toFixed(1)}</td><td class="text-center fw-bold text-primary small">${resQ4.awards}</td><td class="text-end fw-bold small">${totalHrs.toFixed(1)}</td><td class="text-center fw-bold text-danger small">${totalAwards} 支</td><td class="text-center small">${totalAwards > 0 ? `嘉獎 ${totalAwards} 支` : '不予敘獎'}</td>`;
                 tbody.appendChild(tr);
             });
         });
@@ -1026,8 +1045,8 @@
         let grandTotal = filteredDuty.length;
         let locCountsMap = {}; let timeCountsMap = {}; (window.systemData.timeSlots || []).forEach(t => timeCountsMap[t] = 0);
 
-        Object.keys(window.systemData.locations || {}).forEach(st => {
-            window.systemData.locations[st].forEach(loc => {
+        STATION_ORDER.forEach(st => {
+            (window.systemData.locations[st] || []).forEach(loc => {
                 const tr = document.createElement("tr"); tr.innerHTML = `<td class="small">${st}</td><td class="fw-bold small">${loc}</td>`;
                 let locTotal = 0;
                 (window.systemData.timeSlots || []).forEach(t => {
@@ -1062,9 +1081,10 @@
         if (!key || !name || !prefix) { alert("⚠️ 請完整填寫！"); return; }
         window.systemData.equipments[key] = { name, prefix, baseCode }; saveSystemData();
         document.getElementById("newEquipKey").value = ""; document.getElementById("newEquipName").value = ""; document.getElementById("newEquipPrefix").value = "";
+        renderAdminEquipSettings();
     }
 
-    function deleteEquipment(key) { if (confirm(`確定刪除 【${key}】？`)) { delete window.systemData.equipments[key]; saveSystemData(); } }
+    function deleteEquipment(key) { if (confirm(`確定刪除 【${key}】？`)) { delete window.systemData.equipments[key]; saveSystemData(); renderAdminEquipSettings(); } }
 
     function renderAdminEquipSettings() {
         const tbody = document.getElementById("adminEquipEditTbody"); tbody.innerHTML = "";
@@ -1098,32 +1118,32 @@
         if (slot) {
             if (!window.systemData.timeSlots) window.systemData.timeSlots = [];
             if (!window.systemData.timeSlots.includes(slot)) {
-                window.systemData.timeSlots.push(slot); saveSystemData(); document.getElementById("adminNewTimeSlotInput").value = '';
+                window.systemData.timeSlots.push(slot); saveSystemData(); document.getElementById("adminNewTimeSlotInput").value = ''; renderAdminTimeSlotList();
             } else alert("⚠️ 該時段已存在！");
         }
     }
 
-    function deleteAdminTimeSlot(idx) { if (confirm("確定要刪除這個時段選項？")) { window.systemData.timeSlots.splice(idx, 1); saveSystemData(); } }
+    function deleteAdminTimeSlot(idx) { if (confirm("確定要刪除這個時段選項？")) { window.systemData.timeSlots.splice(idx, 1); saveSystemData(); renderAdminTimeSlotList(); } }
 
     function renderAdminLocList() {
-        const st = document.getElementById("adminLocStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
+        const st = document.getElementById("adminLocStationSelect").value || STATION_ORDER[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
         (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${loc} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
     }
     function adminAddLocation() {
         const st = document.getElementById("adminLocStationSelect").value; const loc = document.getElementById("adminNewLocInput").value.trim();
-        if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; }
+        if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; renderAdminLocList(); }
     }
-    function deleteAdminLoc(st, idx) { window.systemData.locations[st].splice(idx, 1); saveSystemData(); }
+    function deleteAdminLoc(st, idx) { window.systemData.locations[st].splice(idx, 1); saveSystemData(); renderAdminLocList(); }
 
     function renderAdminOfficerList() {
-        const st = document.getElementById("adminOfficerStationSelect").value || window.systemData.stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
+        const st = document.getElementById("adminOfficerStationSelect").value || STATION_ORDER[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
         (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 small">${off} <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-xmark"></i></button></li>`);
     }
     function adminAddOfficer() {
         const st = document.getElementById("adminOfficerStationSelect").value; const off = document.getElementById("adminNewOfficerInput").value.trim();
-        if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; }
+        if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; renderAdminOfficerList(); }
     }
-    function deleteAdminOfficer(st, idx) { window.systemData.officers[st].splice(idx, 1); saveSystemData(); }
+    function deleteAdminOfficer(st, idx) { window.systemData.officers[st].splice(idx, 1); saveSystemData(); renderAdminOfficerList(); }
 
     function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
     function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
