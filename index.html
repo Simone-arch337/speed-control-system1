@@ -2566,39 +2566,11 @@
         saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存！");
     }
 
-    /* 🔄 根據保管單位連動過濾保管人員下拉選單 */
-    function updateKeeperNameDropdownByStation(equipKey) {
-        const stationEl = document.getElementById(`keeper_st_${equipKey}`);
-        const nameEl = document.getElementById(`keeper_name_${equipKey}`);
-        if (!stationEl || !nameEl) return;
-
-        const selectedStation = stationEl.value;
-        const currentSelectedName = nameEl.value;
-        nameEl.innerHTML = "";
-
-        let officerOpts = `<option value="">--選擇保管人--</option>`;
-        
-        if (selectedStation === "歸仁分局") {
-            officerOpts += `<option value="分局辦理" ${currentSelectedName === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
-        } else if (selectedStation && window.systemData.officers[selectedStation]) {
-            window.systemData.officers[selectedStation].forEach(off => {
-                officerOpts += `<option value="${off}" ${currentSelectedName === off ? 'selected' : ''}>${off}</option>`;
-            });
-        } else {
-            // 若未選擇單位則備用列出全人員
-            getAllOfficersList().forEach(off => {
-                officerOpts += `<option value="${off}" ${currentSelectedName === off ? 'selected' : ''}>${off}</option>`;
-            });
-            officerOpts += `<option value="分局辦理" ${currentSelectedName === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
-        }
-
-        nameEl.innerHTML = officerOpts;
-    }
-
     function renderKeeperBaseTable() {
         const tbody = document.getElementById("keeperBaseTbody");
         tbody.innerHTML = "";
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
+        const allOfficers = getAllOfficersList();
         const stations = getStationList();
         ensureStatusOptions();
         const canEdit = getPagePermission('hq-42') === 'EDIT';
@@ -2611,6 +2583,10 @@
             stations.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
             stationOpts += `<option value="歸仁分局" ${keeper.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
+            let officerOpts = `<option value="">--選擇保管人--</option>`;
+            allOfficers.forEach(off => officerOpts += `<option value="${off}" ${keeper.name === off ? 'selected' : ''}>${off}</option>`);
+            officerOpts += `<option value="分局辦理" ${keeper.name === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
+
             let statusOpts = '';
             (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
                 statusOpts += `<option value="${stOpt}" ${eq.currentStatus === stOpt ? 'selected' : ''}>${stOpt}</option>`;
@@ -2620,8 +2596,8 @@
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold small">${k}</td>
                 <td class="fw-bold small">${eq.name}</td>
-                <td><select class="form-select form-select-sm" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'} onchange="updateKeeperNameDropdownByStation('${k}')">${stationOpts}</select></td>
-                <td><select class="form-select form-select-sm" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}></select></td>
+                <td><select class="form-select form-select-sm" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'}>${stationOpts}</select></td>
+                <td><select class="form-select form-select-sm" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}>${officerOpts}</select></td>
                 <td>
                     <select class="form-select form-select-sm" id="keeper_title_${k}" ${canEdit ? '' : 'disabled'}>
                         <option value="警員" ${keeper.title === '警員' ? 'selected' : ''}>警員</option>
@@ -2642,13 +2618,6 @@
                 </td>
             `;
             tbody.appendChild(tr);
-
-            // 渲染該列後立即根據現有單位載入該單位人員
-            updateKeeperNameDropdownByStation(k);
-            if (keeper.name) {
-                const nameSelect = document.getElementById(`keeper_name_${k}`);
-                if (nameSelect) nameSelect.value = keeper.name;
-            }
         });
     }
 
