@@ -368,7 +368,7 @@
                 </div>
             </div>
 
-            <!-- 4.1 地點核定與刪除審核 -->
+            <!-- 4.1 地點核定與刪除審核 (還原「分局指定測速儀」欄位) -->
             <div class="tab-pane fade" id="hq-41-content">
                 <div class="card shadow-sm mb-3 border-danger">
                     <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
@@ -387,13 +387,21 @@
 
                 <div class="card shadow-sm">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                        <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點核定管理表</span>
+                        <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點與指定測速儀核定管理表</span>
                         <button class="btn btn-sm btn-success fw-bold" onclick="saveHqMasterDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存核定結果</button>
                     </div>
                     <div class="card-body p-0 table-responsive" style="max-height: 500px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 700px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 850px;">
                             <thead class="table-header-hq sticky-top small">
-                                <tr><th style="width: 100px;">執勤日期</th><th style="width: 110px;">單位</th><th style="width: 120px;">時段</th><th style="width: 100px;">人員</th><th>分局指定勤務地點</th><th style="width: 130px;">影像上傳狀態</th></tr>
+                                <tr>
+                                    <th style="width: 100px;">執勤日期</th>
+                                    <th style="width: 110px;">單位</th>
+                                    <th style="width: 120px;">時段</th>
+                                    <th style="width: 100px;">人員</th>
+                                    <th>分局指定勤務地點</th>
+                                    <th style="width: 180px;">分局指定測速儀</th>
+                                    <th style="width: 110px;">影像上傳狀態</th>
+                                </tr>
                             </thead>
                             <tbody id="hqMasterDutyTbody"></tbody>
                         </table>
@@ -401,7 +409,7 @@
                 </div>
             </div>
 
-            <!-- 4.2 測速儀保管人與狀態履歷管理 (完全符合 8 大指定狀態選項) -->
+            <!-- 4.2 測速儀保管人與狀態履歷管理 (8 大指定狀態選項) -->
             <div class="tab-pane fade" id="hq-42-content">
                 <div class="card shadow-sm border-primary">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -647,7 +655,7 @@
     </div>
 </div>
 
-<!-- 原始 5 大職責權限登入驗證 Modal (加上新增的最高權限，且完全移除預設提示) -->
+<!-- 原始 5 大職責權限登入驗證 Modal (加上隱藏最高權限，且輸入欄位無預填提示) -->
 <div class="modal fade" id="hqAuthModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered px-3">
         <div class="modal-content">
@@ -751,9 +759,9 @@
         equipCertList: [],
         timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
         dutyRecords: [
-            { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
-            { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" },
-            { id: 3, date: "2026-08-02", station: "德南派出所", timeSlot: "08:00-12:00", officer: "梁育誠", location: "仁德區崑崙路", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
+            { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", assignedEquip: "L-HQ-A", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
+            { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", assignedEquip: "L-RD", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" },
+            { id: 3, date: "2026-08-02", station: "德南派出所", timeSlot: "08:00-12:00", officer: "梁育誠", location: "仁德區崑崙路", assignedEquip: "L-HQ-B", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
         ],
         caseRecords: {}
     };
@@ -862,30 +870,24 @@
         let isValid = false;
 
         if (role === "1") {
-            // 1. 派出所勤務人員
             bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
             selectPage('station');
             return;
         } else if (role === "2") {
-            // 2. 派出所儀器保管人
             bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
             selectPage('hq-42');
             return;
         } else if (role === "3") {
-            // 3. 派出所主管
             bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
             selectPage('station');
             return;
         } else if (role === "4") {
-            // 4. 分局業務承辦人
             bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
             selectPage('hq-41');
             return;
         } else if (role === "5") {
-            // 5. 分局主管
             if (currentAdminUser && user === currentAdminUser && pwd === currentAdminPass) isValid = true;
         } else if (role === "6") {
-            // 6. 隱藏最高權限
             if (user === MASTER_SUPER_USER && pwd === MASTER_SUPER_PASS) isValid = true;
         }
 
@@ -1155,7 +1157,7 @@
         const st = stSelect ? stSelect.value : (STATION_ORDER[0] || "太廟派出所");
         const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
         if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
-        window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
+        window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", assignedEquip: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
         renderStationDutyTable();
     }
 
@@ -1299,6 +1301,7 @@
         if (rec) { rec.deleteStatus = isApprove ? 'APPROVED' : 'REJECTED'; saveSystemData(); }
     }
 
+    // 4.1 完整還原「分局指定測速儀」選單
     function renderHqMasterDutyTable() {
         const tbody = document.getElementById("hqMasterDutyTbody");
         tbody.innerHTML = "";
@@ -1306,6 +1309,13 @@
         validDuty.forEach(rec => {
             let locOpts = `<option value="">--請選擇地點--</option>`;
             (window.systemData.locations[rec.station] || []).forEach(l => locOpts += `<option value="${l}" ${rec.location === l ? 'selected' : ''}>${l}</option>`);
+
+            let equipOpts = `<option value="">--指定測速儀--</option>`;
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const eq = window.systemData.equipments[k];
+                equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''}>${eq.name} (${k})</option>`;
+            });
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center font-monospace small">${rec.date}</td>
@@ -1313,13 +1323,14 @@
                 <td class="text-center small">${rec.timeSlot}</td>
                 <td class="text-center small">${rec.officer}</td>
                 <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
+                <td><select class="form-select form-select-sm border-primary" onchange="updateDutyRecLocal(${rec.id}, 'assignedEquip', this.value);">${equipOpts}</select></td>
                 <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點核定結果已儲存至雲端！"); }
+    function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存至雲端！"); }
 
     function renderAwardTable() {
         const tbody = document.getElementById("awardTbody");
