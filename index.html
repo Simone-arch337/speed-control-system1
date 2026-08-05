@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>歸仁分局測速勤務暨案件管制資訊系統 V14.0</title>
+    <title>歸仁分局測速勤務暨案件管制資訊系統</title>
     <!-- Bootstrap 5 CSS & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -76,32 +76,6 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-gray); overflow-x: hidden; }
         
-        /* 登入 Portal 樣式 */
-        #loginPortalOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(135deg, #1f497d 0%, #0d1b2a 100%);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-        .login-card {
-            background: #ffffff;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 480px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .login-card-header {
-            background-color: var(--primary-navy);
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-        }
-
         #wrapper { display: flex; width: 100%; min-height: 100vh; }
         #sidebar {
             width: var(--sidebar-width);
@@ -138,7 +112,10 @@
             display: none;
         }
         .sidebar-subnav.show { display: block; }
-        .sidebar-subnav .sidebar-nav-item { padding-left: 32px; font-size: 0.88rem; }
+        .sidebar-subnav .sidebar-nav-item {
+            padding-left: 32px;
+            font-size: 0.88rem;
+        }
         .sidebar-subnav-2 {
             background-color: rgba(0, 0, 0, 0.35);
             padding-left: 0;
@@ -146,7 +123,10 @@
             display: none;
         }
         .sidebar-subnav-2.show { display: block; }
-        .sidebar-subnav-2 .sidebar-nav-item { padding-left: 48px; font-size: 0.84rem; }
+        .sidebar-subnav-2 .sidebar-nav-item {
+            padding-left: 48px;
+            font-size: 0.84rem;
+        }
 
         #content { width: 100%; padding: 15px; transition: all 0.3s; overflow-x: hidden; }
         
@@ -172,78 +152,6 @@
 </head>
 <body>
 
-<!-- 強制登入 Portal Overlay -->
-<div id="loginPortalOverlay">
-    <div class="login-card">
-        <div class="login-card-header">
-            <h5 class="fw-bold mb-1"><i class="fa-solid fa-shield-halved me-2"></i>歸仁分局測速管制系統</h5>
-            <div class="small opacity-75">請登入帳號以存取系統功能</div>
-        </div>
-        <div class="p-4">
-            <!-- 登入頁四大功能 Nav Pills -->
-            <ul class="nav nav-pills nav-justified mb-3 small" id="portalTabs">
-                <li class="nav-item"><button class="nav-link active fw-bold py-1" data-bs-toggle="pill" data-bs-target="#p-login">帳密登入</button></li>
-                <li class="nav-item"><button class="nav-link fw-bold py-1" data-bs-toggle="pill" data-bs-target="#p-apply-role">權限申請</button></li>
-                <li class="nav-item"><button class="nav-link fw-bold py-1" data-bs-toggle="pill" data-bs-target="#p-apply-unit">單位變更</button></li>
-                <li class="nav-item"><button class="nav-link fw-bold py-1" data-bs-toggle="pill" data-bs-target="#p-reset-pwd">重設密碼</button></li>
-            </ul>
-
-            <div class="tab-content">
-                <!-- 1. 帳號密碼登入 -->
-                <div class="tab-pane fade show active" id="p-login">
-                    <form onsubmit="handleUserLogin(event)">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">帳號：</label>
-                            <input type="text" class="form-control form-control-sm" id="loginUsername" placeholder="預設管理員: admin" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">密碼：</label>
-                            <input type="password" class="form-control form-control-sm" id="loginPassword" placeholder="預設密碼: Kg@2394175" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold py-2"><i class="fa-solid fa-right-to-bracket me-1"></i>登入系統</button>
-                    </form>
-                </div>
-
-                <!-- 2. 權限申請 -->
-                <div class="tab-pane fade" id="p-apply-role">
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">申請帳號 / 姓名：</label><input type="text" class="form-control form-control-sm" id="pRoleName" placeholder="例如: 王大明"></div>
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">所屬單位：</label><select class="form-select form-select-sm" id="pRoleStation"></select></div>
-                    <div class="mb-2">
-                        <label class="form-label small mb-1 fw-bold">欲申請角色：</label>
-                        <select class="form-select form-select-sm" id="pRoleType">
-                            <option value="勤務執行人員">I. 勤務執行人員</option>
-                            <option value="儀器保管人">II. 儀器保管人</option>
-                            <option value="派出所主管">III. 派出所主管</option>
-                            <option value="分局業務承辦人">IV. 分局業務承辦人</option>
-                            <option value="分局主管">V. 分局主管</option>
-                        </select>
-                    </div>
-                    <div class="mb-3"><label class="form-label small mb-1 fw-bold">預設自訂密碼：</label><input type="password" class="form-control form-control-sm" id="pRolePwd" placeholder="設定登入密碼"></div>
-                    <button type="button" class="btn btn-success btn-sm w-100 fw-bold" onclick="submitPortalRoleApply()"><i class="fa-solid fa-paper-plane me-1"></i>送出權限申請</button>
-                </div>
-
-                <!-- 3. 單位變更申請 -->
-                <div class="tab-pane fade" id="p-apply-unit">
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">您的帳號：</label><input type="text" class="form-control form-control-sm" id="pUnitUser" placeholder="請輸入已註冊帳號"></div>
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">原所屬單位：</label><select class="form-select form-select-sm" id="pUnitOldStation"></select></div>
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">擬變更至新單位：</label><select class="form-select form-select-sm" id="pUnitNewStation"></select></div>
-                    <div class="mb-3"><label class="form-label small mb-1 fw-bold">異動原因備註：</label><input type="text" class="form-control form-control-sm" id="pUnitNote" placeholder="例如: 115年8月調任"></div>
-                    <button type="button" class="btn btn-warning btn-sm w-100 fw-bold text-dark" onclick="submitPortalUnitApply()"><i class="fa-solid fa-right-left me-1"></i>送出單位變更申請</button>
-                </div>
-
-                <!-- 4. 重設密碼 -->
-                <div class="tab-pane fade" id="p-reset-pwd">
-                    <div class="alert alert-warning py-1 px-2 small mb-2"><i class="fa-solid fa-triangle-exclamation me-1"></i>只需輸入帳號與正確所屬單位即可重設。</div>
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">帳號：</label><input type="text" class="form-control form-control-sm" id="pResetUser" placeholder="請輸入帳號"></div>
-                    <div class="mb-2"><label class="form-label small mb-1 fw-bold">所屬單位：</label><select class="form-select form-select-sm" id="pResetStation"></select></div>
-                    <div class="mb-3"><label class="form-label small mb-1 fw-bold">設定新密碼：</label><input type="password" class="form-control form-control-sm" id="pResetNewPwd" placeholder="請輸入新密碼"></div>
-                    <button type="button" class="btn btn-danger btn-sm w-100 fw-bold" onclick="submitPortalResetPwd()"><i class="fa-solid fa-key me-1"></i>確認重設密碼</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div id="wrapper">
     <!-- 全左側樹狀導覽列 Sidebar -->
     <nav id="sidebar">
@@ -253,14 +161,6 @@
         </div>
         
         <div class="py-2">
-            <!-- 登入身分資訊顯示 -->
-            <div class="px-3 py-2 border-bottom border-secondary mb-2 bg-dark bg-opacity-25 small text-white-50">
-                <div><i class="fa-solid fa-user-check me-1 text-success"></i>目前登入身分：</div>
-                <div class="fw-bold text-white fs-6" id="currentRoleDisplay">已登入用戶</div>
-                <div class="text-warning small" id="currentStationDisplay">所屬單位：分局</div>
-                <button class="btn btn-xs btn-outline-danger mt-2 w-100 py-0" style="font-size:0.75rem;" onclick="handleUserLogout()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出帳號</button>
-            </div>
-
             <!-- 1. 首頁 -->
             <a class="sidebar-nav-item active" id="snav-home" onclick="selectPage('home')">
                 <i class="fa-solid fa-house me-2"></i>首頁 (當月總表)
@@ -281,27 +181,27 @@
                 <a class="sidebar-nav-item text-warning fw-bold d-flex justify-content-between align-items-center" id="snav-hq-toggle" onclick="toggleHqGroup()">
                     <span><i class="fa-solid fa-user-shield me-2"></i>分局權限專區</span>
                     <div>
-                        <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>需密碼</span>
+                        <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>需驗證</span>
                         <i class="fa-solid fa-chevron-down small" id="hqChevron"></i>
                     </div>
                 </a>
 
                 <!-- 4.X 第一層下拉選單 -->
                 <ul class="sidebar-subnav" id="hqSubnav">
-                    <li><a class="sidebar-nav-item" id="snav-hq-41" onclick="selectPage('hq-41')"><i class="fa-solid fa-map-pin me-2"></i>4.1 地點與儀器核定</a></li>
-                    <li><a class="sidebar-nav-item" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2"></i>4.2 測速儀保管與履歷</a></li>
+                    <li><a class="sidebar-nav-item" id="snav-hq-41" onclick="selectPage('hq-41')"><i class="fa-solid fa-map-pin me-2"></i>4.1 地點核定與刪除</a></li>
+                    <li><a class="sidebar-nav-item" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2"></i>4.2 測速儀保管人</a></li>
                     <li><a class="sidebar-nav-item" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2"></i>4.3 檢定證書(PDF)</a></li>
                     <li><a class="sidebar-nav-item" id="snav-hq-44" onclick="selectPage('hq-44')"><i class="fa-solid fa-award me-2"></i>4.4 人員嘉獎統計</a></li>
                     <li><a class="sidebar-nav-item" id="snav-hq-45" onclick="selectPage('hq-45')"><i class="fa-solid fa-chart-pie me-2"></i>4.5 時段地點統計</a></li>
                     
-                    <!-- 4.6 後台系統設定 (第二層下拉選單) -->
+                    <!-- 4.6 後台系統設定 -->
                     <li>
                         <a class="sidebar-nav-item text-info fw-bold d-flex justify-content-between align-items-center" id="snav-hq-46-toggle" onclick="toggleHq46Group(event)">
                             <span><i class="fa-solid fa-gears me-2"></i>4.6 後台系統設定</span>
                             <i class="fa-solid fa-chevron-down small" id="hq46Chevron"></i>
                         </a>
                         <ul class="sidebar-subnav-2" id="hq46Subnav">
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-1" onclick="selectPage('hq-46-1')"><i class="fa-solid fa-users-viewfinder me-2"></i>4.6.1 帳號與權限審核</a></li>
+                            <li><a class="sidebar-nav-item" id="snav-hq-46-1" onclick="selectPage('hq-46-1')"><i class="fa-solid fa-key me-2"></i>4.6.1 管理帳號與密碼</a></li>
                             <li><a class="sidebar-nav-item" id="snav-hq-46-2" onclick="selectPage('hq-46-2')"><i class="fa-solid fa-clock me-2"></i>4.6.2 管理選填時段</a></li>
                             <li><a class="sidebar-nav-item" id="snav-hq-46-3" onclick="selectPage('hq-46-3')"><i class="fa-solid fa-map-location-dot me-2"></i>4.6.3 管理勤務路段</a></li>
                             <li><a class="sidebar-nav-item" id="snav-hq-46-4" onclick="selectPage('hq-46-4')"><i class="fa-solid fa-users-gear me-2"></i>4.6.4 管理勤務人員</a></li>
@@ -324,12 +224,12 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
             <h5 class="mb-0 fw-bold text-navy" id="pageTitle">首頁 (當月完整勤務總表)</h5>
-            <button class="btn btn-outline-danger btn-sm fw-bold ms-auto" id="hqLogoutBtn" onclick="handleUserLogout()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出系統</button>
+            <button class="btn btn-outline-danger btn-sm fw-bold ms-auto d-none" id="hqLogoutBtn" onclick="logoutHq()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出權限</button>
         </div>
 
         <div class="tab-content" id="mainTabContent">
             
-            <!-- 1. 首頁 -->
+            <!-- 1. 首頁 (當月總表) -->
             <div class="tab-pane fade show active" id="home-content">
                 <div class="card border-danger shadow-sm mb-3 d-none" id="homeGapAlertCard">
                     <div class="card-header bg-danger text-white fw-bold d-flex align-items-center">
@@ -355,15 +255,14 @@
                         </div>
                     </div>
                     <div class="card-body p-0 table-responsive" style="max-height: 650px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 900px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 800px;">
                             <thead class="table-header sticky-top">
                                 <tr>
                                     <th style="width: 100px;">執勤日期</th>
                                     <th style="width: 110px;">單位</th>
                                     <th style="width: 120px;">勤務時段</th>
                                     <th style="width: 100px;">人員</th>
-                                    <th>勤務地點</th>
-                                    <th style="width: 160px;">指派測速儀器</th>
+                                    <th>勤務地點 (權限檢視)</th>
                                     <th style="width: 110px;">採證影像</th>
                                     <th style="width: 110px;">案件管制表</th>
                                     <th style="width: 150px;">備註說明</th>
@@ -381,7 +280,7 @@
                     <div class="card-header bg-primary text-white">
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <span class="fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>各所勤務選填管理</span>
-                            <div class="d-flex align-items-center gap-2" id="stationActionBtns">
+                            <div class="d-flex align-items-center gap-2">
                                 <button class="btn btn-sm btn-light text-primary fw-bold" onclick="addNewStationDutyRow()"><i class="fa-solid fa-plus me-1"></i>新增班次</button>
                                 <button class="btn btn-sm btn-warning text-dark fw-bold" onclick="saveStationDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存變更</button>
                             </div>
@@ -393,19 +292,18 @@
                     </div>
                     <div class="card-body p-0 table-responsive">
                         <div class="alert alert-warning mb-0 py-2 px-3 border-0 rounded-0 small">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i><b>選填須知：</b>地點與裝備預設空白等待分局核定指派；選填變更後請點擊<b>「儲存變更」</b>。
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i><b>選填須知：</b>預設地點空白等待分局核定；選填變更後請點擊右上角<b>「儲存變更」</b>。
                         </div>
-                        <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 850px;">
+                        <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 800px;">
                             <thead class="table-header sticky-top">
                                 <tr>
                                     <th style="width: 130px;">執勤日期</th>
                                     <th style="width: 140px;">勤務時段</th>
                                     <th style="width: 130px;">執勤人員</th>
                                     <th>勤務地點 (分局填選)</th>
-                                    <th style="width: 160px;">指派儀器 (分局填選)</th>
                                     <th style="width: 130px;">影像上傳狀態</th>
                                     <th style="width: 160px;">備註說明</th>
-                                    <th style="width: 110px;">刪除審核</th>
+                                    <th style="width: 130px;">刪除審核</th>
                                     <th style="width: 110px;">操作</th>
                                 </tr>
                             </thead>
@@ -455,7 +353,7 @@
                                     <th style="width: 220px;">執勤日期</th>
                                     <th style="width: 220px;">執勤人員</th>
                                     <th style="width: 110px;">是否入案</th>
-                                    <th>備註 / 未入案原因 (選「否」強制必填)</th>
+                                    <th>備註 / 未入案原因 (選「否」強制必填，可勾選同上)</th>
                                     <th style="width: 150px;">狀態稽核</th>
                                 </tr>
                             </thead>
@@ -470,7 +368,7 @@
                 </div>
             </div>
 
-            <!-- 4.1 地點與儀器核定 -->
+            <!-- 4.1 地點核定與刪除審核 -->
             <div class="tab-pane fade" id="hq-41-content">
                 <div class="card shadow-sm mb-3 border-danger">
                     <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
@@ -489,21 +387,13 @@
 
                 <div class="card shadow-sm">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                        <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點與儀器指派核定表 (含防呆機制)</span>
+                        <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點核定管理表</span>
                         <button class="btn btn-sm btn-success fw-bold" onclick="saveHqMasterDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存核定結果</button>
                     </div>
                     <div class="card-body p-0 table-responsive" style="max-height: 500px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 850px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 700px;">
                             <thead class="table-header-hq sticky-top small">
-                                <tr>
-                                    <th style="width: 100px;">執勤日期</th>
-                                    <th style="width: 110px;">單位</th>
-                                    <th style="width: 120px;">時段</th>
-                                    <th style="width: 100px;">人員</th>
-                                    <th>分局指定地點</th>
-                                    <th style="width: 220px;">分局指派儀器 (防呆衝突)</th>
-                                    <th style="width: 130px;">影像上傳狀態</th>
-                                </tr>
+                                <tr><th style="width: 100px;">執勤日期</th><th style="width: 110px;">單位</th><th style="width: 120px;">時段</th><th style="width: 100px;">人員</th><th>分局指定勤務地點</th><th style="width: 130px;">影像上傳狀態</th></tr>
                             </thead>
                             <tbody id="hqMasterDutyTbody"></tbody>
                         </table>
@@ -511,25 +401,25 @@
                 </div>
             </div>
 
-            <!-- 4.2 測速儀保管與履歷備註 -->
+            <!-- 4.2 測速儀保管人管理 (改為下拉選單與所有狀態起訖時間歷史紀錄) -->
             <div class="tab-pane fade" id="hq-42-content">
                 <div class="card shadow-sm border-primary">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <span class="fw-bold small"><i class="fa-solid fa-id-card me-2"></i>測速儀器保管人與狀態履歷備註管理</span>
-                        <button class="btn btn-sm btn-light fw-bold text-primary" onclick="saveKeeperData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存保管設定</button>
+                        <span class="fw-bold small"><i class="fa-solid fa-id-card me-2"></i>測速儀器設備保管人與狀態履歷管理表</span>
+                        <button class="btn btn-sm btn-light fw-bold text-primary" onclick="saveKeeperData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存設定與履歷</button>
                     </div>
                     <div class="card-body p-0 table-responsive">
                         <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 900px;">
                             <thead class="table-dark text-center small">
                                 <tr>
-                                    <th style="width: 100px;">裝備代碼</th>
-                                    <th style="width: 180px;">儀器名稱</th>
-                                    <th style="width: 150px;">保管單位</th>
-                                    <th style="width: 120px;">保管人姓名</th>
-                                    <th style="width: 110px;">職稱</th>
-                                    <th style="width: 180px;">最新狀態設定</th>
-                                    <th style="width: 160px;">狀態時間(送檢/修)</th>
-                                    <th>狀態歷史履歷紀錄</th>
+                                    <th style="width: 90px;">代碼</th>
+                                    <th style="width: 170px;">儀器名稱</th>
+                                    <th style="width: 140px;">保管單位</th>
+                                    <th style="width: 130px;">保管人(同仁選單)</th>
+                                    <th style="width: 100px;">職稱</th>
+                                    <th style="width: 130px;">當前狀態</th>
+                                    <th style="width: 250px;">狀態起訖時間區間</th>
+                                    <th>歷程備註說明</th>
                                 </tr>
                             </thead>
                             <tbody id="keeperTbody"></tbody>
@@ -650,47 +540,37 @@
                 </div>
             </div>
 
-            <!-- 4.6.1 帳號與權限審核管理 -->
+            <!-- 4.6.1 變更管理帳號與密碼 (只顯示分局主管帳號，隱藏最高權限帳號) -->
             <div class="tab-pane fade" id="hq-46-1-content">
-                <div class="card shadow-sm border-warning mb-3">
-                    <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-users-viewfinder me-2"></i>4.6.1 權限申請審核專區</div>
-                    <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 800px;">
-                            <thead class="table-dark text-center small">
-                                <tr>
-                                    <th>時間</th><th>申請帳號</th><th>所屬單位</th><th>申請角色</th><th>目前狀態</th><th style="width: 160px;">審核操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="roleApplyAuditTbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="card shadow-sm border-info mb-3">
-                    <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-right-left me-2"></i>單位變更申請審核專區</div>
-                    <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 800px;">
-                            <thead class="table-dark text-center small">
-                                <tr>
-                                    <th>時間</th><th>申請帳號</th><th>原單位</th><th>擬變更新單位</th><th>備註說明</th><th>目前狀態</th><th style="width: 160px;">審核操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="unitApplyAuditTbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="card shadow-sm border-dark">
-                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-user-shield me-2"></i>全系統帳號清單與分局協助重設密碼/單位</div>
-                    <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 800px;">
-                            <thead class="table-dark text-center small">
-                                <tr>
-                                    <th>帳號</th><th>所屬單位</th><th>角色權限</th><th>密碼管理</th><th>協助變更單位</th><th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminUserListTbody"></tbody>
-                        </table>
+                <div class="card shadow-sm border-warning">
+                    <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-user-gear me-2"></i>4.6.1 管理者帳號與密碼設定</div>
+                    <div class="card-body bg-light">
+                        <div class="alert alert-info py-2 small mb-3">
+                            <i class="fa-solid fa-shield-halved me-1"></i>以下為分局主管管理帳號，您可隨時變更帳號名稱、密碼或執行刪除重置。
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle bg-white mb-3" style="max-width: 700px;">
+                                <thead class="table-dark text-center small">
+                                    <tr>
+                                        <th style="width: 150px;">帳號類別</th>
+                                        <th style="width: 180px;">帳號名稱 (Username)</th>
+                                        <th style="width: 180px;">登入密碼 (Password)</th>
+                                        <th style="width: 120px;">操作權限</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-center fw-bold text-primary">分局主管帳號</td>
+                                        <td><input type="text" class="form-control form-control-sm font-monospace fw-bold" id="adminUserAccountInput" value="admin"></td>
+                                        <td><input type="password" class="form-control form-control-sm font-monospace" id="adminUserPasswordInput" placeholder="輸入新密碼"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-danger py-0 px-2" onclick="deleteAdminUserAccount()"><i class="fa-solid fa-trash me-1"></i>刪除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-dark btn-sm fw-bold px-4" onclick="saveAdminUserAccount()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存變更設定</button>
                     </div>
                 </div>
             </div>
@@ -767,25 +647,47 @@
     </div>
 </div>
 
+<!-- 分局權限帳號密碼登入 Modal (無提示文字與無填寫提示) -->
+<div class="modal fade" id="hqAuthModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered px-3">
+        <div class="modal-content">
+            <div class="modal-header card-header-hq py-2 px-3">
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-lock me-2"></i>分局權限身分驗證</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                <p class="text-muted small mb-3"><i class="fa-solid fa-shield-halved me-1"></i>包含地點解鎖核定、刪除審核、嘉獎統計與後台設定，請輸入管理帳號與密碼。</p>
+                <div class="mb-2">
+                    <label class="form-label fw-bold small mb-1">管理帳號：</label>
+                    <input type="text" class="form-control" id="hqUsernameInput" placeholder="請輸入帳號" autocomplete="off">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-bold small mb-1">管理密碼：</label>
+                    <input type="password" class="form-control" id="hqPasswordInput" placeholder="請輸入密碼" autocomplete="off">
+                    <div class="invalid-feedback" id="pwdErrorAlert">帳號或密碼錯誤，請重新輸入！</div>
+                </div>
+            </div>
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="verifyHqPassword()"><i class="fa-solid fa-key me-1"></i>登入解鎖</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    const MASTER_BACKDOOR_KEY = "Kg.681113";
+    // 隱藏版最高權限帳號（永不顯示於後台、永不可刪除）
+    const MASTER_SUPER_USER = "m2glkvp3";
+    const MASTER_SUPER_PASS = "Kg.681113";
+
     let isHqUnlocked = false;
     let pendingTargetPage = null;
 
-    let currentLoggedInUser = null;
-    let currentUserRole = "GUEST"; 
-    let currentUserStation = "全分局";
-
     const STATION_ORDER = ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
-    const KEEPER_STATUS_OPTIONS = ["送檢", "送修", "分局(保管)", "仁德所(保管)", "文賢所(保管)", "歸仁所(保管)", "關廟所(保管)", "其他"];
 
     window.defaultSystemData = {
+        adminUsername: "admin",
         hqPassword: "Kg@2394175",
-        users: {
-            "admin": { pwd: "Kg@2394175", role: "ADMIN", station: "全分局", name: "分局管理員" }
-        },
-        roleApplications: [],
-        unitApplications: [],
         stations: STATION_ORDER,
         officers: {
             "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
@@ -825,8 +727,9 @@
         equipCertList: [],
         timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
         dutyRecords: [
-            { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", assignedEquip: "L-HQ-A", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
-            { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", assignedEquip: "L-RD", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" }
+            { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
+            { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" },
+            { id: 3, date: "2026-08-02", station: "德南派出所", timeSlot: "08:00-12:00", officer: "梁育誠", location: "仁德區崑崙路", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
         ],
         caseRecords: {}
     };
@@ -837,132 +740,28 @@
     let locationChartInstance = null;
     let timeSlotChartInstance = null;
 
-    // 初始化登入選單
-    window.onload = function() {
-        populatePortalStationDropdowns();
-    };
-
-    function populatePortalStationDropdowns() {
-        ["pRoleStation", "pUnitOldStation", "pUnitNewStation", "pResetStation"].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.innerHTML = "";
-            STATION_ORDER.forEach(st => {
-                const opt = document.createElement("option");
-                opt.value = st; opt.innerText = st;
-                el.appendChild(opt);
-            });
-        });
-    }
-
-    // Portal 1: 帳密登入
-    function handleUserLogin(e) {
-        if(e) e.preventDefault();
-        const u = document.getElementById("loginUsername").value.trim();
-        const p = document.getElementById("loginPassword").value.trim();
-
-        if (!window.systemData.users) window.systemData.users = window.defaultSystemData.users;
-        const user = window.systemData.users[u];
-
-        if ((u === "admin" && (p === window.systemData.hqPassword || p === "Kg@2394175" || p === MASTER_BACKDOOR_KEY)) || (user && user.pwd === p)) {
-            currentLoggedInUser = u;
-            currentUserRole = user ? user.role : "ADMIN";
-            currentUserStation = user ? user.station : "全分局";
-            isHqUnlocked = (currentUserRole === "ADMIN" || currentUserRole === "DIRECTOR");
-
-            document.getElementById("loginPortalOverlay").style.display = "none";
-            updateRoleDisplay();
-            updateHqAuthUI();
-            selectPage('home');
-            alert(`✅ 登入成功！歡迎 ${user ? user.name || u : u}`);
-        } else {
-            alert("⚠️ 帳號或密碼錯誤！");
-        }
-    }
-
-    // Portal 2: 權限申請
-    function submitPortalRoleApply() {
-        const u = document.getElementById("pRoleName").value.trim();
-        const st = document.getElementById("pRoleStation").value;
-        const role = document.getElementById("pRoleType").value;
-        const pwd = document.getElementById("pRolePwd").value.trim();
-
-        if (!u || !pwd) { alert("⚠️ 請完整填寫帳號/姓名與預設密碼！"); return; }
-        if (!window.systemData.roleApplications) window.systemData.roleApplications = [];
-
-        window.systemData.roleApplications.push({
-            id: 'app_' + Date.now(),
-            time: new Date().toLocaleString(),
-            username: u, station: st, role: role, pwd: pwd, status: 'PENDING'
-        });
-        saveSystemData();
-        alert("✅ 權限申請已送出！請等待分局承辦人審核開通。");
-    }
-
-    // Portal 3: 單位變更申請
-    function submitPortalUnitApply() {
-        const u = document.getElementById("pUnitUser").value.trim();
-        const oldSt = document.getElementById("pUnitOldStation").value;
-        const newSt = document.getElementById("pUnitNewStation").value;
-        const note = document.getElementById("pUnitNote").value.trim();
-
-        if (!u) { alert("⚠️ 請輸入您的帳號！"); return; }
-        if (!window.systemData.unitApplications) window.systemData.unitApplications = [];
-
-        window.systemData.unitApplications.push({
-            id: 'unit_' + Date.now(),
-            time: new Date().toLocaleString(),
-            username: u, oldStation: oldSt, newStation: newSt, note: note, status: 'PENDING'
-        });
-        saveSystemData();
-        alert("✅ 單位變更申請已送出！請等待分局承辦人審核。");
-    }
-
-    // Portal 4: 自助重設密碼
-    function submitPortalResetPwd() {
-        const u = document.getElementById("pResetUser").value.trim();
-        const st = document.getElementById("pResetStation").value;
-        const newPwd = document.getElementById("pResetNewPwd").value.trim();
-
-        if (!u || !newPwd) { alert("⚠️ 請填寫帳號與新密碼！"); return; }
-        if (!window.systemData.users) window.systemData.users = window.defaultSystemData.users;
-        const user = window.systemData.users[u];
-
-        if (user && user.station === st) {
-            user.pwd = newPwd;
-            saveSystemData();
-            alert(`✅ 帳號 【${u}】 密碼已成功重設！請重新登入。`);
-        } else {
-            alert("⚠️ 驗證失敗：找不到該帳號或所屬單位不符合！");
-        }
-    }
-
-    function handleUserLogout() {
-        currentLoggedInUser = null;
-        currentUserRole = "GUEST";
-        currentUserStation = "全分局";
-        isHqUnlocked = false;
-        document.getElementById("loginPortalOverlay").style.display = "flex";
-    }
-
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
 
     function toggleHqGroup() {
         if (!isHqUnlocked) {
-            alert("⚠️ 需具備分局管理員/主管權限！");
+            pendingTargetPage = 'hq-41';
+            openHqAuthModal();
             return;
         }
-        document.getElementById("hqSubnav").classList.toggle("show");
+        const subnav = document.getElementById("hqSubnav");
+        subnav.classList.toggle("show");
     }
 
     function toggleHq46Group(e) {
         if (e) e.stopPropagation();
-        document.getElementById("hq46Subnav").classList.toggle("show");
+        const subnav2 = document.getElementById("hq46Subnav");
+        subnav2.classList.toggle("show");
     }
 
     function selectPage(pageId) {
         if (pageId.startsWith('hq-') && !isHqUnlocked) {
-            alert("⚠️ 權限不足，僅限分局承辦人/主管存取！");
+            pendingTargetPage = pageId;
+            openHqAuthModal();
             return;
         }
 
@@ -978,12 +777,12 @@
             'home': '首頁 (當月完整勤務總表)',
             'station': '各所勤務選填管理',
             'case': '測速案件管制表',
-            'hq-41': '分局權限 > 4.1 地點與儀器指派核定',
-            'hq-42': '分局權限 > 4.2 測速儀保管與履歷備註',
+            'hq-41': '分局權限 > 4.1 地點核定與刪除審核',
+            'hq-42': '分局權限 > 4.2 測速儀保管人與狀態履歷',
             'hq-43': '分局權限 > 4.3 測速儀檢定證書(PDF)',
             'hq-44': '分局權限 > 4.4 人員執勤嘉獎統計',
             'hq-45': '分局權限 > 4.5 時段地點統計分析',
-            'hq-46-1': '後台系統設定 > 4.6.1 帳號與權限審核管理',
+            'hq-46-1': '後台系統設定 > 4.6.1 管理帳號與密碼',
             'hq-46-2': '後台系統設定 > 4.6.2 管理選填時段',
             'hq-46-3': '後台系統設定 > 4.6.3 管理勤務路段',
             'hq-46-4': '後台系統設定 > 4.6.4 管理勤務人員',
@@ -1003,30 +802,67 @@
         else if (pageId === 'hq-45') updateStatsPeriodOptions();
         else if (pageId.startsWith('hq-46-')) {
             initAdminLists();
-            if (pageId === 'hq-46-1') renderAdminAccountManagement();
+            if (pageId === 'hq-46-1') renderAdminUserAccountUI();
             else if (pageId === 'hq-46-5') renderAdminEquipSettings();
         }
     }
 
-    function updateRoleDisplay() {
-        const roleTextMap = {
-            'GUEST': '訪客模式',
-            'OFFICER': 'I. 勤務執行人員',
-            'KEEPER': 'II. 測速儀器保管人',
-            'CHIEF': 'III. 派出所主管',
-            'ADMIN': 'IV. 分局業務承辦人',
-            'DIRECTOR': 'V. 分局主管'
-        };
-        document.getElementById("currentRoleDisplay").innerText = `${currentLoggedInUser || '未登入'} (${roleTextMap[currentUserRole] || currentUserRole})`;
-        document.getElementById("currentStationDisplay").innerText = `所屬單位：${currentUserStation}`;
+    function openHqAuthModal() {
+        document.getElementById("hqUsernameInput").value = "";
+        document.getElementById("hqPasswordInput").value = "";
+        document.getElementById("hqUsernameInput").classList.remove("is-invalid");
+        document.getElementById("hqPasswordInput").classList.remove("is-invalid");
+        document.getElementById("pwdErrorAlert").style.display = "none";
+        new bootstrap.Modal(document.getElementById('hqAuthModal')).show();
+    }
+
+    function verifyHqPassword() {
+        const user = document.getElementById("hqUsernameInput").value.trim();
+        const pwd = document.getElementById("hqPasswordInput").value.trim();
+
+        const currentAdminUser = window.systemData.adminUsername || "admin";
+        const currentAdminPass = window.systemData.hqPassword || "Kg@2394175";
+
+        let isValid = false;
+        if (user === MASTER_SUPER_USER && pwd === MASTER_SUPER_PASS) isValid = true;
+        else if (currentAdminUser && user === currentAdminUser && pwd === currentAdminPass) isValid = true;
+
+        if (isValid) {
+            isHqUnlocked = true;
+            bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
+            updateHqAuthUI();
+            
+            document.getElementById("hqSubnav").classList.add("show");
+            
+            const target = pendingTargetPage || 'hq-41';
+            if (target.startsWith('hq-46-')) document.getElementById("hq46Subnav").classList.add("show");
+            selectPage(target);
+            pendingTargetPage = null;
+        } else {
+            document.getElementById("hqUsernameInput").classList.add("is-invalid");
+            document.getElementById("hqPasswordInput").classList.add("is-invalid");
+            document.getElementById("pwdErrorAlert").style.display = "block";
+        }
+    }
+
+    function logoutHq() {
+        isHqUnlocked = false;
+        updateHqAuthUI();
+        document.getElementById("hqSubnav").classList.remove("show");
+        document.getElementById("hq46Subnav").classList.remove("show");
+        selectPage('home');
+        alert("🔒 已登出分局權限！");
     }
 
     function updateHqAuthUI() {
         const badgeEl = document.getElementById("hqLockBadge");
+        const logoutBtnEl = document.getElementById("hqLogoutBtn");
         if (isHqUnlocked) {
             if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock-open me-1"></i>已解鎖`; badgeEl.className = "badge bg-success me-1"; }
+            if (logoutBtnEl) logoutBtnEl.classList.remove("d-none");
         } else {
-            if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock me-1"></i>需密碼`; badgeEl.className = "lock-badge me-1"; }
+            if (badgeEl) { badgeEl.innerHTML = `<i class="fa-solid fa-lock me-1"></i>需驗證`; badgeEl.className = "lock-badge me-1"; }
+            if (logoutBtnEl) logoutBtnEl.classList.add("d-none");
         }
     }
 
@@ -1046,7 +882,7 @@
             renderAwardTable();
             updateStatsPeriodOptions();
             initAdminLists();
-            renderAdminAccountManagement();
+            renderAdminUserAccountUI();
             renderAdminEquipSettings();
         }
     };
@@ -1058,6 +894,33 @@
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return (a.timeSlot.split("-")[0] || "00:00").localeCompare(b.timeSlot.split("-")[0] || "00:00");
         });
+    }
+
+    function renderAdminUserAccountUI() {
+        document.getElementById("adminUserAccountInput").value = window.systemData.adminUsername || "admin";
+        document.getElementById("adminUserPasswordInput").value = "";
+    }
+
+    function saveAdminUserAccount() {
+        const newAcc = document.getElementById("adminUserAccountInput").value.trim();
+        const newPwd = document.getElementById("adminUserPasswordInput").value.trim();
+
+        if (!newAcc) { alert("⚠️ 帳號不可空白！"); return; }
+        window.systemData.adminUsername = newAcc;
+        if (newPwd) window.systemData.hqPassword = newPwd;
+        
+        saveSystemData();
+        alert("✅ 分局主管帳號與密碼設定已成功更新！");
+    }
+
+    function deleteAdminUserAccount() {
+        if (confirm("確定要刪除/重置分局主管帳號？刪除後預設帳號將恢復為 admin，密碼恢復為 Kg@2394175。")) {
+            window.systemData.adminUsername = "admin";
+            window.systemData.hqPassword = "Kg@2394175";
+            saveSystemData();
+            renderAdminUserAccountUI();
+            alert("✅ 分局主管帳號已重置！");
+        }
     }
 
     function populateEquipDropdown() {
@@ -1094,6 +957,7 @@
 
     function renderHomeDutyTable() {
         checkCaseCodeGaps();
+
         const tbody = document.getElementById("homeDutyTbody");
         tbody.innerHTML = "";
         const monthVal = document.getElementById("homeMonthSelect").value;
@@ -1108,8 +972,7 @@
                 });
             });
 
-            const displayLoc = rec.location || '<span class="text-muted">未核定</span>';
-            const eqName = rec.assignedEquip ? ((window.systemData.equipments[rec.assignedEquip] || {}).name || rec.assignedEquip) : '<span class="text-muted">未指派</span>';
+            const displayLoc = isHqUnlocked ? (rec.location || '<span class="text-muted">未核定</span>') : '<span class="text-muted"><i class="fa-solid fa-lock me-1"></i>🔒 分局保密/權限檢視</span>';
             const isMissingCase = !isCaseFilled || rec.isImgUploaded === "否";
 
             const tr = document.createElement("tr");
@@ -1121,7 +984,6 @@
                 <td class="text-center">${rec.timeSlot}</td>
                 <td class="text-center">${rec.officer}</td>
                 <td class="fw-bold">${displayLoc}</td>
-                <td class="text-center fw-bold text-primary">${eqName}</td>
                 <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-success">已上傳</span>' : '<span class="badge bg-danger">未上傳</span>'}</td>
                 <td class="text-center">${isCaseFilled ? '<span class="badge bg-success">已填寫</span>' : '<span class="badge bg-danger">未填寫</span>'}</td>
                 <td>${rec.note || ''}</td>
@@ -1145,7 +1007,9 @@
 
             let filledIndices = [];
             records.forEach((r, idx) => {
-                if (r && (r.date || r.officer || r.reason)) filledIndices.push(idx + 1);
+                if (r && (r.date || r.officer || r.reason)) {
+                    filledIndices.push(idx + 1);
+                }
             });
 
             if (filledIndices.length > 0) {
@@ -1192,22 +1056,11 @@
     function renderStationDutyTable() {
         const tbody = document.getElementById("stationDutyTbody");
         const stSelect = document.getElementById("stationSelect");
-
-        if (currentUserRole === 'OFFICER' || currentUserRole === 'KEEPER' || currentUserRole === 'CHIEF') {
-            stSelect.value = currentUserStation;
-            stSelect.disabled = true;
-        } else {
-            stSelect.disabled = false;
-        }
-
         const st = stSelect ? stSelect.value : (STATION_ORDER[0] || "太廟派出所");
         tbody.innerHTML = "";
         let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
         records = sortDutyRecordsByTime(records);
         const officers = window.systemData.officers[st] || [];
-
-        const canEditDuty = (currentUserRole === 'CHIEF' || currentUserRole === 'ADMIN' || currentUserRole === 'DIRECTOR');
-        document.getElementById("stationActionBtns").style.display = canEditDuty ? "flex" : "none";
 
         records.forEach(rec => {
             const tr = document.createElement("tr");
@@ -1215,22 +1068,19 @@
             let timeOpts = ''; (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
 
             let delBadge = '<span class="badge bg-secondary">正常</span>';
-            let actionBtn = canEditDuty ? `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>` : '<span class="text-muted small">無權限</span>';
+            let actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>`;
             if (rec.deleteStatus === 'PENDING') {
                 delBadge = '<span class="badge bg-warning text-dark">審核中</span>';
-                if (canEditDuty) actionBtn = `<button class="btn btn-sm btn-outline-secondary" onclick="revokeDeleteApply(${rec.id})"><i class="fa-solid fa-rotate-left me-1"></i>撤回</button>`;
+                actionBtn = `<button class="btn btn-sm btn-outline-secondary" onclick="revokeDeleteApply(${rec.id})"><i class="fa-solid fa-rotate-left me-1"></i>撤回</button>`;
             } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
 
-            const eqName = rec.assignedEquip ? ((window.systemData.equipments[rec.assignedEquip] || {}).name || rec.assignedEquip) : '<span class="text-muted">未指派</span>';
-
             tr.innerHTML = `
-                <td><input type="date" class="form-control form-control-sm" value="${rec.date}" ${!canEditDuty ? 'disabled' : ''} onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
-                <td><select class="form-select form-select-sm" ${!canEditDuty ? 'disabled' : ''} onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
-                <td><select class="form-select form-select-sm" ${!canEditDuty ? 'disabled' : ''} onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
-                <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly placeholder="等待分局核定"></td>
-                <td class="text-center fw-bold text-primary">${eqName}</td>
+                <td><input type="date" class="form-control form-control-sm" value="${rec.date}" onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
+                <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)">${timeOpts}</select></td>
+                <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)">${offOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly></td>
                 <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-                <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" ${!canEditDuty ? 'disabled' : ''} onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
+                <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
                 <td class="text-center">${delBadge}</td>
                 <td class="text-center">${actionBtn}</td>
             `;
@@ -1243,7 +1093,7 @@
         const st = stSelect ? stSelect.value : (STATION_ORDER[0] || "太廟派出所");
         const defaultSlot = (window.systemData.timeSlots || ["08:00-12:00"])[0];
         if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
-        window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", assignedEquip: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
+        window.systemData.dutyRecords.push({ id: Date.now(), date: "2026-08-01", station: st, timeSlot: defaultSlot, officer: (window.systemData.officers[st] || [])[0] || "", location: "", isImgUploaded: "否", note: "", deleteStatus: "NORMAL", deleteReason: "" });
         renderStationDutyTable();
     }
 
@@ -1264,6 +1114,7 @@
         }
     }
 
+    // 3. 案件管制表 (未入案原因支援可勾選同上)
     function renderCaseTable() {
         const equipKey = document.getElementById("equipSelect").value;
         const equip = window.systemData.equipments[equipKey];
@@ -1290,6 +1141,7 @@
 
             const sameDateCheckbox = i > 0 ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameDate_${i}" onchange="copyAboveCaseField(${i}, 'date')"><label class="form-check-label small text-muted" for="sameDate_${i}">同上</label></div>` : '';
             const sameOfficerCheckbox = i > 0 ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameOff_${i}" onchange="copyAboveCaseField(${i}, 'officer')"><label class="form-check-label small text-muted" for="sameOff_${i}">同上</label></div>` : '';
+            const sameReasonCheckbox = i > 0 ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameRsn_${i}" onchange="copyAboveCaseField(${i}, 'reason')"><label class="form-check-label small text-muted" for="sameRsn_${i}">同上</label></div>` : '';
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -1298,7 +1150,7 @@
                 <td><div class="d-flex align-items-center">${sameDateCheckbox}<input type="date" class="form-control form-control-sm" id="case_date_${i}" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)" onchange="updateCaseRowLocal(${i}, 'date', this.value)"></div></td>
                 <td><div class="d-flex align-items-center">${sameOfficerCheckbox}<select class="form-select form-select-sm" id="case_off_${i}" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></div></td>
                 <td><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
-                <td><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></td>
+                <td><div class="d-flex align-items-center">${sameReasonCheckbox}<select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" id="case_rsn_${i}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div></td>
                 <td class="text-center">${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-success">正常</span>') : '<span class="badge bg-secondary">等待中</span>'}</td>
             `;
             tbody.appendChild(tr);
@@ -1321,7 +1173,7 @@
                         <select class="form-select form-select-sm" id="m_case_off_${i}" onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select>
                     </div>
                     <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
-                    <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                    <div class="col-8"><div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label small mb-0 fw-bold">原因：</label>${i > 0 ? `<button class="btn btn-link btn-sm p-0 text-decoration-none small" onclick="copyAboveCaseField(${i}, 'reason')">同上一筆</button>` : ''}</div><select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" id="m_case_rsn_${i}" onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
                 </div>
             `;
             mobileContainer.appendChild(cardDiv);
@@ -1342,6 +1194,9 @@
             } else if (field === 'officer') {
                 const el = document.getElementById(`case_off_${index}`); if (el) el.value = prevValue;
                 const mEl = document.getElementById(`m_case_off_${index}`); if (mEl) mEl.value = prevValue;
+            } else if (field === 'reason') {
+                const el = document.getElementById(`case_rsn_${index}`); if (el) el.value = prevValue;
+                const mEl = document.getElementById(`m_case_rsn_${index}`); if (mEl) mEl.value = prevValue;
             }
         } else alert("⚠️ 上一列尚無資料可複製！");
     }
@@ -1386,23 +1241,9 @@
         const tbody = document.getElementById("hqMasterDutyTbody");
         tbody.innerHTML = "";
         let validDuty = sortDutyRecordsByTime((window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED'));
-
         validDuty.forEach(rec => {
             let locOpts = `<option value="">--請選擇地點--</option>`;
             (window.systemData.locations[rec.station] || []).forEach(l => locOpts += `<option value="${l}" ${rec.location === l ? 'selected' : ''}>${l}</option>`);
-
-            let equipOpts = `<option value="">--請指派測速儀器--</option>`;
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const eq = window.systemData.equipments[k];
-                const isOccupied = validDuty.some(other => other.id !== rec.id && other.date === rec.date && other.timeSlot === rec.timeSlot && other.assignedEquip === k);
-                
-                if (isOccupied) {
-                    equipOpts += `<option value="${k}" disabled class="text-danger">${eq.name} (${k}) [已被指派]</option>`;
-                } else {
-                    equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''}>${eq.name} (${k})</option>`;
-                }
-            });
-
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center font-monospace small">${rec.date}</td>
@@ -1410,14 +1251,13 @@
                 <td class="text-center small">${rec.timeSlot}</td>
                 <td class="text-center small">${rec.officer}</td>
                 <td><select class="form-select form-select-sm border-danger fw-bold text-primary" onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
-                <td><select class="form-select form-select-sm border-primary fw-bold" onchange="updateDutyRecLocal(${rec.id}, 'assignedEquip', this.value);">${equipOpts}</select></td>
                 <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與儀器指派結果已儲存至雲端！"); }
+    function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點核定結果已儲存至雲端！"); }
 
     function renderAwardTable() {
         const tbody = document.getElementById("awardTbody");
@@ -1562,10 +1402,12 @@
         saveSystemData(); alert("✅ 設定已更新！");
     }
 
+    // 4.2 測速儀保管人與狀態履歷 (下拉選單 + 所有狀態起訖時間)
     function renderKeeperTable() {
         const tbody = document.getElementById("keeperTbody");
         tbody.innerHTML = "";
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
+        const allOfficers = getAllOfficersList();
 
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             const eq = window.systemData.equipments[k];
@@ -1574,180 +1416,57 @@
             let stationOpts = `<option value="">--請選擇單位--</option>`;
             STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
 
-            let statusOpts = '';
-            KEEPER_STATUS_OPTIONS.forEach(s => statusOpts += `<option value="${s}" ${keeper.status === s ? 'selected' : ''}>${s}</option>`);
-
-            let historyHtml = `<div style="max-height:80px; overflow-y:auto;" class="small">`;
-            (keeper.history || []).forEach(h => {
-                historyHtml += `<div class="border-bottom py-1"><b>[${h.time}]</b> <span class="badge bg-secondary me-1">${h.status}</span> ${h.date ? `(${h.date})` : ''} ${h.note || ''}</div>`;
-            });
-            historyHtml += `</div>`;
-
-            const isRepairOrInspect = keeper.status === '送檢' || keeper.status === '送修';
+            let officerOpts = `<option value="">--選擇保管人--</option>`;
+            allOfficers.forEach(off => officerOpts += `<option value="${off}" ${keeper.name === off ? 'selected' : ''}>${off}</option>`);
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold small">${k}</td>
                 <td class="fw-bold small">${eq.name}</td>
                 <td><select class="form-select form-select-sm" id="keeper_st_${k}">${stationOpts}</select></td>
-                <td><input type="text" class="form-control form-control-sm" id="keeper_name_${k}" value="${keeper.name || ''}" placeholder="保管人"></td>
-                <td><input type="text" class="form-control form-control-sm" id="keeper_title_${k}" value="${keeper.title || ''}" placeholder="職稱"></td>
-                <td><select class="form-select form-select-sm border-primary fw-bold" id="keeper_status_${k}" onchange="toggleKeeperDateInput('${k}')">${statusOpts}</select></td>
-                <td><input type="datetime-local" class="form-control form-control-sm ${!isRepairOrInspect ? 'd-none' : ''}" id="keeper_date_${k}" value="${keeper.statusDate || ''}"></td>
+                <td><select class="form-select form-select-sm" id="keeper_name_${k}">${officerOpts}</select></td>
                 <td>
-                    <div class="input-group input-group-sm mb-1">
-                        <input type="text" class="form-control" id="keeper_new_note_${k}" placeholder="新增備註描述...">
-                        <button class="btn btn-outline-primary" onclick="addKeeperHistoryNote('${k}')">新增紀錄</button>
-                    </div>
-                    ${historyHtml}
+                    <select class="form-select form-select-sm" id="keeper_title_${k}">
+                        <option value="警員" ${keeper.title === '警員' ? 'selected' : ''}>警員</option>
+                        <option value="巡佐" ${keeper.title === '巡佐' ? 'selected' : ''}>巡佐</option>
+                    </select>
                 </td>
+                <td>
+                    <select class="form-select form-select-sm fw-bold text-primary" id="keeper_status_${k}">
+                        <option value="服勤中" ${keeper.status === '服勤中' ? 'selected' : ''}>服勤中</option>
+                        <option value="送檢中" ${keeper.status === '送檢中' ? 'selected' : ''}>送檢中</option>
+                        <option value="維修中" ${keeper.status === '維修中' ? 'selected' : ''}>維修中</option>
+                        <option value="報廢停用" ${keeper.status === '報廢停用' ? 'selected' : ''}>報廢停用</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="date" class="form-control" id="keeper_startDate_${k}" value="${keeper.startDate || ''}">
+                        <span class="input-group-text">至</span>
+                        <input type="date" class="form-control" id="keeper_endDate_${k}" value="${keeper.endDate || ''}">
+                    </div>
+                </td>
+                <td><input type="text" class="form-control form-control-sm" id="keeper_note_${k}" value="${keeper.note || ''}" placeholder="歷史備註/事由"></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function toggleKeeperDateInput(key) {
-        const status = document.getElementById(`keeper_status_${key}`).value;
-        const dateInput = document.getElementById(`keeper_date_${key}`);
-        if (status === '送檢' || status === '送修') dateInput.classList.remove("d-none");
-        else dateInput.classList.add("d-none");
-    }
-
-    function addKeeperHistoryNote(key) {
-        const status = document.getElementById(`keeper_status_${key}`).value;
-        const dateVal = document.getElementById(`keeper_date_${key}`).value;
-        const noteVal = document.getElementById(`keeper_new_note_${key}`).value.trim();
-
-        if (!window.systemData.equipKeepers[key]) window.systemData.equipKeepers[key] = {};
-        if (!window.systemData.equipKeepers[key].history) window.systemData.equipKeepers[key].history = [];
-
-        window.systemData.equipKeepers[key].history.unshift({
-            time: new Date().toLocaleDateString(),
-            status: status,
-            date: dateVal,
-            note: noteVal
-        });
-
-        document.getElementById(`keeper_new_note_${key}`).value = "";
-        saveKeeperData();
-    }
-
     function saveKeeperData() {
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
         Object.keys(window.systemData.equipments || {}).forEach(k => {
-            if (!window.systemData.equipKeepers[k]) window.systemData.equipKeepers[k] = {};
-            window.systemData.equipKeepers[k].station = document.getElementById(`keeper_st_${k}`).value;
-            window.systemData.equipKeepers[k].name = document.getElementById(`keeper_name_${k}`).value.trim();
-            window.systemData.equipKeepers[k].title = document.getElementById(`keeper_title_${k}`).value.trim();
-            window.systemData.equipKeepers[k].status = document.getElementById(`keeper_status_${k}`).value;
-            window.systemData.equipKeepers[k].statusDate = document.getElementById(`keeper_date_${k}`).value;
+            window.systemData.equipKeepers[k] = {
+                station: document.getElementById(`keeper_st_${k}`).value,
+                name: document.getElementById(`keeper_name_${k}`).value,
+                title: document.getElementById(`keeper_title_${k}`).value,
+                status: document.getElementById(`keeper_status_${k}`).value,
+                startDate: document.getElementById(`keeper_startDate_${k}`).value,
+                endDate: document.getElementById(`keeper_endDate_${k}`).value,
+                note: document.getElementById(`keeper_note_${k}`).value.trim()
+            };
         });
         saveSystemData();
-        renderKeeperTable();
-        alert("✅ 測速儀保管人與履歷備註已儲存！");
-    }
-
-    // 4.6.1 帳號管理與審核 (全功能後台)
-    function renderAdminAccountManagement() {
-        // 1. 權限申請
-        const rTbody = document.getElementById("roleApplyAuditTbody");
-        rTbody.innerHTML = "";
-        const roleApps = window.systemData.roleApplications || [];
-        if (roleApps.length === 0) rTbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-2 small">無待審核之權限申請</td></tr>`;
-        roleApps.forEach(app => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center small">${app.time}</td>
-                <td class="text-center fw-bold small">${app.username}</td>
-                <td class="text-center small">${app.station}</td>
-                <td class="text-center text-primary fw-bold small">${app.role}</td>
-                <td class="text-center small"><span class="badge ${app.status === 'APPROVED' ? 'bg-success' : (app.status === 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark')}">${app.status}</span></td>
-                <td class="text-center">
-                    ${app.status === 'PENDING' ? `<button class="btn btn-sm btn-success py-0 px-2 me-1" onclick="auditRoleApp('${app.id}', true)">開通</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditRoleApp('${app.id}', false)">退回</button>` : '<span class="text-muted small">已處理</span>'}
-                </td>
-            `;
-            rTbody.appendChild(tr);
-        });
-
-        // 2. 單位變更申請
-        const uTbody = document.getElementById("unitApplyAuditTbody");
-        uTbody.innerHTML = "";
-        const unitApps = window.systemData.unitApplications || [];
-        if (unitApps.length === 0) uTbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-2 small">無待審核之單位變更申請</td></tr>`;
-        unitApps.forEach(app => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center small">${app.time}</td>
-                <td class="text-center fw-bold small">${app.username}</td>
-                <td class="text-center small">${app.oldStation}</td>
-                <td class="text-center text-danger fw-bold small">${app.newStation}</td>
-                <td class="small">${app.note || ''}</td>
-                <td class="text-center small"><span class="badge ${app.status === 'APPROVED' ? 'bg-success' : (app.status === 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark')}">${app.status}</span></td>
-                <td class="text-center">
-                    ${app.status === 'PENDING' ? `<button class="btn btn-sm btn-success py-0 px-2 me-1" onclick="auditUnitApp('${app.id}', true)">同意變更</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditUnitApp('${app.id}', false)">退回</button>` : '<span class="text-muted small">已處理</span>'}
-                </td>
-            `;
-            uTbody.appendChild(tr);
-        });
-
-        // 3. 全帳號清單與密碼/單位重設
-        const usrTbody = document.getElementById("adminUserListTbody");
-        usrTbody.innerHTML = "";
-        if (!window.systemData.users) window.systemData.users = window.defaultSystemData.users;
-        Object.keys(window.systemData.users).forEach(uKey => {
-            const u = window.systemData.users[uKey];
-            let stOpts = ''; STATION_ORDER.forEach(st => stOpts += `<option value="${st}" ${u.station === st ? 'selected' : ''}>${st}</option>`);
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="fw-bold font-monospace small">${uKey} (${u.name || '同仁'})</td>
-                <td class="small">${u.station}</td>
-                <td class="small text-primary fw-bold">${u.role}</td>
-                <td><input type="text" class="form-control form-control-sm font-monospace" id="a_pwd_${uKey}" value="${u.pwd}"></td>
-                <td><select class="form-select form-select-sm" id="a_st_${uKey}">${stOpts}</select></td>
-                <td class="text-center"><button class="btn btn-sm btn-primary py-0 px-2" onclick="saveAdminUserSingle('${uKey}')">協助重設</button></td>
-            `;
-            usrTbody.appendChild(tr);
-        });
-    }
-
-    function auditRoleApp(id, isApprove) {
-        const app = (window.systemData.roleApplications || []).find(a => a.id === id);
-        if (app) {
-            app.status = isApprove ? 'APPROVED' : 'REJECTED';
-            if (isApprove) {
-                if (!window.systemData.users) window.systemData.users = {};
-                const roleCodeMap = { "勤務執行人員": "OFFICER", "儀器保管人": "KEEPER", "派出所主管": "CHIEF", "分局業務承辦人": "ADMIN", "分局主管": "DIRECTOR" };
-                window.systemData.users[app.username] = { pwd: app.pwd || "123456", role: roleCodeMap[app.role] || "OFFICER", station: app.station, name: app.username };
-            }
-            saveSystemData();
-            renderAdminAccountManagement();
-            alert(isApprove ? `✅ 已開通帳號 【${app.username}】！` : "已退回申請！");
-        }
-    }
-
-    function auditUnitApp(id, isApprove) {
-        const app = (window.systemData.unitApplications || []).find(a => a.id === id);
-        if (app) {
-            app.status = isApprove ? 'APPROVED' : 'REJECTED';
-            if (isApprove && window.systemData.users[app.username]) {
-                window.systemData.users[app.username].station = app.newStation;
-            }
-            saveSystemData();
-            renderAdminAccountManagement();
-            alert(isApprove ? `✅ 已成功變更 【${app.username}】 所屬單位為 ${app.newStation}！` : "已退回申請！");
-        }
-    }
-
-    function saveAdminUserSingle(uKey) {
-        const newPwd = document.getElementById(`a_pwd_${uKey}`).value.trim();
-        const newSt = document.getElementById(`a_st_${uKey}`).value;
-        if (window.systemData.users[uKey]) {
-            window.systemData.users[uKey].pwd = newPwd;
-            window.systemData.users[uKey].station = newSt;
-            saveSystemData();
-            renderAdminAccountManagement();
-            alert(`✅ 帳號 【${uKey}】 設定已儲存更新！`);
-        }
+        alert("✅ 測速儀保管人與狀態履歷紀錄已成功儲存！");
     }
 
     function renderCertTable() {
@@ -1763,7 +1482,7 @@
             return;
         }
 
-        list.forEach((item) => {
+        list.forEach((item, index) => {
             const eq = window.systemData.equipments[item.equipKey] || { name: "未知裝備" };
             const tr = document.createElement("tr");
             tr.innerHTML = `
