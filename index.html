@@ -157,7 +157,6 @@
 
         /* 權限清單極簡對照表樣式 */
         .perm-table th, .perm-table td { padding: 6px 10px; vertical-align: middle; }
-        .perm-radio-group label { cursor: pointer; font-size: 0.85rem; }
 
         @media (max-width: 991.98px) {
             #sidebar { margin-left: calc(-1 * var(--sidebar-width)); position: fixed; height: 100%; }
@@ -758,10 +757,10 @@
         <div id="adminModuleContainer" style="display: none;">
             <div class="tab-content">
                 
-                <!-- 4.6.1 管理與帳號審核專區 (重構成極簡列表勾選) -->
+                <!-- 4.6.1 管理與帳號審核專區 (純中文極簡列表勾選) -->
                 <div class="tab-pane fade show active" id="hq-46-1-content">
                     
-                    <!-- 身分權限類型與存取頁面/卡片管理 (極簡列表清單樣式) -->
+                    <!-- 身分權限類型與存取頁面/卡片管理 (純中文極簡對照表) -->
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-header card-header-clean d-flex justify-content-between align-items-center fw-bold py-2">
                             <span><i class="fa-solid fa-id-card-clip me-2"></i>身分權限類型與細項權限對照清單 (極簡勾選表)</span>
@@ -791,15 +790,15 @@
                                 </div>
                             </div>
 
-                            <!-- 極簡條列式勾選對照表 -->
+                            <!-- 純中文極簡條列式勾選對照表 (無英文及Emoji) -->
                             <div class="table-responsive">
                                 <table class="table table-bordered table-hover align-middle mb-0 perm-table" style="min-width: 750px;">
                                     <thead class="table-dark text-center small">
                                         <tr>
                                             <th style="width: 250px;">系統頁面 / 功能模組名稱</th>
-                                            <th style="width: 130px;">👁️ 讀取 (Read)</th>
-                                            <th style="width: 130px;">✏️ 編輯 (Edit)</th>
-                                            <th style="width: 130px;">🚫 隱藏 (Hidden)</th>
+                                            <th style="width: 120px;">讀取</th>
+                                            <th style="width: 120px;">編輯</th>
+                                            <th style="width: 120px;">隱藏</th>
                                             <th>備註 / 說明</th>
                                         </tr>
                                     </thead>
@@ -1690,7 +1689,7 @@
         }
     }
 
-    /* 重構成極簡列表對照勾選 UI */
+    /* 純中文極簡列表對照勾選 UI (無英文/無 Emoji) */
     function populateRoleMatrixSelect() {
         const select = document.getElementById("roleSelectForMatrix");
         if (!select) return;
