@@ -109,6 +109,28 @@
         .alert-missing { background-color: #fce4d6 !important; color: #c00000; font-weight: bold; }
         .lock-badge { background-color: #dc3545; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
         .admin-header { background-color: #2c3e50; color: white; font-weight: bold; }
+
+        /* 分局權限左側選單樣式 */
+        .hq-pills .nav-link {
+            color: #333;
+            font-weight: 600;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 4px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s;
+        }
+        .hq-pills .nav-link.active {
+            background-color: var(--primary-navy);
+            color: #fff !important;
+            border-color: var(--primary-navy);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .hq-pills .nav-link:hover:not(.active) {
+            background-color: #e9ecef;
+        }
         
         @media (max-width: 991.98px) {
             #sidebar { margin-left: calc(-1 * var(--sidebar-width)); position: fixed; height: 100%; }
@@ -163,8 +185,21 @@
 
         <div class="tab-content" id="mainTabContent">
             
-            <!-- 1. 首頁 (總表) -->
+            <!-- 1. 首頁 (總表 + 缺漏編號警示卡片，已刪除警示欄位) -->
             <div class="tab-pane fade show active" id="home-content">
+                
+                <!-- 案件管制表斷號缺漏警示卡片 -->
+                <div class="card border-danger shadow-sm mb-3 d-none" id="homeGapAlertCard">
+                    <div class="card-header bg-danger text-white fw-bold d-flex align-items-center">
+                        <i class="fa-solid fa-triangle-exclamation fa-lg me-2"></i>
+                        <span>案件管制表缺漏（斷號）警示通知</span>
+                    </div>
+                    <div class="card-body bg-light text-dark p-3">
+                        <p class="mb-2 text-danger fw-bold small"><i class="fa-solid fa-circle-exclamation me-1"></i>檢測到下列測速儀器之案件編號有未填寫的「缺漏斷號」區間：</p>
+                        <div id="homeGapAlertList" class="list-group list-group-flush border rounded bg-white small"></div>
+                    </div>
+                </div>
+
                 <div class="card shadow-sm mb-3">
                     <div class="card-header card-header-main d-flex flex-wrap justify-content-between align-items-center gap-2">
                         <span><i class="fa-solid fa-table-list me-2"></i>當月全分局測速勤務總表彙整</span>
@@ -188,8 +223,7 @@
                                     <th>勤務地點 (權限檢視)</th>
                                     <th style="width: 110px;">採證影像</th>
                                     <th style="width: 110px;">案件管制表</th>
-                                    <th style="width: 130px;">管制表填寫警示</th>
-                                    <th style="width: 130px;">備註說明</th>
+                                    <th style="width: 150px;">備註說明</th>
                                 </tr>
                             </thead>
                             <tbody id="homeDutyTbody"></tbody>
@@ -292,215 +326,298 @@
                 </div>
             </div>
 
-            <!-- 4. 分局權限 -->
+            <!-- 4. 分局權限 (改為左側子選單與新排序) -->
             <div class="tab-pane fade" id="hq-content">
                 <div class="card shadow-sm mb-3">
-                    <div class="card-header card-header-hq d-flex justify-content-between align-items-center">
-                        <span class="text-truncate fw-bold"><i class="fa-solid fa-user-shield me-2"></i>分局長官權限專區</span>
+                    <div class="card-header card-header-hq">
+                        <i class="fa-solid fa-user-shield me-2"></i>分局長官權限專區
                     </div>
-                    <div class="card-body p-2 bg-light">
-                        <ul class="nav nav-tabs fs-6 flex-nowrap overflow-auto" id="hqSubTabs" role="tablist" style="white-space: nowrap;">
-                            <li class="nav-item">
-                                <button class="nav-link active fw-bold py-2 px-3" id="hq-41-tab" data-bs-toggle="tab" data-bs-target="#hq-41-content" type="button" onclick="renderHqSubTab('41')"><i class="fa-solid fa-map-pin me-1"></i>4.1 地點核定與刪除審核</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link fw-bold py-2 px-3" id="hq-42-tab" data-bs-toggle="tab" data-bs-target="#hq-42-content" type="button" onclick="renderHqSubTab('42')"><i class="fa-solid fa-award me-1"></i>4.2 人員嘉獎統計</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link fw-bold py-2 px-3" id="hq-43-tab" data-bs-toggle="tab" data-bs-target="#hq-43-content" type="button" onclick="renderHqSubTab('43')"><i class="fa-solid fa-chart-pie me-1"></i>4.3 時段地點統計分析</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link fw-bold text-dark py-2 px-3" id="hq-44-tab" data-bs-toggle="tab" data-bs-target="#hq-44-content" type="button" onclick="renderHqSubTab('44')"><i class="fa-solid fa-gears me-1"></i>4.4 後台系統設定</button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="tab-content" id="hqSubTabContent">
-                    <!-- 4.1 地點核定與刪除審核 -->
-                    <div class="tab-pane fade show active" id="hq-41-content">
-                        <div class="card shadow-sm mb-3 border-danger">
-                            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-                                <span class="small fw-bold"><i class="fa-solid fa-trash-can-arrow-up me-2"></i>各所「勤務刪除申請」審核專區</span>
-                                <span class="badge bg-white text-danger" id="pendingDeleteBadge">0 筆待審核</span>
-                            </div>
-                            <div class="card-body p-0 table-responsive">
-                                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 650px;">
-                                    <thead class="table-dark text-center small">
-                                        <tr><th>單位</th><th>日期</th><th>時段</th><th>人員</th><th>地點</th><th>刪除原因</th><th style="width: 150px;">審核操作</th></tr>
-                                    </thead>
-                                    <tbody id="hqDeleteAuditTbody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                                <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點核定管理表</span>
-                                <button class="btn btn-sm btn-success fw-bold" onclick="saveHqMasterDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存核定結果</button>
-                            </div>
-                            <div class="card-body p-0 table-responsive" style="max-height: 500px;">
-                                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 700px;">
-                                    <thead class="table-header-hq sticky-top small">
-                                        <tr><th style="width: 100px;">執勤日期</th><th style="width: 110px;">單位</th><th style="width: 120px;">時段</th><th style="width: 100px;">人員</th><th>分局指定勤務地點</th><th style="width: 130px;">影像上傳狀態</th></tr>
-                                    </thead>
-                                    <tbody id="hqMasterDutyTbody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4.2 人員嘉獎統計 -->
-                    <div class="tab-pane fade" id="hq-42-content">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                <span class="small fw-bold"><i class="fa-solid fa-award me-2"></i>人員執勤嘉獎統計表</span>
-                                <button class="btn btn-sm btn-light" onclick="exportAwardToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
-                            </div>
-                            <div class="card-body p-0 table-responsive" style="max-height: 550px;">
-                                <table class="table table-bordered table-hover align-middle mb-0" id="awardTable" style="min-width: 850px;">
-                                    <thead class="table-header sticky-top small">
-                                        <tr><th>單位</th><th>姓名</th><th>Q1 時數</th><th>Q1 嘉獎</th><th>Q2 時數</th><th>Q2 嘉獎</th><th>Q3 時數</th><th>Q3 嘉獎</th><th>Q4 時數</th><th>Q4 嘉獎</th><th>全年時數</th><th>全年嘉獎</th><th>建議敘獎</th></tr>
-                                    </thead>
-                                    <tbody id="awardTbody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4.3 時段地點統計分析 (修正月、週、日選單) -->
-                    <div class="tab-pane fade" id="hq-43-content">
-                        <div class="card shadow-sm mb-3">
-                            <div class="card-body bg-light">
-                                <div class="row align-items-center g-2">
-                                    <div class="col-12 col-md-3">
-                                        <label class="form-label fw-bold mb-1 small"><i class="fa-solid fa-filter me-1"></i>統計週期模式：</label>
-                                        <select class="form-select form-select-sm" id="statsPeriodType" onchange="updateStatsPeriodOptions()">
-                                            <option value="YEAR">全年度統計 (Yearly)</option>
-                                            <option value="MONTH" selected>月度統計 (Monthly)</option>
-                                            <option value="WEEK">週度統計 (Weekly)</option>
-                                            <option value="DAY">指定單日統計 (Daily)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-md-6" id="statsDateSelectorContainer"></div>
-                                    <div class="col-12 col-md-3 text-end">
-                                        <button class="btn btn-primary btn-sm w-100 fw-bold" onclick="renderStatsTableAndChart()"><i class="fa-solid fa-chart-column me-1"></i>產生分析圖表</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-12 col-md-6">
-                                <div class="card shadow-sm">
-                                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-chart-bar me-2"></i>各路段執行次數統計</div>
-                                    <div class="card-body"><canvas id="locationChart" height="200"></canvas></div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="card shadow-sm">
-                                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-chart-pie me-2"></i>各時段分佈佔比</div>
-                                    <div class="card-body"><canvas id="timeSlotChart" height="200"></canvas></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-secondary text-white fw-bold small"><i class="fa-solid fa-table me-2"></i>交叉分析數據表</div>
-                            <div class="card-body p-0 table-responsive">
-                                <table class="table table-bordered table-striped align-middle mb-0" id="statsTable" style="min-width: 700px;">
-                                    <thead class="table-header sticky-top small"><tr id="statsHeaderRow"><th>單位</th><th>測速路段</th><th>總次數</th><th>佔比</th></tr></thead>
-                                    <tbody id="statsTbody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4.4 後台系統設定 -->
-                    <div class="tab-pane fade" id="hq-44-content">
+                    <div class="card-body p-3">
                         <div class="row g-3">
-                            <!-- 變更密碼欄位 -->
-                            <div class="col-12">
-                                <div class="card shadow-sm border-warning">
-                                    <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-key me-2"></i>變更分局管理密碼</div>
-                                    <div class="card-body bg-light">
-                                        <div class="row g-2 align-items-center">
-                                            <div class="col-12 col-md-4"><input type="password" class="form-control form-control-sm" id="newAdminPasswordInput" placeholder="新密碼"></div>
-                                            <div class="col-12 col-md-4"><input type="password" class="form-control form-control-sm" id="confirmAdminPasswordInput" placeholder="確認新密碼"></div>
-                                            <div class="col-12 col-md-4"><button class="btn btn-dark btn-sm w-100 fw-bold" onclick="changeHqPassword()"><i class="fa-solid fa-floppy-disk me-1"></i>確認更新密碼</button></div>
-                                        </div>
-                                    </div>
+                            <!-- 左側子選單導向列 -->
+                            <div class="col-12 col-md-3 col-lg-2 border-end pe-md-3">
+                                <div class="nav flex-column nav-pills hq-pills" id="hqSubTabs" role="tablist">
+                                    <button class="nav-link active" id="hq-41-tab" data-bs-toggle="pill" data-bs-target="#hq-41-content" type="button" onclick="renderHqSubTab('41')">
+                                        <i class="fa-solid fa-map-pin me-2"></i>4.1 地點核定與刪除
+                                    </button>
+                                    <button class="nav-link" id="hq-42-tab" data-bs-toggle="pill" data-bs-target="#hq-42-content" type="button" onclick="renderHqSubTab('42')">
+                                        <i class="fa-solid fa-id-card me-2"></i>4.2 測速儀保管人
+                                    </button>
+                                    <button class="nav-link" id="hq-43-tab" data-bs-toggle="pill" data-bs-target="#hq-43-content" type="button" onclick="renderHqSubTab('43')">
+                                        <i class="fa-solid fa-file-pdf me-2"></i>4.3 檢定證書(PDF)
+                                    </button>
+                                    <button class="nav-link" id="hq-44-tab" data-bs-toggle="pill" data-bs-target="#hq-44-content" type="button" onclick="renderHqSubTab('44')">
+                                        <i class="fa-solid fa-award me-2"></i>4.4 人員嘉獎統計
+                                    </button>
+                                    <button class="nav-link" id="hq-45-tab" data-bs-toggle="pill" data-bs-target="#hq-45-content" type="button" onclick="renderHqSubTab('45')">
+                                        <i class="fa-solid fa-chart-pie me-2"></i>4.5 時段地點統計
+                                    </button>
+                                    <button class="nav-link" id="hq-46-tab" data-bs-toggle="pill" data-bs-target="#hq-46-content" type="button" onclick="renderHqSubTab('46')">
+                                        <i class="fa-solid fa-gears me-2"></i>4.6 後台系統設定
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- 管理勤務時段 -->
-                            <div class="col-12 col-md-4">
-                                <div class="card shadow-sm border-info">
-                                    <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-clock me-2"></i>管理勤務選填時段</div>
-                                    <div class="card-body">
-                                        <div class="input-group input-group-sm mb-2">
-                                            <input type="text" class="form-control" id="adminNewTimeSlotInput" placeholder="例: 00:00-04:00">
-                                            <button class="btn btn-primary" onclick="adminAddTimeSlot()">新增</button>
-                                        </div>
-                                        <ul class="list-group list-group-flush border rounded" id="adminTimeSlotList" style="max-height: 220px; overflow-y: auto;"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 管理路段 -->
-                            <div class="col-12 col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-header admin-header small"><i class="fa-solid fa-map-location-dot me-2"></i>管理勤務路段</div>
-                                    <div class="card-body">
-                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminLocStationSelect" onchange="renderAdminLocList()"></select></div>
-                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewLocInput" placeholder="新路段名稱"><button class="btn btn-primary" onclick="adminAddLocation()">新增</button></div>
-                                        <ul class="list-group list-group-flush border rounded" id="adminLocList" style="max-height: 180px; overflow-y: auto;"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 管理人員 -->
-                            <div class="col-12 col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-header admin-header small"><i class="fa-solid fa-users-gear me-2"></i>管理勤務人員</div>
-                                    <div class="card-body">
-                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminOfficerStationSelect" onchange="renderAdminOfficerList()"></select></div>
-                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewOfficerInput" placeholder="新同仁姓名"><button class="btn btn-primary" onclick="adminAddOfficer()">新增</button></div>
-                                        <ul class="list-group list-group-flush border rounded" id="adminOfficerList" style="max-height: 180px; overflow-y: auto;"></ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 測速裝備設定 -->
-                            <div class="col-12">
-                                <div class="card shadow-sm border-danger">
-                                    <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
-                                        <span class="small"><i class="fa-solid fa-video me-2"></i>測速儀器設備設定</span>
-                                        <button class="btn btn-sm btn-light text-danger fw-bold" onclick="saveAdminEquipSettings()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存裝備設定</button>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="p-2 mb-3 bg-light border rounded">
-                                            <h6 class="fw-bold text-danger mb-2 small"><i class="fa-solid fa-circle-plus me-1"></i>新增測速儀器：</h6>
-                                            <div class="row g-2 align-items-center">
-                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipKey" placeholder="代碼 (例: L-DK)"></div>
-                                                <div class="col-6 col-md-4"><input type="text" class="form-control form-control-sm" id="newEquipName" placeholder="儀器名稱"></div>
-                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipPrefix" placeholder="前綴 (例: L-DK-)"></div>
-                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipBaseCode" placeholder="首筆基底"></div>
-                                                <div class="col-12 col-md-2"><button class="btn btn-sm btn-danger w-100 fw-bold" onclick="addNewEquipment()"><i class="fa-solid fa-plus me-1"></i>新增</button></div>
+                            <!-- 右側子分頁內容區 -->
+                            <div class="col-12 col-md-9 col-lg-10">
+                                <div class="tab-content" id="hqSubTabContent">
+                                    
+                                    <!-- 4.1 地點核定與刪除審核 -->
+                                    <div class="tab-pane fade show active" id="hq-41-content">
+                                        <div class="card shadow-sm mb-3 border-danger">
+                                            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                                                <span class="small fw-bold"><i class="fa-solid fa-trash-can-arrow-up me-2"></i>各所「勤務刪除申請」審核專區</span>
+                                                <span class="badge bg-white text-danger" id="pendingDeleteBadge">0 筆待審核</span>
+                                            </div>
+                                            <div class="card-body p-0 table-responsive">
+                                                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 650px;">
+                                                    <thead class="table-dark text-center small">
+                                                        <tr><th>單位</th><th>日期</th><th>時段</th><th>人員</th><th>地點</th><th>刪除原因</th><th style="width: 150px;">審核操作</th></tr>
+                                                    </thead>
+                                                    <tbody id="hqDeleteAuditTbody"></tbody>
+                                                </table>
                                             </div>
                                         </div>
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered align-middle mb-0" style="min-width: 600px;">
-                                                <thead class="table-dark text-center small">
-                                                    <tr><th style="width: 120px;">代碼</th><th>儀器名稱</th><th style="width: 140px;">前綴</th><th style="width: 160px;">首筆編號基底</th><th style="width: 60px;">操作</th></tr>
-                                                </thead>
-                                                <tbody id="adminEquipEditTbody"></tbody>
-                                            </table>
+
+                                        <div class="card shadow-sm">
+                                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                                <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點核定管理表</span>
+                                                <button class="btn btn-sm btn-success fw-bold" onclick="saveHqMasterDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存核定結果</button>
+                                            </div>
+                                            <div class="card-body p-0 table-responsive" style="max-height: 500px;">
+                                                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 700px;">
+                                                    <thead class="table-header-hq sticky-top small">
+                                                        <tr><th style="width: 100px;">執勤日期</th><th style="width: 110px;">單位</th><th style="width: 120px;">時段</th><th style="width: 100px;">人員</th><th>分局指定勤務地點</th><th style="width: 130px;">影像上傳狀態</th></tr>
+                                                    </thead>
+                                                    <tbody id="hqMasterDutyTbody"></tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <!-- 4.2 測速儀保管人管理 -->
+                                    <div class="tab-pane fade" id="hq-42-content">
+                                        <div class="card shadow-sm border-primary">
+                                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold small"><i class="fa-solid fa-id-card me-2"></i>測速儀器設備保管人管理表</span>
+                                                <button class="btn btn-sm btn-light fw-bold text-primary" onclick="saveKeeperData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存保管人設定</button>
+                                            </div>
+                                            <div class="card-body p-0 table-responsive">
+                                                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 750px;">
+                                                    <thead class="table-dark text-center small">
+                                                        <tr>
+                                                            <th style="width: 110px;">裝備代碼</th>
+                                                            <th style="width: 200px;">儀器名稱</th>
+                                                            <th style="width: 160px;">保管單位</th>
+                                                            <th style="width: 130px;">保管人姓名</th>
+                                                            <th style="width: 120px;">職稱</th>
+                                                            <th>聯絡電話 / 備註</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="keeperTbody"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4.3 測速儀檢定證書 (支援多筆 PDF 與日期排序) -->
+                                    <div class="tab-pane fade" id="hq-43-content">
+                                        <div class="card shadow-sm border-success">
+                                            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                                                <span class="small"><i class="fa-solid fa-file-pdf me-2"></i>測速儀器國家檢定合格證書 (可上傳多筆 PDF，按日期排序)</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row g-2 mb-3 bg-light p-3 rounded border align-items-end">
+                                                    <div class="col-12 col-md-3">
+                                                        <label class="form-label fw-bold small">1. 選擇儀器：</label>
+                                                        <select class="form-select form-select-sm" id="certEquipSelect"></select>
+                                                    </div>
+                                                    <div class="col-12 col-md-3">
+                                                        <label class="form-label fw-bold small">2. 檢定合格字號：</label>
+                                                        <input type="text" class="form-control form-control-sm" id="certNoInput" placeholder="例如: J1120001">
+                                                    </div>
+                                                    <div class="col-12 col-md-3">
+                                                        <label class="form-label fw-bold small">3. 證書有效期限：</label>
+                                                        <input type="date" class="form-control form-control-sm" id="certExpInput">
+                                                    </div>
+                                                    <div class="col-12 col-md-3">
+                                                        <label class="form-label fw-bold small">4. 上傳 PDF 檔案：</label>
+                                                        <input type="file" class="form-control form-control-sm" id="certFileInput" accept="application/pdf">
+                                                    </div>
+                                                    <div class="col-12 text-end mt-2">
+                                                        <button class="btn btn-success btn-sm fw-bold px-3" onclick="addNewCertRecord()"><i class="fa-solid fa-cloud-arrow-up me-1"></i>新增上傳證書</button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 800px;">
+                                                        <thead class="table-dark text-center small">
+                                                            <tr>
+                                                                <th style="width: 120px;">裝備代碼</th>
+                                                                <th style="width: 180px;">儀器名稱</th>
+                                                                <th style="width: 160px;">檢定合格字號</th>
+                                                                <th style="width: 140px;">證書有效期限</th>
+                                                                <th>證書檔案名稱</th>
+                                                                <th style="width: 160px;">操作</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="certTbody"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4.4 人員嘉獎統計 -->
+                                    <div class="tab-pane fade" id="hq-44-content">
+                                        <div class="card shadow-sm">
+                                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                                <span class="small fw-bold"><i class="fa-solid fa-award me-2"></i>人員執勤嘉獎統計表</span>
+                                                <button class="btn btn-sm btn-light" onclick="exportAwardToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
+                                            </div>
+                                            <div class="card-body p-0 table-responsive" style="max-height: 550px;">
+                                                <table class="table table-bordered table-hover align-middle mb-0" id="awardTable" style="min-width: 850px;">
+                                                    <thead class="table-header sticky-top small">
+                                                        <tr><th>單位</th><th>姓名</th><th>Q1 時數</th><th>Q1 嘉獎</th><th>Q2 時數</th><th>Q2 嘉獎</th><th>Q3 時數</th><th>Q3 嘉獎</th><th>Q4 時數</th><th>Q4 嘉獎</th><th>全年時數</th><th>全年嘉獎</th><th>建議敘獎</th></tr>
+                                                    </thead>
+                                                    <tbody id="awardTbody"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4.5 時段地點統計分析 -->
+                                    <div class="tab-pane fade" id="hq-45-content">
+                                        <div class="card shadow-sm mb-3">
+                                            <div class="card-body bg-light">
+                                                <div class="row align-items-center g-2">
+                                                    <div class="col-12 col-md-3">
+                                                        <label class="form-label fw-bold mb-1 small"><i class="fa-solid fa-filter me-1"></i>統計週期模式：</label>
+                                                        <select class="form-select form-select-sm" id="statsPeriodType" onchange="updateStatsPeriodOptions()">
+                                                            <option value="YEAR">全年度統計 (Yearly)</option>
+                                                            <option value="MONTH" selected>月度統計 (Monthly)</option>
+                                                            <option value="WEEK">週度統計 (Weekly)</option>
+                                                            <option value="DAY">指定單日統計 (Daily)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12 col-md-6" id="statsDateSelectorContainer"></div>
+                                                    <div class="col-12 col-md-3 text-end">
+                                                        <button class="btn btn-primary btn-sm w-100 fw-bold" onclick="renderStatsTableAndChart()"><i class="fa-solid fa-chart-column me-1"></i>產生分析圖表</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12 col-md-6">
+                                                <div class="card shadow-sm">
+                                                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-chart-bar me-2"></i>各路段執行次數統計</div>
+                                                    <div class="card-body"><canvas id="locationChart" height="200"></canvas></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="card shadow-sm">
+                                                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-chart-pie me-2"></i>各時段分佈佔比</div>
+                                                    <div class="card-body"><canvas id="timeSlotChart" height="200"></canvas></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card shadow-sm">
+                                            <div class="card-header bg-secondary text-white fw-bold small"><i class="fa-solid fa-table me-2"></i>交叉分析數據表</div>
+                                            <div class="card-body p-0 table-responsive">
+                                                <table class="table table-bordered table-striped align-middle mb-0" id="statsTable" style="min-width: 700px;">
+                                                    <thead class="table-header sticky-top small"><tr id="statsHeaderRow"><th>單位</th><th>測速路段</th><th>總次數</th><th>佔比</th></tr></thead>
+                                                    <tbody id="statsTbody"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4.6 後台系統設定 -->
+                                    <div class="tab-pane fade" id="hq-46-content">
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <div class="card shadow-sm border-warning">
+                                                    <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-key me-2"></i>變更分局管理密碼</div>
+                                                    <div class="card-body bg-light">
+                                                        <div class="row g-2 align-items-center">
+                                                            <div class="col-12 col-md-4"><input type="password" class="form-control form-control-sm" id="newAdminPasswordInput" placeholder="新密碼"></div>
+                                                            <div class="col-12 col-md-4"><input type="password" class="form-control form-control-sm" id="confirmAdminPasswordInput" placeholder="確認新密碼"></div>
+                                                            <div class="col-12 col-md-4"><button class="btn btn-dark btn-sm w-100 fw-bold" onclick="changeHqPassword()"><i class="fa-solid fa-floppy-disk me-1"></i>確認更新密碼</button></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-md-4">
+                                                <div class="card shadow-sm border-info">
+                                                    <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-clock me-2"></i>管理勤務選填時段</div>
+                                                    <div class="card-body">
+                                                        <div class="input-group input-group-sm mb-2">
+                                                            <input type="text" class="form-control" id="adminNewTimeSlotInput" placeholder="例: 00:00-04:00">
+                                                            <button class="btn btn-primary" onclick="adminAddTimeSlot()">新增</button>
+                                                        </div>
+                                                        <ul class="list-group list-group-flush border rounded" id="adminTimeSlotList" style="max-height: 220px; overflow-y: auto;"></ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-md-4">
+                                                <div class="card shadow-sm">
+                                                    <div class="card-header admin-header small"><i class="fa-solid fa-map-location-dot me-2"></i>管理勤務路段</div>
+                                                    <div class="card-body">
+                                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminLocStationSelect" onchange="renderAdminLocList()"></select></div>
+                                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewLocInput" placeholder="新路段名稱"><button class="btn btn-primary" onclick="adminAddLocation()">新增</button></div>
+                                                        <ul class="list-group list-group-flush border rounded" id="adminLocList" style="max-height: 180px; overflow-y: auto;"></ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-md-4">
+                                                <div class="card shadow-sm">
+                                                    <div class="card-header admin-header small"><i class="fa-solid fa-users-gear me-2"></i>管理勤務人員</div>
+                                                    <div class="card-body">
+                                                        <div class="mb-2"><select class="form-select form-select-sm" id="adminOfficerStationSelect" onchange="renderAdminOfficerList()"></select></div>
+                                                        <div class="input-group input-group-sm mb-2"><input type="text" class="form-control" id="adminNewOfficerInput" placeholder="新同仁姓名"><button class="btn btn-primary" onclick="adminAddOfficer()">新增</button></div>
+                                                        <ul class="list-group list-group-flush border rounded" id="adminOfficerList" style="max-height: 180px; overflow-y: auto;"></ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <div class="card shadow-sm border-danger">
+                                                    <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
+                                                        <span class="small"><i class="fa-solid fa-video me-2"></i>測速儀器設備設定</span>
+                                                        <button class="btn btn-sm btn-light text-danger fw-bold" onclick="saveAdminEquipSettings()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存裝備設定</button>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="p-2 mb-3 bg-light border rounded">
+                                                            <h6 class="fw-bold text-danger mb-2 small"><i class="fa-solid fa-circle-plus me-1"></i>新增測速儀器：</h6>
+                                                            <div class="row g-2 align-items-center">
+                                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipKey" placeholder="代碼 (例: L-DK)"></div>
+                                                                <div class="col-6 col-md-4"><input type="text" class="form-control form-control-sm" id="newEquipName" placeholder="儀器名稱"></div>
+                                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipPrefix" placeholder="前綴 (例: L-DK-)"></div>
+                                                                <div class="col-6 col-md-2"><input type="text" class="form-control form-control-sm font-monospace" id="newEquipBaseCode" placeholder="首筆基底"></div>
+                                                                <div class="col-12 col-md-2"><button class="btn btn-sm btn-danger w-100 fw-bold" onclick="addNewEquipment()"><i class="fa-solid fa-plus me-1"></i>新增</button></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered align-middle mb-0" style="min-width: 600px;">
+                                                                <thead class="table-dark text-center small">
+                                                                    <tr><th style="width: 120px;">代碼</th><th>儀器名稱</th><th style="width: 140px;">前綴</th><th style="width: 160px;">首筆編號基底</th><th style="width: 60px;">操作</th></tr>
+                                                                </thead>
+                                                                <tbody id="adminEquipEditTbody"></tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -575,6 +692,8 @@
             "R-HQ": { name: "分局雷達測速儀", prefix: "R-HQ-", baseCode: "SPD-1150001" },
             "R-HS": { name: "文賢派出所雷達測速儀", prefix: "R-HS-", baseCode: "SPD-1150001" }
         },
+        equipKeepers: {},
+        equipCertList: [], // 多筆證書儲存陣列
         timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
         dutyRecords: [
             { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
@@ -613,9 +732,11 @@
 
     function renderHqSubTab(tabNum) {
         if (tabNum === '41') { renderHqDeleteAuditTable(); renderHqMasterDutyTable(); }
-        else if (tabNum === '42') renderAwardTable();
-        else if (tabNum === '43') { updateStatsPeriodOptions(); }
-        else if (tabNum === '44') { initAdminLists(); renderAdminEquipSettings(); }
+        else if (tabNum === '42') renderKeeperTable();
+        else if (tabNum === '43') renderCertTable();
+        else if (tabNum === '44') renderAwardTable();
+        else if (tabNum === '45') { updateStatsPeriodOptions(); }
+        else if (tabNum === '46') { initAdminLists(); renderAdminEquipSettings(); }
     }
 
     function saveSystemData() { if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData); }
@@ -629,6 +750,8 @@
         if (isHqUnlocked) {
             renderHqDeleteAuditTable();
             renderHqMasterDutyTable();
+            renderKeeperTable();
+            renderCertTable();
             renderAwardTable();
             updateStatsPeriodOptions();
             initAdminLists();
@@ -703,13 +826,21 @@
 
     function populateEquipDropdown() {
         const select = document.getElementById("equipSelect");
-        if (!select) return;
-        const currentVal = select.value;
-        select.innerHTML = "";
-        Object.keys(window.systemData.equipments || {}).forEach(k => {
-            const opt = document.createElement("option"); opt.value = k; opt.innerText = `${window.systemData.equipments[k].name} (${window.systemData.equipments[k].prefix})`; select.appendChild(opt);
-        });
-        if (currentVal && window.systemData.equipments[currentVal]) select.value = currentVal;
+        const certSelect = document.getElementById("certEquipSelect");
+        if (select) {
+            const currentVal = select.value;
+            select.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${window.systemData.equipments[k].name} (${window.systemData.equipments[k].prefix})`; select.appendChild(opt);
+            });
+            if (currentVal && window.systemData.equipments[currentVal]) select.value = currentVal;
+        }
+        if (certSelect) {
+            certSelect.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${window.systemData.equipments[k].name} (${k})`; certSelect.appendChild(opt);
+            });
+        }
     }
 
     function populateStationDropdowns() {
@@ -725,7 +856,10 @@
         });
     }
 
+    // 1. 首頁當月總表渲染 (已刪除警示欄位)
     function renderHomeDutyTable() {
+        checkCaseCodeGaps();
+
         const tbody = document.getElementById("homeDutyTbody");
         tbody.innerHTML = "";
         const monthVal = document.getElementById("homeMonthSelect").value;
@@ -742,7 +876,6 @@
 
             const displayLoc = isHqUnlocked ? (rec.location || '<span class="text-muted">未核定</span>') : '<span class="text-muted"><i class="fa-solid fa-lock me-1"></i>🔒 分局保密/權限檢視</span>';
             const isMissingCase = !isCaseFilled || rec.isImgUploaded === "否";
-            const warningBadge = isMissingCase ? '<span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>⚠️ 缺漏待補</span>' : '<span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>正常完整</span>';
 
             const tr = document.createElement("tr");
             if (isMissingCase) tr.classList.add("alert-missing");
@@ -755,11 +888,71 @@
                 <td class="fw-bold">${displayLoc}</td>
                 <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-success">已上傳</span>' : '<span class="badge bg-danger">未上傳</span>'}</td>
                 <td class="text-center">${isCaseFilled ? '<span class="badge bg-success">已填寫</span>' : '<span class="badge bg-danger">未填寫</span>'}</td>
-                <td class="text-center">${warningBadge}</td>
                 <td>${rec.note || ''}</td>
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    function checkCaseCodeGaps() {
+        const gapAlertCard = document.getElementById("homeGapAlertCard");
+        const gapAlertList = document.getElementById("homeGapAlertList");
+        gapAlertList.innerHTML = "";
+        let totalGapsFound = 0;
+
+        Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
+            const equip = window.systemData.equipments[eqKey];
+            const records = window.systemData.caseRecords[eqKey] || [];
+            const baseCode = equip.baseCode || "SPD-1150001";
+            const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
+            const basePfx = baseCode.replace(/\d+$/, "");
+
+            let filledIndices = [];
+            records.forEach((r, idx) => {
+                if (r && (r.date || r.officer || r.reason)) {
+                    filledIndices.push(idx + 1);
+                }
+            });
+
+            if (filledIndices.length > 0) {
+                let maxFilled = Math.max(...filledIndices);
+                let missingRanges = [];
+                let rangeStart = null;
+
+                for (let i = 1; i <= maxFilled; i++) {
+                    if (!filledIndices.includes(i)) {
+                        if (rangeStart === null) rangeStart = i;
+                    } else {
+                        if (rangeStart !== null) {
+                            missingRanges.push({ start: rangeStart, end: i - 1 });
+                            rangeStart = null;
+                        }
+                    }
+                }
+
+                missingRanges.forEach(range => {
+                    totalGapsFound++;
+                    const startNumStr = `${equip.prefix}${basePfx}${String(baseNum + range.start - 1).padStart(7, '0')}`;
+                    const endNumStr = `${equip.prefix}${basePfx}${String(baseNum + range.end - 1).padStart(7, '0')}`;
+                    const rangeText = range.start === range.end ? startNumStr : `${startNumStr} ～ ${endNumStr}`;
+
+                    const item = document.createElement("div");
+                    item.className = "list-group-item d-flex justify-content-between align-items-center py-2";
+                    item.innerHTML = `
+                        <div>
+                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${equip.name} (${eqKey})</span>
+                            <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
+                            <span class="font-monospace fw-bold text-primary">${rangeText}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary py-0" onclick="switchNav('case'); document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">前往補填</button>
+                    `;
+                    gapAlertList.appendChild(item);
+                });
+            }
+        });
+
+        if (totalGapsFound > 0) gapAlertCard.classList.remove("d-none");
+        else gapAlertCard.classList.add("d-none");
     }
 
     function renderStationDutyTable() {
@@ -996,7 +1189,6 @@
         });
     }
 
-    // 更新 4.3 統計週期選單 (年、月、週、日對應選單)
     function updateStatsPeriodOptions() {
         const pType = document.getElementById("statsPeriodType").value;
         const container = document.getElementById("statsDateSelectorContainer");
@@ -1018,7 +1210,6 @@
         renderStatsTableAndChart();
     }
 
-    // 依選擇的年、月、週區間或單日進行資料過濾
     function filterDutyRecordsByPeriod() {
         const pType = document.getElementById("statsPeriodType").value;
         return (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED').filter(r => {
@@ -1106,6 +1297,143 @@
             window.systemData.equipments[k].baseCode = document.getElementById(`eqBaseCode_${k}`).value.trim();
         });
         saveSystemData(); alert("✅ 設定已更新！");
+    }
+
+    // 4.2 測速儀保管人管理
+    function renderKeeperTable() {
+        const tbody = document.getElementById("keeperTbody");
+        tbody.innerHTML = "";
+        if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
+
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const eq = window.systemData.equipments[k];
+            const keeper = window.systemData.equipKeepers[k] || {};
+
+            let stationOpts = `<option value="">--請選擇單位--</option>`;
+            STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center font-monospace fw-bold small">${k}</td>
+                <td class="fw-bold small">${eq.name}</td>
+                <td><select class="form-select form-select-sm" id="keeper_st_${k}">${stationOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm" id="keeper_name_${k}" value="${keeper.name || ''}" placeholder="保管人姓名"></td>
+                <td><input type="text" class="form-control form-control-sm" id="keeper_title_${k}" value="${keeper.title || ''}" placeholder="例: 警員/巡佐"></td>
+                <td><input type="text" class="form-control form-control-sm" id="keeper_phone_${k}" value="${keeper.phone || ''}" placeholder="電話或分機"></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function saveKeeperData() {
+        if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            window.systemData.equipKeepers[k] = {
+                station: document.getElementById(`keeper_st_${k}`).value,
+                name: document.getElementById(`keeper_name_${k}`).value.trim(),
+                title: document.getElementById(`keeper_title_${k}`).value.trim(),
+                phone: document.getElementById(`keeper_phone_${k}`).value.trim()
+            };
+        });
+        saveSystemData();
+        alert("✅ 測速儀保管人資料已成功儲存！");
+    }
+
+    // 4.3 檢定證書多筆 PDF 檔案管理 (依有效期限由新到舊排序)
+    function renderCertTable() {
+        populateEquipDropdown();
+        const tbody = document.getElementById("certTbody");
+        tbody.innerHTML = "";
+        if (!window.systemData.equipCertList) window.systemData.equipCertList = [];
+
+        // 照證書有效期限由新到舊 (Date 降序) 排序
+        let list = [...window.systemData.equipCertList].sort((a, b) => (b.expDate || "").localeCompare(a.expDate || ""));
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3 small">目前尚未上傳任何檢定證書，請由上方欄位新增。</td></tr>`;
+            return;
+        }
+
+        list.forEach((item, index) => {
+            const eq = window.systemData.equipments[item.equipKey] || { name: "未知裝備" };
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center font-monospace fw-bold small">${item.equipKey}</td>
+                <td class="fw-bold small">${eq.name}</td>
+                <td class="text-center small font-monospace">${item.certNo || '未填寫'}</td>
+                <td class="text-center font-monospace fw-bold text-primary small">${item.expDate || '未填寫'}</td>
+                <td class="small text-truncate" style="max-width: 200px;"><i class="fa-solid fa-file-pdf me-1 text-danger"></i>${item.fileName || '證書檔案.pdf'}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-success me-1 py-0 px-2" onclick="viewCertPdfByRecordId('${item.id}')"><i class="fa-solid fa-eye me-1"></i>檢視</button>
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2 me-1" onclick="downloadCertPdfByRecordId('${item.id}')"><i class="fa-solid fa-download me-1"></i>下載</button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteCertRecord('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addNewCertRecord() {
+        const eqKey = document.getElementById("certEquipSelect").value;
+        const certNo = document.getElementById("certNoInput").value.trim();
+        const expDate = document.getElementById("certExpInput").value;
+        const fileInput = document.getElementById("certFileInput");
+        const file = fileInput.files[0];
+
+        if (!file) { alert("⚠️ 請選擇 PDF 證書檔案！"); return; }
+        if (file.type !== "application/pdf") { alert("⚠️ 請上傳 PDF 格式的檔案！"); return; }
+        if (file.size > 5 * 1024 * 1024) { alert("⚠️ 檔案大小請控制在 5MB 以內！"); return; }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (!window.systemData.equipCertList) window.systemData.equipCertList = [];
+            const newRecord = {
+                id: 'cert_' + Date.now(),
+                equipKey: eqKey,
+                certNo: certNo,
+                expDate: expDate,
+                fileName: file.name,
+                pdfData: e.target.result
+            };
+            window.systemData.equipCertList.push(newRecord);
+            saveSystemData();
+            renderCertTable();
+
+            // 清空輸入欄位
+            document.getElementById("certNoInput").value = "";
+            document.getElementById("certExpInput").value = "";
+            fileInput.value = "";
+            alert(`✅ 【${file.name}】 上傳新增成功！`);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function viewCertPdfByRecordId(recId) {
+        const cert = (window.systemData.equipCertList || []).find(item => item.id === recId);
+        if (cert && cert.pdfData) {
+            const pdfWindow = window.open("");
+            pdfWindow.document.write(`<iframe src="${cert.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+        }
+    }
+
+    function downloadCertPdfByRecordId(recId) {
+        const cert = (window.systemData.equipCertList || []).find(item => item.id === recId);
+        if (cert && cert.pdfData) {
+            const a = document.createElement("a");
+            a.href = cert.pdfData;
+            a.download = cert.fileName || `檢定證書.pdf`;
+            a.click();
+        }
+    }
+
+    function deleteCertRecord(recId) {
+        if (confirm("確定要刪除這份檢定證書檔案紀錄？")) {
+            if (window.systemData.equipCertList) {
+                window.systemData.equipCertList = window.systemData.equipCertList.filter(item => item.id !== recId);
+                saveSystemData();
+                renderCertTable();
+            }
+        }
     }
 
     function initAdminLists() { renderAdminTimeSlotList(); renderAdminLocList(); renderAdminOfficerList(); }
