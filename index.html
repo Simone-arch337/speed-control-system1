@@ -71,7 +71,7 @@
     <style>
         :root {
             --primary-navy: #1f497d;
-            --sidebar-width: 280px;
+            --sidebar-width: 290px;
             --bg-gray: #f4f6f9;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-gray); overflow-x: hidden; }
@@ -87,12 +87,12 @@
             overflow-y: auto;
             max-height: 100vh;
         }
-        #sidebar .sidebar-header { padding: 15px; background: rgba(0,0,0,0.2); }
+        #sidebar .sidebar-header { padding: 15px; background: rgba(0,0,0,0.25); }
         
         .sidebar-nav-item {
             display: block;
-            padding: 11px 18px;
-            color: rgba(255,255,255,0.85);
+            padding: 11px 16px;
+            color: rgba(255,255,255,0.88);
             text-decoration: none;
             font-size: 0.92rem;
             border-left: 4px solid transparent;
@@ -101,10 +101,24 @@
         }
         .sidebar-nav-item:hover, .sidebar-nav-item.active {
             color: #fff;
-            background: rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.15);
             border-left-color: #0d6efd;
             font-weight: bold;
         }
+        
+        /* 側邊主模組大頁樣式 */
+        .sidebar-main-module {
+            background-color: rgba(255, 255, 255, 0.08);
+            font-weight: bold;
+            font-size: 0.96rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-main-module.active {
+            background-color: #0d6efd;
+            color: white;
+            border-left-color: #ffc107;
+        }
+
         .sidebar-subnav {
             background-color: rgba(0, 0, 0, 0.2);
             padding-left: 0;
@@ -113,7 +127,7 @@
         }
         .sidebar-subnav.show { display: block; }
         .sidebar-subnav .sidebar-nav-item {
-            padding-left: 32px;
+            padding-left: 28px;
             font-size: 0.88rem;
         }
         .sidebar-subnav-2 {
@@ -124,7 +138,7 @@
         }
         .sidebar-subnav-2.show { display: block; }
         .sidebar-subnav-2 .sidebar-nav-item {
-            padding-left: 48px;
+            padding-left: 44px;
             font-size: 0.84rem;
         }
 
@@ -136,21 +150,6 @@
         .alert-missing { background-color: #fce4d6 !important; color: #c00000; font-weight: bold; }
         .lock-badge { background-color: #dc3545; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
         .admin-header { background-color: #2c3e50; color: white; font-weight: bold; }
-
-        .main-module-tab .nav-link {
-            font-size: 1.05rem;
-            font-weight: bold;
-            color: #495057;
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
-            margin-right: 5px;
-            border-radius: 8px 8px 0 0;
-        }
-        .main-module-tab .nav-link.active {
-            color: #fff;
-            background-color: var(--primary-navy);
-            border-color: var(--primary-navy);
-        }
 
         @media (max-width: 991.98px) {
             #sidebar { margin-left: calc(-1 * var(--sidebar-width)); position: fixed; height: 100%; }
@@ -179,60 +178,74 @@
         </div>
         
         <div class="py-2" id="sidebarMenuGroup">
-            <!-- 1. 首頁 -->
-            <a class="sidebar-nav-item active" id="snav-home" onclick="selectPage('home')">
-                <i class="fa-solid fa-house me-2"></i><span id="snav-text-home">首頁 (當月總表)</span>
-            </a>
-
-            <!-- 2. 各所選填勤務 -->
-            <a class="sidebar-nav-item" id="snav-station" onclick="selectPage('station')">
-                <i class="fa-solid fa-building me-2"></i><span id="snav-text-station">各所選填勤務</span>
-            </a>
-
-            <!-- 3. 測速案件管制表 -->
-            <a class="sidebar-nav-item" id="snav-case" onclick="selectPage('case')">
-                <i class="fa-solid fa-gun me-2"></i><span id="snav-text-case">測速案件管制表</span>
-            </a>
-
-            <!-- 4. 分局權限專區 (含下拉選單) -->
-            <div class="mt-2 border-top border-secondary pt-2" id="hqMenuContainer">
-                <a class="sidebar-nav-item text-warning fw-bold d-flex justify-content-between align-items-center" id="snav-hq-toggle" onclick="toggleHqGroup()">
-                    <span><i class="fa-solid fa-user-shield me-2"></i><span id="snav-text-hq">分局權限專區</span></span>
-                    <div>
-                        <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>已驗證</span>
-                        <i class="fa-solid fa-chevron-down small" id="hqChevron"></i>
-                    </div>
+            
+            <!-- 大頁 1: 測速執勤管理 (可折疊/展開子頁) -->
+            <div class="main-module-group mb-1">
+                <a class="sidebar-nav-item sidebar-main-module text-warning d-flex justify-content-between align-items-center" id="snav-main-speed" onclick="toggleSpeedGroup()">
+                    <span><i class="fa-solid fa-gauge-high me-2"></i><span id="topTabSpeedTitle">固定/非固定式測速執勤管理</span></span>
+                    <i class="fa-solid fa-chevron-down small" id="speedGroupChevron"></i>
                 </a>
 
-                <!-- 4.X 第一層下拉選單 -->
-                <ul class="sidebar-subnav" id="hqSubnav">
-                    <li><a class="sidebar-nav-item" id="snav-hq-41" onclick="selectPage('hq-41')"><i class="fa-solid fa-map-pin me-2"></i><span id="snav-text-41">4.1 地點與儀器核定</span></a></li>
-                    <li><a class="sidebar-nav-item" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2"></i><span id="snav-text-42">4.2 測速儀保管與履歷</span></a></li>
-                    <li><a class="sidebar-nav-item" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2"></i><span id="snav-text-43">4.3 檢定證書(PDF)</span></a></li>
-                    <li><a class="sidebar-nav-item" id="snav-hq-44" onclick="selectPage('hq-44')"><i class="fa-solid fa-award me-2"></i><span id="snav-text-44">4.4 人員嘉獎統計</span></a></li>
-                    <li><a class="sidebar-nav-item" id="snav-hq-45" onclick="selectPage('hq-45')"><i class="fa-solid fa-chart-pie me-2"></i><span id="snav-text-45">4.5 時段地點統計</span></a></li>
-                    
-                    <!-- 4.6 後台系統設定 -->
-                    <li>
-                        <a class="sidebar-nav-item text-info fw-bold d-flex justify-content-between align-items-center" id="snav-hq-46-toggle" onclick="toggleHq46Group(event)">
-                            <span><i class="fa-solid fa-gears me-2"></i><span id="snav-text-46">4.6 後台系統設定</span></span>
-                            <i class="fa-solid fa-chevron-down small" id="hq46Chevron"></i>
+                <!-- 測速執勤管理 下轄子頁選單 -->
+                <ul class="sidebar-subnav show" id="speedSubnav">
+                    <!-- 1. 首頁 -->
+                    <li><a class="sidebar-nav-item active" id="snav-home" onclick="selectPage('home')"><i class="fa-solid fa-house me-2"></i><span id="snav-text-home">首頁 (當月總表)</span></a></li>
+
+                    <!-- 2. 各所選填勤務 -->
+                    <li><a class="sidebar-nav-item" id="snav-station" onclick="selectPage('station')"><i class="fa-solid fa-building me-2"></i><span id="snav-text-station">各所選填勤務</span></a></li>
+
+                    <!-- 3. 測速案件管制表 -->
+                    <li><a class="sidebar-nav-item" id="snav-case" onclick="selectPage('case')"><i class="fa-solid fa-gun me-2"></i><span id="snav-text-case">測速案件管制表</span></a></li>
+
+                    <!-- 4. 分局權限專區 (含下拉選單) -->
+                    <li id="hqMenuContainer">
+                        <a class="sidebar-nav-item text-warning fw-bold d-flex justify-content-between align-items-center" id="snav-hq-toggle" onclick="toggleHqGroup(event)">
+                            <span><i class="fa-solid fa-user-shield me-2"></i><span id="snav-text-hq">分局權限專區</span></span>
+                            <div>
+                                <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>已驗證</span>
+                                <i class="fa-solid fa-chevron-down small" id="hqChevron"></i>
+                            </div>
                         </a>
-                        <ul class="sidebar-subnav-2" id="hq46Subnav">
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-1" onclick="selectPage('hq-46-1')"><i class="fa-solid fa-key me-2"></i><span id="snav-text-46-1">4.6.1 管理與帳號審核</span></a></li>
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-2" onclick="selectPage('hq-46-2')"><i class="fa-solid fa-clock me-2"></i><span id="snav-text-46-2">4.6.2 管理選填時段</span></a></li>
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-3" onclick="selectPage('hq-46-3')"><i class="fa-solid fa-map-location-dot me-2"></i><span id="snav-text-46-3">4.6.3 管理勤務路段</span></a></li>
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-4" onclick="selectPage('hq-46-4')"><i class="fa-solid fa-users-gear me-2"></i><span id="snav-text-46-4">4.6.4 管理勤務人員</span></a></li>
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-5" onclick="selectPage('hq-46-5')"><i class="fa-solid fa-video me-2"></i><span id="snav-text-46-5">4.6.5 測速儀器設定</span></a></li>
-                            <li><a class="sidebar-nav-item" id="snav-hq-46-6" onclick="selectPage('hq-46-6')"><i class="fa-solid fa-sitemap me-2"></i><span id="snav-text-46-6">4.6.6 管理系統單位名稱</span></a></li>
-                            <!-- 最高權限專屬卡片選項 (隱藏) -->
-                            <li id="superAdminNavItem" style="display:none;">
-                                <a class="sidebar-nav-item text-danger fw-bold" id="snav-hq-46-7" onclick="selectPage('hq-46-7')"><i class="fa-solid fa-crown me-2"></i><span id="snav-text-46-7">4.6.7 系統頁面與標題名稱自訂 (最高權限)</span></a>
+
+                        <!-- 4.X 第一層下拉選單 -->
+                        <ul class="sidebar-subnav-2" id="hqSubnav">
+                            <li><a class="sidebar-nav-item" id="snav-hq-41" onclick="selectPage('hq-41')"><i class="fa-solid fa-map-pin me-2"></i><span id="snav-text-41">4.1 地點與儀器核定</span></a></li>
+                            <li><a class="sidebar-nav-item" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2"></i><span id="snav-text-42">4.2 測速儀保管與履歷</span></a></li>
+                            <li><a class="sidebar-nav-item" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2"></i><span id="snav-text-43">4.3 檢定證書(PDF)</span></a></li>
+                            <li><a class="sidebar-nav-item" id="snav-hq-44" onclick="selectPage('hq-44')"><i class="fa-solid fa-award me-2"></i><span id="snav-text-44">4.4 人員嘉獎統計</span></a></li>
+                            <li><a class="sidebar-nav-item" id="snav-hq-45" onclick="selectPage('hq-45')"><i class="fa-solid fa-chart-pie me-2"></i><span id="snav-text-45">4.5 時段地點統計</span></a></li>
+                            
+                            <!-- 4.6 後台系統設定 -->
+                            <li>
+                                <a class="sidebar-nav-item text-info fw-bold d-flex justify-content-between align-items-center" id="snav-hq-46-toggle" onclick="toggleHq46Group(event)">
+                                    <span><i class="fa-solid fa-gears me-2"></i><span id="snav-text-46">4.6 後台系統設定</span></span>
+                                    <i class="fa-solid fa-chevron-down small" id="hq46Chevron"></i>
+                                </a>
+                                <ul class="sidebar-subnav-2" id="hq46Subnav">
+                                    <li><a class="sidebar-nav-item" id="snav-hq-46-1" onclick="selectPage('hq-46-1')"><i class="fa-solid fa-key me-2"></i><span id="snav-text-46-1">4.6.1 管理與帳號審核</span></a></li>
+                                    <li><a class="sidebar-nav-item" id="snav-hq-46-2" onclick="selectPage('hq-46-2')"><i class="fa-solid fa-clock me-2"></i><span id="snav-text-46-2">4.6.2 管理選填時段</span></a></li>
+                                    <li><a class="sidebar-nav-item" id="snav-hq-46-3" onclick="selectPage('hq-46-3')"><i class="fa-solid fa-map-location-dot me-2"></i><span id="snav-text-46-3">4.6.3 管理勤務路段</span></a></li>
+                                    <li><a class="sidebar-nav-item" id="snav-hq-46-4" onclick="selectPage('hq-46-4')"><i class="fa-solid fa-users-gear me-2"></i><span id="snav-text-46-4">4.6.4 管理勤務人員</span></a></li>
+                                    <li><a class="sidebar-nav-item" id="snav-hq-46-5" onclick="selectPage('hq-46-5')"><i class="fa-solid fa-video me-2"></i><span id="snav-text-46-5">4.6.5 測速儀器設定</span></a></li>
+                                    <li><a class="sidebar-nav-item" id="snav-hq-46-6" onclick="selectPage('hq-46-6')"><i class="fa-solid fa-sitemap me-2"></i><span id="snav-text-46-6">4.6.6 管理系統單位名稱</span></a></li>
+                                    <!-- 最高權限專屬選項 -->
+                                    <li id="superAdminNavItem" style="display:none;">
+                                        <a class="sidebar-nav-item text-danger fw-bold" id="snav-hq-46-7" onclick="selectPage('hq-46-7')"><i class="fa-solid fa-crown me-2"></i><span id="snav-text-46-7">4.6.7 系統頁面與標題名稱自訂 (最高權限)</span></a>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </li>
                 </ul>
             </div>
+
+            <!-- 大頁 2: 道路交通工程管理 -->
+            <div class="main-module-group mb-1">
+                <a class="sidebar-nav-item sidebar-main-module text-info" id="snav-main-traffic" onclick="switchMainModule('traffic')">
+                    <i class="fa-solid fa-road me-2"></i><span id="topTabTrafficTitle">道路交通工程管理</span>
+                </a>
+            </div>
+
         </div>
 
         <div class="p-3 text-white-50 small border-top border-secondary mt-auto">
@@ -244,25 +257,16 @@
 
     <!-- 主內容區 Content -->
     <div id="content">
-        <!-- 頂端模組大頁 Tab 選單 -->
+        <!-- 頂端列 (只保留展開側欄按鈕與使用者狀態) -->
         <div class="d-flex align-items-center mb-3 border-bottom pb-2">
             <button type="button" id="sidebarCollapse" class="btn btn-primary d-lg-none me-2" onclick="toggleSidebar()">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <ul class="nav nav-tabs main-module-tab border-0" id="mainModuleTab">
-                <li class="nav-item">
-                    <button class="nav-link active" id="module-speed-tab" onclick="switchMainModule('speed')"><i class="fa-solid fa-gauge-high me-2"></i><span id="topTabSpeedTitle">固定/非固定式測速執勤管理</span></button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="module-traffic-tab" onclick="switchMainModule('traffic')"><i class="fa-solid fa-road me-2"></i><span id="topTabTrafficTitle">道路交通工程管理</span></button>
-                </li>
-            </ul>
+            <h5 class="mb-0 fw-bold text-navy" id="pageTitle">首頁 (當月完整勤務總表)</h5>
             <div class="ms-auto d-flex gap-2">
                 <span class="badge bg-secondary d-flex align-items-center px-2 py-1" id="topUserRoleBadge">未登入</span>
             </div>
         </div>
-
-        <h5 class="mb-3 fw-bold text-navy" id="pageTitle">首頁 (當月完整勤務總表)</h5>
 
         <!-- 大頁 1：測速執勤管理區域 -->
         <div id="speedModuleContainer">
@@ -844,7 +848,7 @@
                                 <!-- 2. 頂端各大頁 (Top Modules) 標題 -->
                                 <div class="col-12 col-md-6">
                                     <div class="card border-success">
-                                        <div class="card-header bg-success text-white fw-bold small"><i class="fa-solid fa-layer-group me-1"></i>2. 頂端各大頁頁籤名稱</div>
+                                        <div class="card-header bg-success text-white fw-bold small"><i class="fa-solid fa-layer-group me-1"></i>2. 側邊各大頁模組標題</div>
                                         <div class="card-body bg-white">
                                             <div class="mb-2">
                                                 <label class="form-label small fw-bold">大頁 1 (測速執勤大頁)：</label>
@@ -1173,29 +1177,33 @@
         document.getElementById("cardTitleCaseList").innerText = titles.card_caseList;
     }
 
+    function toggleSpeedGroup() {
+        const subnav = document.getElementById("speedSubnav");
+        subnav.classList.toggle("show");
+        switchMainModule('speed');
+    }
+
     function switchMainModule(moduleKey) {
         currentMainModule = moduleKey;
-        const speedBtn = document.getElementById("module-speed-tab");
-        const trafficBtn = document.getElementById("module-traffic-tab");
+        const speedBtn = document.getElementById("snav-main-speed");
+        const trafficBtn = document.getElementById("snav-main-traffic");
         const speedContainer = document.getElementById("speedModuleContainer");
         const trafficContainer = document.getElementById("trafficModuleContainer");
-        const sidebarMenu = document.getElementById("sidebarMenuGroup");
 
         if (moduleKey === 'speed') {
             speedBtn.classList.add("active");
             trafficBtn.classList.remove("active");
             speedContainer.style.display = "block";
             trafficContainer.style.display = "none";
-            sidebarMenu.style.display = "block";
-            const titles = window.systemData.customTitles || DEFAULT_TITLES;
-            document.getElementById("pageTitle").innerText = titles.snav_home;
-            selectPage('home');
         } else if (moduleKey === 'traffic') {
             trafficBtn.classList.add("active");
             speedBtn.classList.remove("active");
             speedContainer.style.display = "none";
             trafficContainer.style.display = "block";
-            sidebarMenu.style.display = "none";
+            
+            document.querySelectorAll(".sidebar-nav-item").forEach(el => el.classList.remove("active"));
+            trafficBtn.classList.add("active");
+
             const titles = window.systemData.customTitles || DEFAULT_TITLES;
             document.getElementById("pageTitle").innerText = titles.topTabTraffic;
         }
@@ -1324,7 +1332,8 @@
 
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
 
-    function toggleHqGroup() {
+    function toggleHqGroup(e) {
+        if (e) e.stopPropagation();
         const subnav = document.getElementById("hqSubnav");
         subnav.classList.toggle("show");
     }
@@ -1336,6 +1345,8 @@
     }
 
     function selectPage(pageId) {
+        switchMainModule('speed');
+
         if (pageId.startsWith('hq-') && (currentUser.role === 'duty_officer' || currentUser.role === 'equipment_custodian' || currentUser.role === 'station_supervisor')) {
             alert("⚠️ 您無權訪問分局權限專區！");
             return;
@@ -1347,6 +1358,8 @@
         }
 
         document.querySelectorAll(".sidebar-nav-item").forEach(el => el.classList.remove("active"));
+        document.getElementById("snav-main-speed").classList.add("active");
+        
         const targetSnav = document.getElementById(`snav-${pageId}`);
         if (targetSnav) targetSnav.classList.add("active");
 
@@ -2468,7 +2481,7 @@
             if (window.systemData.rejectedRequests) delete window.systemData.rejectedRequests[req.username];
             saveSystemData();
             renderAccountRequestsUI();
-            alert(`✅ 已成功核准 【${req.name}】 (${req.username}) 之權限，該帳號已可登入使用！`);
+            alert(`✅ 已成功核準 【${req.name}】 (${req.username}) 之權限，該帳號已可登入使用！`);
         }
     }
 
