@@ -159,7 +159,7 @@
             animation: pulse-dot 1.5s infinite;
         }
         @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(2ff, 59, 48, 0.7); }
             70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
@@ -353,14 +353,13 @@
                 
                 <!-- 1. 首頁 (當月總表) -->
                 <div class="tab-pane fade show active" id="home-content">
-                    <!-- 🚨 跳號/斷號警示卡片 -->
                     <div class="card border-danger shadow-sm mb-3 d-none" id="homeGapAlertCard">
                         <div class="card-header bg-danger text-white fw-bold d-flex align-items-center py-2">
-                            <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
-                            <span>測速案件管制表缺漏（斷號）警示通知</span>
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            <span>案件管制表缺漏（斷號）警示通知</span>
                         </div>
                         <div class="card-body bg-light text-dark p-3">
-                            <p class="mb-2 text-danger fw-bold small"><i class="fa-solid fa-circle-exclamation me-1"></i>系統檢測到下列測速儀器之案件編號有未填寫的「缺漏斷號」區間，請儘速補填：</p>
+                            <p class="mb-2 text-danger fw-bold small"><i class="fa-solid fa-circle-exclamation me-1"></i>檢測到下列測速儀器之案件編號有未填寫的「缺漏斷號」區間：</p>
                             <div id="homeGapAlertList" class="list-group list-group-flush border rounded bg-white small"></div>
                         </div>
                     </div>
@@ -445,8 +444,8 @@
                         <div class="card-body py-3">
                             <div class="row g-2 align-items-center">
                                 <div class="col-12 col-md-5">
-                                    <label class="form-label fw-bold mb-1 small">測速裝備選擇 (名稱與當前狀態)：</label>
-                                    <select class="form-select border-secondary fw-bold text-dark" id="equipSelect" onchange="switchEquipment()"></select>
+                                    <label class="form-label fw-bold mb-1 small">測速裝備選擇：</label>
+                                    <select class="form-select border-secondary" id="equipSelect" onchange="switchEquipment()"></select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label class="form-label fw-bold mb-1 small">首筆編號基底：</label>
@@ -1365,7 +1364,7 @@
         checkLoginState();
     });
 
-    /* 🔴 全局動態紅點提醒更新邏輯 */
+    /* 🔴 全局動態紅點提醒更新邏輯 (含層級連動) */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
@@ -2059,7 +2058,6 @@
         });
     }
 
-    /* 🎯 填充與連動裝備下拉選單 */
     function populateEquipDropdown() {
         const select = document.getElementById("equipSelect");
         const certSelect = document.getElementById("certEquipSelect");
@@ -2070,15 +2068,9 @@
             select.innerHTML = "";
             Object.keys(window.systemData.equipments || {}).forEach(k => {
                 const eq = window.systemData.equipments[k];
-                const currentStatus = eq ? (eq.currentStatus || "分局(保管)") : "未指定";
-                const opt = document.createElement("option"); 
-                opt.value = k; 
-                opt.innerText = `${eq.name} (${currentStatus})`; 
-                select.appendChild(opt);
+                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${eq.name} (${k})`; select.appendChild(opt);
             });
-            if (currentVal && window.systemData.equipments[currentVal]) {
-                select.value = currentVal;
-            }
+            if (currentVal && window.systemData.equipments[currentVal]) select.value = currentVal;
         }
         if (certSelect) {
             certSelect.innerHTML = "";
@@ -2131,77 +2123,8 @@
         }
     }
 
-    /* 🚨 檢查測速案件管制表缺漏（斷號）之核心演算法 */
-    function checkCaseCodeGaps() {
-        const gapAlertCard = document.getElementById("homeGapAlertCard");
-        const gapAlertList = document.getElementById("homeGapAlertList");
-        if (!gapAlertCard || !gapAlertList) return;
-
-        gapAlertList.innerHTML = "";
-        let totalGapsFound = 0;
-
-        Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
-            const equip = window.systemData.equipments[eqKey];
-            const records = (window.systemData.caseRecords || {})[eqKey] || [];
-            const baseCode = equip.baseCode || "SPD-1150001";
-            const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
-            const basePfx = baseCode.replace(/\d+$/, "");
-
-            let filledIndices = [];
-            records.forEach((r, idx) => {
-                if (r && (r.date || r.officer || r.reason)) {
-                    filledIndices.push(idx + 1);
-                }
-            });
-
-            if (filledIndices.length > 0) {
-                let maxFilled = Math.max(...filledIndices);
-                let missingRanges = [];
-                let rangeStart = null;
-
-                for (let i = 1; i <= maxFilled; i++) {
-                    if (!filledIndices.includes(i)) {
-                        if (rangeStart === null) rangeStart = i;
-                    } else {
-                        if (rangeStart !== null) {
-                            missingRanges.push({ start: rangeStart, end: i - 1 });
-                            rangeStart = null;
-                        }
-                    }
-                }
-
-                missingRanges.forEach(range => {
-                    totalGapsFound++;
-                    const startNumStr = `${eqKey}-${basePfx}${String(baseNum + range.start - 1).padStart(7, '0')}`;
-                    const endNumStr = `${eqKey}-${basePfx}${String(baseNum + range.end - 1).padStart(7, '0')}`;
-                    const rangeText = range.start === range.end ? startNumStr : `${startNumStr} ～ ${endNumStr}`;
-
-                    const item = document.createElement("div");
-                    item.className = "list-group-item d-flex flex-wrap justify-content-between align-items-center py-2 gap-2";
-                    item.innerHTML = `
-                        <div>
-                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${equip.name} (${eqKey})</span>
-                            <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
-                            <span class="font-monospace fw-bold text-dark">${rangeText}</span>
-                        </div>
-                        <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" onclick="selectPage('case'); document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">
-                            <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>前往補填
-                        </button>
-                    `;
-                    gapAlertList.appendChild(item);
-                });
-            }
-        });
-
-        if (totalGapsFound > 0) {
-            gapAlertCard.classList.remove("d-none");
-        } else {
-            gapAlertCard.classList.add("d-none");
-        }
-    }
-
     function renderHomeDutyTable() {
-        checkCaseCodeGaps(); // 每次渲染首頁時自動觸發缺漏跳號檢測
+        checkCaseCodeGaps();
 
         const tbody = document.getElementById("homeDutyTbody");
         tbody.innerHTML = "";
@@ -2242,6 +2165,67 @@
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    function checkCaseCodeGaps() {
+        const gapAlertCard = document.getElementById("homeGapAlertCard");
+        const gapAlertList = document.getElementById("homeGapAlertList");
+        gapAlertList.innerHTML = "";
+        let totalGapsFound = 0;
+
+        Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
+            const equip = window.systemData.equipments[eqKey];
+            const records = window.systemData.caseRecords[eqKey] || [];
+            const baseCode = equip.baseCode || "SPD-1150001";
+            const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
+            const basePfx = baseCode.replace(/\d+$/, "");
+
+            let filledIndices = [];
+            records.forEach((r, idx) => {
+                if (r && (r.date || r.officer || r.reason)) {
+                    filledIndices.push(idx + 1);
+                }
+            });
+
+            if (filledIndices.length > 0) {
+                let maxFilled = Math.max(...filledIndices);
+                let missingRanges = [];
+                let rangeStart = null;
+
+                for (let i = 1; i <= maxFilled; i++) {
+                    if (!filledIndices.includes(i)) {
+                        if (rangeStart === null) rangeStart = i;
+                    } else {
+                        if (rangeStart !== null) {
+                            missingRanges.push({ start: rangeStart, end: i - 1 });
+                            rangeStart = null;
+                        }
+                    }
+                }
+
+                missingRanges.forEach(range => {
+                    totalGapsFound++;
+                    const startNumStr = `${eqKey}-${basePfx}${String(baseNum + range.start - 1).padStart(7, '0')}`;
+                    const endNumStr = `${eqKey}-${basePfx}${String(baseNum + range.end - 1).padStart(7, '0')}`;
+                    const rangeText = range.start === range.end ? startNumStr : `${startNumStr} ～ ${endNumStr}`;
+
+                    const item = document.createElement("div");
+                    item.className = "list-group-item d-flex justify-content-between align-items-center py-2";
+                    item.innerHTML = `
+                        <div>
+                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${equip.name} (${eqKey})</span>
+                            <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
+                            <span class="font-monospace fw-bold text-dark">${rangeText}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-dark py-0" onclick="selectPage('case'); document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">前往補填</button>
+                    `;
+                    gapAlertList.appendChild(item);
+                });
+            }
+        });
+
+        if (totalGapsFound > 0) gapAlertCard.classList.remove("d-none");
+        else gapAlertCard.classList.add("d-none");
     }
 
     function renderStationDutyTable() {
@@ -2321,6 +2305,7 @@
         renderStationDutyTable();
     }
 
+    /* 開啟申請刪除對話框 */
     function openDeleteApplyModal(recId) {
         if (getPagePermission('station') !== 'EDIT') return;
         const reason = prompt("請輸入申請刪除此班次的原因 (送交分局審核)：", "勤務異動/班次調整");
@@ -2337,6 +2322,7 @@
         }
     }
 
+    /* 撤回刪除申請 */
     function revokeDeleteApply(recId) {
         if (getPagePermission('station') !== 'EDIT') return;
         const rec = window.systemData.dutyRecords.find(r => r.id === recId);
@@ -2364,22 +2350,16 @@
         const equipKey = document.getElementById("equipSelect").value;
         const equip = window.systemData.equipments[equipKey];
         if (equip) {
-            const currentStatus = equip.currentStatus || "分局(保管)";
-            document.getElementById("equipNotice").innerText = `現正登記：${equip.name} (${currentStatus})`;
+            document.getElementById("equipNotice").innerText = `現正登記：${equip.name}`;
             document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
             renderCaseTable();
         }
     }
 
     function renderCaseTable() {
-        populateEquipDropdown();
         const equipKey = document.getElementById("equipSelect").value;
         const equip = window.systemData.equipments[equipKey];
         if (!equip) return;
-
-        const currentStatus = equip.currentStatus || "分局(保管)";
-        document.getElementById("equipNotice").innerText = `現正登記：${equip.name} (${currentStatus})`;
-
         const tbody = document.getElementById("caseTbody");
         const mobileContainer = document.getElementById("caseMobileContainer");
         tbody.innerHTML = ""; mobileContainer.innerHTML = "";
@@ -2566,39 +2546,11 @@
         saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存！");
     }
 
-    /* 🔄 根據保管單位連動過濾保管人員下拉選單 */
-    function updateKeeperNameDropdownByStation(equipKey) {
-        const stationEl = document.getElementById(`keeper_st_${equipKey}`);
-        const nameEl = document.getElementById(`keeper_name_${equipKey}`);
-        if (!stationEl || !nameEl) return;
-
-        const selectedStation = stationEl.value;
-        const currentSelectedName = nameEl.value;
-        nameEl.innerHTML = "";
-
-        let officerOpts = `<option value="">--選擇保管人--</option>`;
-        
-        if (selectedStation === "歸仁分局") {
-            officerOpts += `<option value="分局辦理" ${currentSelectedName === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
-        } else if (selectedStation && window.systemData.officers[selectedStation]) {
-            window.systemData.officers[selectedStation].forEach(off => {
-                officerOpts += `<option value="${off}" ${currentSelectedName === off ? 'selected' : ''}>${off}</option>`;
-            });
-        } else {
-            // 若未選擇單位則備用列出全人員
-            getAllOfficersList().forEach(off => {
-                officerOpts += `<option value="${off}" ${currentSelectedName === off ? 'selected' : ''}>${off}</option>`;
-            });
-            officerOpts += `<option value="分局辦理" ${currentSelectedName === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
-        }
-
-        nameEl.innerHTML = officerOpts;
-    }
-
     function renderKeeperBaseTable() {
         const tbody = document.getElementById("keeperBaseTbody");
         tbody.innerHTML = "";
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
+        const allOfficers = getAllOfficersList();
         const stations = getStationList();
         ensureStatusOptions();
         const canEdit = getPagePermission('hq-42') === 'EDIT';
@@ -2611,6 +2563,10 @@
             stations.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
             stationOpts += `<option value="歸仁分局" ${keeper.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
+            let officerOpts = `<option value="">--選擇保管人--</option>`;
+            allOfficers.forEach(off => officerOpts += `<option value="${off}" ${keeper.name === off ? 'selected' : ''}>${off}</option>`);
+            officerOpts += `<option value="分局辦理" ${keeper.name === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
+
             let statusOpts = '';
             (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
                 statusOpts += `<option value="${stOpt}" ${eq.currentStatus === stOpt ? 'selected' : ''}>${stOpt}</option>`;
@@ -2620,8 +2576,8 @@
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold small">${k}</td>
                 <td class="fw-bold small">${eq.name}</td>
-                <td><select class="form-select form-select-sm" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'} onchange="updateKeeperNameDropdownByStation('${k}')">${stationOpts}</select></td>
-                <td><select class="form-select form-select-sm" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}></select></td>
+                <td><select class="form-select form-select-sm" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'}>${stationOpts}</select></td>
+                <td><select class="form-select form-select-sm" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}>${officerOpts}</select></td>
                 <td>
                     <select class="form-select form-select-sm" id="keeper_title_${k}" ${canEdit ? '' : 'disabled'}>
                         <option value="警員" ${keeper.title === '警員' ? 'selected' : ''}>警員</option>
@@ -2642,13 +2598,6 @@
                 </td>
             `;
             tbody.appendChild(tr);
-
-            // 渲染該列後立即根據現有單位載入該單位人員
-            updateKeeperNameDropdownByStation(k);
-            if (keeper.name) {
-                const nameSelect = document.getElementById(`keeper_name_${k}`);
-                if (nameSelect) nameSelect.value = keeper.name;
-            }
         });
     }
 
