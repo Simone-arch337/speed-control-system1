@@ -401,7 +401,7 @@
                 </div>
             </div>
 
-            <!-- 4.2 測速儀保管人管理 (改為下拉選單與所有狀態起訖時間歷史紀錄) -->
+            <!-- 4.2 測速儀保管人與狀態履歷管理 (完全符合 8 大指定狀態選項) -->
             <div class="tab-pane fade" id="hq-42-content">
                 <div class="card shadow-sm border-primary">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -409,15 +409,15 @@
                         <button class="btn btn-sm btn-light fw-bold text-primary" onclick="saveKeeperData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存設定與履歷</button>
                     </div>
                     <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 900px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 950px;">
                             <thead class="table-dark text-center small">
                                 <tr>
                                     <th style="width: 90px;">代碼</th>
                                     <th style="width: 170px;">儀器名稱</th>
-                                    <th style="width: 140px;">保管單位</th>
+                                    <th style="width: 130px;">保管單位</th>
                                     <th style="width: 130px;">保管人(同仁選單)</th>
-                                    <th style="width: 100px;">職稱</th>
-                                    <th style="width: 130px;">當前狀態</th>
+                                    <th style="width: 90px;">職稱</th>
+                                    <th style="width: 140px;">當前裝備狀態</th>
                                     <th style="width: 250px;">狀態起訖時間區間</th>
                                     <th>歷程備註說明</th>
                                 </tr>
@@ -647,29 +647,41 @@
     </div>
 </div>
 
-<!-- 分局權限帳號密碼登入 Modal (無提示文字與無填寫提示) -->
+<!-- 原始 5 大職責權限登入驗證 Modal (加上新增的最高權限，且完全移除預設提示) -->
 <div class="modal fade" id="hqAuthModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered px-3">
         <div class="modal-content">
             <div class="modal-header card-header-hq py-2 px-3">
-                <h6 class="modal-title fw-bold"><i class="fa-solid fa-lock me-2"></i>分局權限身分驗證</h6>
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-shield-halved me-2"></i>歸仁分局系統身分登入與驗證</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-3">
-                <p class="text-muted small mb-3"><i class="fa-solid fa-shield-halved me-1"></i>包含地點解鎖核定、刪除審核、嘉獎統計與後台設定，請輸入管理帳號與密碼。</p>
-                <div class="mb-2">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small mb-1">請選擇您的職責身分：</label>
+                    <select class="form-select" id="hqRoleSelect" onchange="toggleAuthRoleInputs()">
+                        <option value="1">1. 派出所勤務人員 (勤務選填與案件管制)</option>
+                        <option value="2">2. 派出所儀器保管人 (案件管制 + 裝備保管履歷)</option>
+                        <option value="3">3. 派出所主管 (刪除申請審核與案件覆核)</option>
+                        <option value="4">4. 分局業務承辦人 (地點核定、證書管理與統計)</option>
+                        <option value="5" selected>5. 分局主管 (全系統權限與後台設定)</option>
+                        <option value="6">6. 系統最高管理者 (Super Admin)</option>
+                    </select>
+                </div>
+                
+                <div id="accountInputGroup" class="mb-2">
                     <label class="form-label fw-bold small mb-1">管理帳號：</label>
                     <input type="text" class="form-control" id="hqUsernameInput" placeholder="請輸入帳號" autocomplete="off">
                 </div>
+
                 <div class="mb-2">
                     <label class="form-label fw-bold small mb-1">管理密碼：</label>
                     <input type="password" class="form-control" id="hqPasswordInput" placeholder="請輸入密碼" autocomplete="off">
-                    <div class="invalid-feedback" id="pwdErrorAlert">帳號或密碼錯誤，請重新輸入！</div>
+                    <div class="invalid-feedback" id="pwdErrorAlert">帳號或密碼驗證失敗，請重新輸入！</div>
                 </div>
             </div>
             <div class="modal-footer p-2">
                 <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="verifyHqPassword()"><i class="fa-solid fa-key me-1"></i>登入解鎖</button>
+                <button type="button" class="btn btn-sm btn-danger fw-bold" onclick="verifyHqPassword()"><i class="fa-solid fa-key me-1"></i>登入驗證</button>
             </div>
         </div>
     </div>
@@ -684,6 +696,18 @@
     let pendingTargetPage = null;
 
     const STATION_ORDER = ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
+
+    // 4.2 指定的 8 大狀態選項列表
+    const KEEPER_STATUS_OPTIONS = [
+        "送檢",
+        "送修",
+        "分局保管",
+        "仁德所保管",
+        "文賢所保管",
+        "歸仁所保管",
+        "關廟所保管",
+        "其他"
+    ];
 
     window.defaultSystemData = {
         adminUsername: "admin",
@@ -786,7 +810,7 @@
             'hq-46-2': '後台系統設定 > 4.6.2 管理選填時段',
             'hq-46-3': '後台系統設定 > 4.6.3 管理勤務路段',
             'hq-46-4': '後台系統設定 > 4.6.4 管理勤務人員',
-            'hq-46-5': '後台系統設定 > 4.6.5 測速儀器設備設定'
+            'hq-46-5': '後台系統設定 > 4.6.5 測速儀器設定'
         };
         document.getElementById("pageTitle").innerText = titles[pageId] || '歸仁分局系統';
 
@@ -807,16 +831,28 @@
         }
     }
 
+    function toggleAuthRoleInputs() {
+        const role = document.getElementById("hqRoleSelect").value;
+        const accGroup = document.getElementById("accountInputGroup");
+        if (role === "5" || role === "6") {
+            accGroup.style.display = "block";
+        } else {
+            accGroup.style.display = "none";
+        }
+    }
+
     function openHqAuthModal() {
         document.getElementById("hqUsernameInput").value = "";
         document.getElementById("hqPasswordInput").value = "";
         document.getElementById("hqUsernameInput").classList.remove("is-invalid");
         document.getElementById("hqPasswordInput").classList.remove("is-invalid");
         document.getElementById("pwdErrorAlert").style.display = "none";
+        toggleAuthRoleInputs();
         new bootstrap.Modal(document.getElementById('hqAuthModal')).show();
     }
 
     function verifyHqPassword() {
+        const role = document.getElementById("hqRoleSelect").value;
         const user = document.getElementById("hqUsernameInput").value.trim();
         const pwd = document.getElementById("hqPasswordInput").value.trim();
 
@@ -824,8 +860,34 @@
         const currentAdminPass = window.systemData.hqPassword || "Kg@2394175";
 
         let isValid = false;
-        if (user === MASTER_SUPER_USER && pwd === MASTER_SUPER_PASS) isValid = true;
-        else if (currentAdminUser && user === currentAdminUser && pwd === currentAdminPass) isValid = true;
+
+        if (role === "1") {
+            // 1. 派出所勤務人員
+            bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
+            selectPage('station');
+            return;
+        } else if (role === "2") {
+            // 2. 派出所儀器保管人
+            bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
+            selectPage('hq-42');
+            return;
+        } else if (role === "3") {
+            // 3. 派出所主管
+            bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
+            selectPage('station');
+            return;
+        } else if (role === "4") {
+            // 4. 分局業務承辦人
+            bootstrap.Modal.getInstance(document.getElementById('hqAuthModal')).hide();
+            selectPage('hq-41');
+            return;
+        } else if (role === "5") {
+            // 5. 分局主管
+            if (currentAdminUser && user === currentAdminUser && pwd === currentAdminPass) isValid = true;
+        } else if (role === "6") {
+            // 6. 隱藏最高權限
+            if (user === MASTER_SUPER_USER && pwd === MASTER_SUPER_PASS) isValid = true;
+        }
 
         if (isValid) {
             isHqUnlocked = true;
@@ -1402,7 +1464,7 @@
         saveSystemData(); alert("✅ 設定已更新！");
     }
 
-    // 4.2 測速儀保管人與狀態履歷 (下拉選單 + 所有狀態起訖時間)
+    // 4.2 測速儀保管人與狀態履歷 (下拉選單 + 8 大指定狀態選項 + 所有狀態起訖時間)
     function renderKeeperTable() {
         const tbody = document.getElementById("keeperTbody");
         tbody.innerHTML = "";
@@ -1419,6 +1481,11 @@
             let officerOpts = `<option value="">--選擇保管人--</option>`;
             allOfficers.forEach(off => officerOpts += `<option value="${off}" ${keeper.name === off ? 'selected' : ''}>${off}</option>`);
 
+            let statusOpts = '';
+            KEEPER_STATUS_OPTIONS.forEach(stOpt => {
+                statusOpts += `<option value="${stOpt}" ${keeper.status === stOpt ? 'selected' : ''}>${stOpt}</option>`;
+            });
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold small">${k}</td>
@@ -1433,10 +1500,7 @@
                 </td>
                 <td>
                     <select class="form-select form-select-sm fw-bold text-primary" id="keeper_status_${k}">
-                        <option value="服勤中" ${keeper.status === '服勤中' ? 'selected' : ''}>服勤中</option>
-                        <option value="送檢中" ${keeper.status === '送檢中' ? 'selected' : ''}>送檢中</option>
-                        <option value="維修中" ${keeper.status === '維修中' ? 'selected' : ''}>維修中</option>
-                        <option value="報廢停用" ${keeper.status === '報廢停用' ? 'selected' : ''}>報廢停用</option>
+                        ${statusOpts}
                     </select>
                 </td>
                 <td>
