@@ -30,7 +30,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
-            window.dbRef = db.ref('guiRenSystemV11DB');
+            window.dbRef = db.ref('guiRenSystemV13DB');
 
             window.saveSystemDataToCloud = function(data) {
                 if (window.dbRef) {
@@ -259,7 +259,7 @@
                         </div>
                     </div>
                     <div class="card-body p-0 table-responsive" style="max-height: 650px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 900px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 950px;">
                             <thead class="table-header sticky-top">
                                 <tr>
                                     <th style="width: 100px;">執勤日期</th>
@@ -267,7 +267,7 @@
                                     <th style="width: 120px;">勤務時段</th>
                                     <th style="width: 100px;">人員</th>
                                     <th>勤務地點 (權限檢視)</th>
-                                    <th style="width: 140px;">指定測速儀器</th>
+                                    <th style="width: 220px;">指定測速儀器 (名稱與當前狀態)</th>
                                     <th style="width: 100px;">採證影像</th>
                                     <th style="width: 100px;">案件管制</th>
                                     <th style="width: 130px;">備註說明</th>
@@ -306,7 +306,7 @@
                                     <th style="width: 130px;">勤務時段</th>
                                     <th style="width: 120px;">執勤人員</th>
                                     <th>勤務地點 (分局核定)</th>
-                                    <th style="width: 140px;">指定測速儀器 (分局核定)</th>
+                                    <th style="width: 200px;">指定測速儀器 (分局核定)</th>
                                     <th style="width: 110px;">影像上傳</th>
                                     <th style="width: 140px;">備註說明</th>
                                     <th style="width: 120px;">刪除審核</th>
@@ -405,7 +405,7 @@
                                     <th style="width: 120px;">時段</th>
                                     <th style="width: 100px;">人員</th>
                                     <th>分局指定勤務地點</th>
-                                    <th style="width: 220px;">分局指定測速儀器 (防呆聯動)</th>
+                                    <th style="width: 240px;">分局指定測速儀器 (防呆聯動)</th>
                                     <th style="width: 110px;">影像上傳狀態</th>
                                 </tr>
                             </thead>
@@ -415,23 +415,24 @@
                 </div>
             </div>
 
-            <!-- 4.2 測速儀保管人與狀態履歷管理 (支援多筆紀錄與時間) -->
+            <!-- 4.2 測速儀保管人與狀態履歷管理 -->
             <div class="tab-pane fade" id="hq-42-content">
                 <div class="card shadow-sm border-primary mb-3">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <span class="fw-bold small"><i class="fa-solid fa-id-card me-2"></i>測速儀器設備保管人指定</span>
+                        <span class="fw-bold small"><i class="fa-solid fa-id-card me-2"></i>測速儀器設備當前保管人與狀態指定</span>
                         <button class="btn btn-sm btn-light fw-bold text-primary" onclick="saveKeeperData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存保管設定</button>
                     </div>
                     <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 800px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1000px;">
                             <thead class="table-dark text-center small">
                                 <tr>
                                     <th style="width: 110px;">儀器代碼</th>
                                     <th style="width: 180px;">儀器名稱</th>
-                                    <th style="width: 150px;">保管單位</th>
-                                    <th style="width: 150px;">保管人</th>
-                                    <th style="width: 100px;">職稱</th>
-                                    <th style="width: 180px;">當前裝備狀態 (連動4.6.5)</th>
+                                    <th style="width: 140px;">保管單位</th>
+                                    <th style="width: 130px;">保管人</th>
+                                    <th style="width: 90px;">職稱</th>
+                                    <th style="width: 160px;">當前裝備狀態</th>
+                                    <th style="width: 240px;">當前保管/狀態起訖時間區間</th>
                                 </tr>
                             </thead>
                             <tbody id="keeperBaseTbody"></tbody>
@@ -441,18 +442,23 @@
 
                 <div class="card shadow-sm border-secondary">
                     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                        <span class="fw-bold small"><i class="fa-solid fa-clock-rotate-left me-2"></i>各儀器多筆狀態歷程與時間維護</span>
-                        <button class="btn btn-sm btn-light fw-bold text-dark" onclick="openAddKeeperLogModal()"><i class="fa-solid fa-plus me-1"></i>新增歷史狀態紀錄</button>
+                        <span class="fw-bold small"><i class="fa-solid fa-clock-rotate-left me-2"></i>儀器多筆歷史保管與送檢修歷程維護 (可自由編輯、刪除)</span>
+                        <div>
+                            <button class="btn btn-sm btn-warning fw-bold text-dark me-1" onclick="saveKeeperLogTableData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存歷程變更</button>
+                            <button class="btn btn-sm btn-light fw-bold text-dark" onclick="openAddKeeperLogModal()"><i class="fa-solid fa-plus me-1"></i>新增歷程紀錄</button>
+                        </div>
                     </div>
-                    <div class="card-body p-0 table-responsive" style="max-height: 400px;">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 900px;">
+                    <div class="card-body p-0 table-responsive" style="max-height: 450px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1050px;">
                             <thead class="table-dark text-center small">
                                 <tr>
                                     <th style="width: 110px;">儀器代碼</th>
                                     <th style="width: 160px;">儀器名稱</th>
-                                    <th style="width: 150px;">狀態備註</th>
-                                    <th style="width: 220px;">送檢/送修時間區間</th>
-                                    <th>歷程說明與備註</th>
+                                    <th style="width: 130px;">保管單位</th>
+                                    <th style="width: 120px;">保管人員</th>
+                                    <th style="width: 140px;">狀態備註</th>
+                                    <th style="width: 250px;">起訖時間區間</th>
+                                    <th>歷程說明與事由</th>
                                     <th style="width: 80px;">操作</th>
                                 </tr>
                             </thead>
@@ -574,18 +580,18 @@
                 </div>
             </div>
 
-            <!-- 4.6.1 管理與帳號審核專區 -->
+            <!-- 4.6.1 管理與帳號審核專區 (更新：可全面修改與審核通過/退回) -->
             <div class="tab-pane fade" id="hq-46-1-content">
                 <div class="card shadow-sm border-warning mb-3">
                     <div class="card-header bg-warning text-dark fw-bold small"><i class="fa-solid fa-user-check me-2"></i>權限申請審核清單 (業務承辦人與分局主管專用)</div>
                     <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 750px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 800px;">
                             <thead class="table-dark text-center small">
                                 <tr>
                                     <th>申請時間</th>
                                     <th>真實姓名</th>
                                     <th>單位</th>
-                                    <th>申請權限身分</th>
+                                    <th>申請身分權限</th>
                                     <th>帳號名稱</th>
                                     <th>目前審核狀態</th>
                                     <th style="width: 180px;">審核操作</th>
@@ -597,17 +603,17 @@
                 </div>
 
                 <div class="card shadow-sm border-dark">
-                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-users-gear me-2"></i>已註冊人員帳號與密碼管理 (可停用、修改密碼)</div>
+                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-users-gear me-2"></i>已註冊人員帳號與密碼管理 (可停用、修改全項欄位)</div>
                     <div class="card-body p-0 table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 750px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 900px;">
                             <thead class="table-dark text-center small">
                                 <tr>
-                                    <th>姓名</th>
-                                    <th>單位</th>
-                                    <th>身分角色</th>
-                                    <th>帳號</th>
-                                    <th>設定新密碼</th>
-                                    <th style="width: 150px;">操作</th>
+                                    <th style="width: 130px;">姓名</th>
+                                    <th style="width: 150px;">單位</th>
+                                    <th style="width: 160px;">身分權限</th>
+                                    <th style="width: 150px;">帳號</th>
+                                    <th style="width: 150px;">設定密碼</th>
+                                    <th style="width: 160px;">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="registeredUsersTbody"></tbody>
@@ -734,7 +740,7 @@
                             <select class="form-select form-select-sm" id="applyStation"></select>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label fw-bold small mb-1">申請權限角色：</label>
+                            <label class="form-label fw-bold small mb-1">申請身分權限：</label>
                             <select class="form-select form-select-sm" id="applyRole">
                                 <option value="duty_officer">勤務執行人員</option>
                                 <option value="equipment_custodian">儀器保管人</option>
@@ -764,13 +770,23 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white py-2 px-3">
-                <h6 class="modal-title fw-bold"><i class="fa-solid fa-clock-rotate-left me-2"></i>新增測速儀器狀態歷程紀錄</h6>
+                <h6 class="modal-title fw-bold"><i class="fa-solid fa-clock-rotate-left me-2"></i>新增測速儀器歷程與保管紀錄</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-3">
                 <div class="mb-2">
                     <label class="form-label fw-bold small">選擇儀器：</label>
                     <select class="form-select form-select-sm" id="modalLogEquipSelect"></select>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="form-label fw-bold small">保管單位：</label>
+                        <select class="form-select form-select-sm" id="modalLogStationSelect"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold small">保管人員：</label>
+                        <select class="form-select form-select-sm" id="modalLogOfficerSelect"></select>
+                    </div>
                 </div>
                 <div class="mb-2">
                     <label class="form-label fw-bold small">裝備狀態備註：</label>
@@ -787,17 +803,17 @@
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6">
-                        <label class="form-label fw-bold small">起始時間 (送檢/送修起)：</label>
+                        <label class="form-label fw-bold small">起始時間 (保管/送檢起)：</label>
                         <input type="date" class="form-control form-control-sm" id="modalLogStartDate">
                     </div>
                     <div class="col-6">
-                        <label class="form-label fw-bold small">結束時間 (預計/完成)：</label>
+                        <label class="form-label fw-bold small">結束時間 (迄)：</label>
                         <input type="date" class="form-control form-control-sm" id="modalLogEndDate">
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold small">歷程說明與事由：</label>
-                    <textarea class="form-control form-control-sm" id="modalLogNote" rows="3" placeholder="請輸入送檢送修原因、廠商或相關備註..."></textarea>
+                    <textarea class="form-control form-control-sm" id="modalLogNote" rows="3" placeholder="請輸入保管異動事由、送檢送修原因、廠商或相關備註..."></textarea>
                 </div>
                 <button type="button" class="btn btn-primary btn-sm w-100 fw-bold" onclick="saveNewKeeperLogRecord()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存歷程紀錄</button>
             </div>
@@ -806,15 +822,13 @@
 </div>
 
 <script>
-    // 隱藏版最高權限（永不顯示於後台、永不可刪除）
     const MASTER_SUPER_USER = "m2glkvp3";
     const MASTER_SUPER_PASS = "Kg.681113";
 
-    let currentUser = null; // { username, role, station, name }
+    let currentUser = null;
 
     const STATION_ORDER = ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
 
-    // 規定固定儀器代碼預設清單（永遠 LASER 在前，RADAR 在後）
     const DEFAULT_EQUIPMENTS = {
         "LASER-1": { name: "雷射測速槍 1號機", baseCode: "SPD-1150001", currentStatus: "分局(保管)" },
         "LASER-2": { name: "雷射測速槍 2號機", baseCode: "SPD-1150001", currentStatus: "分局(保管)" },
@@ -830,6 +844,14 @@
         "送檢", "送修", "分局(保管)", "仁德所(保管)", "文賢所(保管)", "歸仁所(保管)", "關廟所(保管)", "其他"
     ];
 
+    const ROLE_MAP = {
+        "duty_officer": "勤務執行人員",
+        "equipment_custodian": "儀器保管人",
+        "station_supervisor": "派出所主管",
+        "hq_business": "分局業務承辦人",
+        "hq_supervisor": "分局主管"
+    };
+
     window.defaultSystemData = {
         adminUsername: "admin",
         hqPassword: "Kg@2394175",
@@ -838,6 +860,7 @@
             "admin": { password: "Kg@2394175", role: "hq_supervisor", station: "歸仁分局", name: "分局長官", status: "approved" }
         },
         accountRequests: [],
+        rejectedRequests: {}, // { username: "退回原因" }
         officers: {
             "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
             "仁德分駐所": ["方士翔", "李昱宏", "王英鑫"],
@@ -864,16 +887,16 @@
         },
         equipments: DEFAULT_EQUIPMENTS,
         equipKeepers: {
-            "LASER-1": { station: "歸仁分局", name: "分局辦理", title: "巡佐" },
-            "LASER-2": { station: "歸仁分局", name: "分局辦理", title: "巡佐" },
-            "LASER-3": { station: "仁德分駐所", name: "方士翔", title: "警員" },
-            "LASER-4": { station: "文賢派出所", name: "吳季涓", title: "警員" },
-            "LASER-5": { station: "歸仁派出所", name: "楊丁樺", title: "警員" },
-            "LASER-6": { station: "關廟分駐所", name: "徐慈螢", title: "警員" },
-            "RADAR-1": { station: "歸仁分局", name: "分局辦理", title: "巡佐" },
-            "RADAR-2": { station: "文賢派出所", name: "陳柏霖", title: "警員" }
+            "LASER-1": { station: "歸仁分局", name: "分局辦理", title: "巡佐", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "LASER-2": { station: "歸仁分局", name: "分局辦理", title: "巡佐", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "LASER-3": { station: "仁德分駐所", name: "方士翔", title: "警員", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "LASER-4": { station: "文賢派出所", name: "吳季涓", title: "警員", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "LASER-5": { station: "歸仁派出所", name: "楊丁樺", title: "警員", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "LASER-6": { station: "關廟分駐所", name: "徐慈螢", title: "警員", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "RADAR-1": { station: "歸仁分局", name: "分局辦理", title: "巡佐", startDate: "2026-01-01", endDate: "2026-12-31" },
+            "RADAR-2": { station: "文賢派出所", name: "陳柏霖", title: "警員", startDate: "2026-01-01", endDate: "2026-12-31" }
         },
-        equipLogs: {}, // { "LASER-1": [{ status, startDate, endDate, note }] }
+        equipLogs: {},
         equipCertList: [],
         timeSlots: ["08:00-12:00", "10:00-14:00", "12:00-16:00", "14:00-18:00", "16:00-20:00", "18:00-22:00", "20:00-24:00", "06:00-08:00", "10:00-12:00", "12:00-14:00"],
         dutyRecords: [
@@ -918,6 +941,17 @@
         const p = document.getElementById('loginPassword').value.trim();
         const errEl = document.getElementById('loginErrorMsg');
 
+        // 檢查是否被退回
+        if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
+            const rsn = window.systemData.rejectedRequests[u];
+            alert(`⚠️ 您的權限申請已被退回！\n退回原因：【${rsn}】\n請重新進行權限申請。`);
+            delete window.systemData.rejectedRequests[u];
+            saveSystemData();
+            document.getElementById('apply-tab').click();
+            document.getElementById('applyUsername').value = u;
+            return;
+        }
+
         if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
             currentUser = { username: MASTER_SUPER_USER, role: 'hq_supervisor', station: '最高管理者', name: 'Super Admin' };
             checkLoginState();
@@ -950,6 +984,14 @@
         const p = document.getElementById('applyPassword').value.trim();
 
         if (!name || !u || !p) { alert("⚠️ 請完整填寫姓名、帳號與密碼！"); return; }
+
+        if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
+            const rsn = window.systemData.rejectedRequests[u];
+            alert(`⚠️ 注意：您上次以帳號【${u}】提出之申請已被退回！\n退回原因：【${rsn}】`);
+            delete window.systemData.rejectedRequests[u];
+            saveSystemData();
+        }
+
         if (window.systemData.users && window.systemData.users[u]) { alert("⚠️ 該帳號名稱已存在，請更換帳號！"); return; }
 
         if (!window.systemData.accountRequests) window.systemData.accountRequests = [];
@@ -970,12 +1012,7 @@
         const currentUserBadge = document.getElementById('currentUserBadge');
         const hqMenu = document.getElementById('hqMenuContainer');
 
-        let roleName = "";
-        if (role === 'duty_officer') roleName = "勤務執行人員";
-        else if (role === 'equipment_custodian') roleName = "儀器保管人";
-        else if (role === 'station_supervisor') roleName = "派出所主管";
-        else if (role === 'hq_business') roleName = "分局業務承辦人";
-        else if (role === 'hq_supervisor') roleName = "分局主管";
+        let roleName = ROLE_MAP[role] || role;
 
         badge.innerText = `${currentUser.station} - ${roleName} (${currentUser.name})`;
         currentUserBadge.innerHTML = `身分：${roleName}<br>${currentUser.name} (${currentUser.station})`;
@@ -1134,7 +1171,7 @@
     }
 
     function populateStationDropdowns() {
-        ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect"].forEach(sId => {
+        ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect", "modalLogStationSelect"].forEach(sId => {
             const el = document.getElementById(sId);
             if (!el) return;
             const currentVal = el.value;
@@ -1142,8 +1179,25 @@
             (STATION_ORDER || []).forEach(st => {
                 const opt = document.createElement("option"); opt.value = st; opt.innerText = st; el.appendChild(opt);
             });
-            if (currentVal && STATION_ORDER.includes(currentVal)) el.value = currentVal;
+            const optHq = document.createElement("option"); optHq.value = "歸仁分局"; optHq.innerText = "歸仁分局"; el.appendChild(optHq);
+            if (currentVal) el.value = currentVal;
         });
+
+        const modalStEl = document.getElementById("modalLogStationSelect");
+        if (modalStEl) {
+            modalStEl.onchange = function() {
+                const st = this.value;
+                const offEl = document.getElementById("modalLogOfficerSelect");
+                if (offEl) {
+                    offEl.innerHTML = "";
+                    const officers = st === "歸仁分局" ? ["分局辦理"] : (window.systemData.officers[st] || []);
+                    officers.forEach(o => {
+                        const opt = document.createElement("option"); opt.value = o; opt.innerText = o; offEl.appendChild(opt);
+                    });
+                }
+            };
+            modalStEl.onchange();
+        }
     }
 
     function renderHomeDutyTable() {
@@ -1165,8 +1219,11 @@
 
             const isHQ = currentUser && currentUser.role !== 'duty_officer' && currentUser.role !== 'equipment_custodian' && currentUser.role !== 'station_supervisor';
             const displayLoc = (isHQ || rec.station === currentUser.station) ? (rec.location || '<span class="text-muted">未核定</span>') : '<span class="text-muted">🔒 保密</span>';
+            
             const eqObj = window.systemData.equipments[rec.assignedEquip];
-            const displayEquip = rec.assignedEquip ? `${eqObj ? eqObj.name : rec.assignedEquip} (${rec.assignedEquip})` : '<span class="text-muted">未指定</span>';
+            const currentStatus = eqObj ? (eqObj.currentStatus || "分局(保管)") : "未指定";
+            const displayEquip = rec.assignedEquip ? `${eqObj ? eqObj.name : rec.assignedEquip} (${currentStatus})` : '<span class="text-muted">未指定</span>';
+            
             const isMissingCase = !isCaseFilled || rec.isImgUploaded === "否";
 
             const tr = document.createElement("tr");
@@ -1273,7 +1330,8 @@
             let timeOpts = ''; (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
 
             const eqObj = window.systemData.equipments[rec.assignedEquip];
-            const displayEquipText = rec.assignedEquip ? `${eqObj ? eqObj.name : rec.assignedEquip} (${rec.assignedEquip})` : '尚未指定';
+            const currentStatus = eqObj ? (eqObj.currentStatus || "分局(保管)") : "未指定";
+            const displayEquipText = rec.assignedEquip ? `${eqObj ? eqObj.name : rec.assignedEquip} (${currentStatus})` : '尚未指定';
 
             let delBadge = '<span class="badge bg-secondary">正常</span>';
             let actionBtn = `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>`;
@@ -1443,7 +1501,6 @@
         if (rec) { rec.deleteStatus = isApprove ? 'APPROVED' : 'REJECTED'; saveSystemData(); renderHqDeleteAuditTable(); }
     }
 
-    // 防呆機制：檢查該時段儀器是否已被其他勤務指派
     function isEquipmentBusyOnSlot(equipKey, date, timeSlot, excludeRecordId) {
         const records = window.systemData.dutyRecords || [];
         for (let r of records) {
@@ -1499,7 +1556,6 @@
 
     function saveHqMasterDutyData() { saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存至雲端！"); }
 
-    // 4.2 測速儀保管與履歷
     function renderKeeperBaseTable() {
         const tbody = document.getElementById("keeperBaseTbody");
         tbody.innerHTML = "";
@@ -1540,6 +1596,13 @@
                         ${statusOpts}
                     </select>
                 </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="date" class="form-control" id="keeper_startDate_${k}" value="${keeper.startDate || ''}">
+                        <span class="input-group-text">至</span>
+                        <input type="date" class="form-control" id="keeper_endDate_${k}" value="${keeper.endDate || ''}">
+                    </div>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -1557,7 +1620,9 @@
             window.systemData.equipKeepers[k] = {
                 station: document.getElementById(`keeper_st_${k}`).value,
                 name: document.getElementById(`keeper_name_${k}`).value,
-                title: document.getElementById(`keeper_title_${k}`).value
+                title: document.getElementById(`keeper_title_${k}`).value,
+                startDate: document.getElementById(`keeper_startDate_${k}`).value,
+                endDate: document.getElementById(`keeper_endDate_${k}`).value
             };
             const statEl = document.getElementById(`keeper_status_${k}`);
             if (statEl) {
@@ -1565,11 +1630,13 @@
             }
         });
         saveSystemData();
+        renderHomeDutyTable();
         alert("✅ 測速儀保管人與當前裝備狀態設定已成功儲存！");
     }
 
     function openAddKeeperLogModal() {
         populateEquipDropdown();
+        populateStationDropdowns();
         document.getElementById('modalLogStartDate').value = '';
         document.getElementById('modalLogEndDate').value = '';
         document.getElementById('modalLogNote').value = '';
@@ -1578,6 +1645,8 @@
 
     function saveNewKeeperLogRecord() {
         const eqKey = document.getElementById('modalLogEquipSelect').value;
+        const station = document.getElementById('modalLogStationSelect').value;
+        const name = document.getElementById('modalLogOfficerSelect').value;
         const status = document.getElementById('modalLogStatusSelect').value;
         const startDate = document.getElementById('modalLogStartDate').value;
         const endDate = document.getElementById('modalLogEndDate').value;
@@ -1588,7 +1657,7 @@
 
         window.systemData.equipLogs[eqKey].push({
             id: 'log_' + Date.now(),
-            status, startDate, endDate, note
+            station, name, status, startDate, endDate, note
         });
 
         if (window.systemData.equipments[eqKey]) {
@@ -1599,7 +1668,8 @@
         bootstrap.Modal.getInstance(document.getElementById('keeperLogModal')).hide();
         renderKeeperBaseTable();
         renderKeeperLogTable();
-        alert("✅ 歷史狀態紀錄已新增儲存！");
+        renderHomeDutyTable();
+        alert("✅ 歷史狀態與保管紀錄已成功新增！");
     }
 
     function renderKeeperLogTable() {
@@ -1608,18 +1678,36 @@
         if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
 
         let hasLogs = false;
+
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             const eq = window.systemData.equipments[k];
             const logs = window.systemData.equipLogs[k] || [];
             logs.forEach((lg, idx) => {
                 hasLogs = true;
+                let stationOpts = '';
+                STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${lg.station === st ? 'selected' : ''}>${st}</option>`);
+                stationOpts += `<option value="歸仁分局" ${lg.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
+
+                let statusOpts = '';
+                KEEPER_STATUS_OPTIONS.forEach(stOpt => {
+                    statusOpts += `<option value="${stOpt}" ${lg.status === stOpt ? 'selected' : ''}>${stOpt}</option>`;
+                });
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="text-center font-monospace fw-bold small">${k}</td>
                     <td class="fw-bold small">${eq.name}</td>
-                    <td class="text-center fw-bold text-primary small">${lg.status}</td>
-                    <td class="text-center font-monospace small">${lg.startDate || '--'} 至 ${lg.endDate || '--'}</td>
-                    <td class="small">${lg.note || ''}</td>
+                    <td><select class="form-select form-select-sm" id="log_st_${k}_${idx}">${stationOpts}</select></td>
+                    <td><input type="text" class="form-control form-control-sm" id="log_off_${k}_${idx}" value="${lg.name || ''}"></td>
+                    <td><select class="form-select form-select-sm fw-bold text-primary" id="log_status_${k}_${idx}">${statusOpts}</select></td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <input type="date" class="form-control" id="log_start_${k}_${idx}" value="${lg.startDate || ''}">
+                            <span class="input-group-text">至</span>
+                            <input type="date" class="form-control" id="log_end_${k}_${idx}" value="${lg.endDate || ''}">
+                        </div>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" id="log_note_${k}_${idx}" value="${lg.note || ''}"></td>
                     <td class="text-center"><button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteKeeperLog('${k}', ${idx})"><i class="fa-solid fa-trash"></i></button></td>
                 `;
                 tbody.appendChild(tr);
@@ -1627,8 +1715,33 @@
         });
 
         if (!hasLogs) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3 small">目前尚無歷史狀態歷程紀錄</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3 small">目前尚無歷史狀態與保管歷程紀錄，請由右上角按鈕新增。</td></tr>`;
         }
+    }
+
+    function saveKeeperLogTableData() {
+        if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const logs = window.systemData.equipLogs[k] || [];
+            logs.forEach((lg, idx) => {
+                const stEl = document.getElementById(`log_st_${k}_${idx}`);
+                const offEl = document.getElementById(`log_off_${k}_${idx}`);
+                const statEl = document.getElementById(`log_status_${k}_${idx}`);
+                const startEl = document.getElementById(`log_start_${k}_${idx}`);
+                const endEl = document.getElementById(`log_end_${k}_${idx}`);
+                const noteEl = document.getElementById(`log_note_${k}_${idx}`);
+
+                if (stEl) lg.station = stEl.value;
+                if (offEl) lg.name = offEl.value.trim();
+                if (statEl) lg.status = statEl.value;
+                if (startEl) lg.startDate = startEl.value;
+                if (endEl) lg.endDate = endEl.value;
+                if (noteEl) lg.note = noteEl.value.trim();
+            });
+        });
+        saveSystemData();
+        renderHomeDutyTable();
+        alert("✅ 歷程與時間資料變更已成功儲存！");
     }
 
     function deleteKeeperLog(equipKey, index) {
@@ -1846,24 +1959,20 @@
         timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6', '#34495e', '#16a085', '#f39c12', '#d35400'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
-    // 4.6.1 帳號申請審核與人員管理
+    // 3. 4.6.1 管理與帳號審核更新（欄位可編輯、身分權限更名、審核通過/退回與退回原因）
     function renderAccountRequestsUI() {
         const reqTbody = document.getElementById('accountRequestsTbody');
         reqTbody.innerHTML = "";
         const reqs = window.systemData.accountRequests || [];
+        const pendingReqs = reqs.filter(r => r.status === 'pending');
 
-        if (reqs.length === 0) {
+        if (pendingReqs.length === 0) {
             reqTbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3 small">目前無等待審核的帳號申請</td></tr>`;
         } else {
-            reqs.forEach((r, idx) => {
-                let roleName = r.role;
-                if (r.role === 'duty_officer') roleName = "勤務執行人員";
-                else if (r.role === 'equipment_custodian') roleName = "儀器保管人";
-                else if (r.role === 'station_supervisor') roleName = "派出所主管";
-                else if (r.role === 'hq_business') roleName = "分局業務承辦人";
-                else if (r.role === 'hq_supervisor') roleName = "分局主管";
-
-                const statusBadge = r.status === 'approved' ? '<span class="badge bg-success">已審核通過</span>' : (r.status === 'rejected' ? '<span class="badge bg-danger">已拒絕</span>' : '<span class="badge bg-warning text-dark">待審核</span>');
+            pendingReqs.forEach((r) => {
+                const reqIndex = reqs.findIndex(item => item.id === r.id);
+                let roleName = ROLE_MAP[r.role] || r.role;
+                const statusBadge = '<span class="badge bg-warning text-dark">待審核</span>';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -1874,7 +1983,8 @@
                     <td class="text-center font-monospace small">${r.username}</td>
                     <td class="text-center">${statusBadge}</td>
                     <td class="text-center">
-                        ${r.status === 'pending' ? `<button class="btn btn-sm btn-success py-0 px-2 me-1" onclick="approveAccountRequest(${idx})">核准</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="rejectAccountRequest(${idx})">拒絕</button>` : `<button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="deleteAccountRequest(${idx})">刪除紀錄</button>`}
+                        <button class="btn btn-sm btn-success py-0 px-2 me-1 fw-bold" onclick="approveAccountRequest(${reqIndex})">審核通過</button>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="rejectAccountRequestWithReason(${reqIndex})">退回</button>
                     </td>
                 `;
                 reqTbody.appendChild(tr);
@@ -1888,23 +1998,26 @@
         Object.keys(users).forEach(u => {
             if (u === MASTER_SUPER_USER) return;
             const usr = users[u];
-            let roleName = usr.role;
-            if (usr.role === 'duty_officer') roleName = "勤務執行人員";
-            else if (usr.role === 'equipment_custodian') roleName = "儀器保管人";
-            else if (usr.role === 'station_supervisor') roleName = "派出所主管";
-            else if (usr.role === 'hq_business') roleName = "分局業務承辦人";
-            else if (usr.role === 'hq_supervisor') roleName = "分局主管";
+
+            let stationOpts = '';
+            STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${usr.station === st ? 'selected' : ''}>${st}</option>`);
+            stationOpts += `<option value="歸仁分局" ${usr.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
+
+            let roleOpts = '';
+            Object.keys(ROLE_MAP).forEach(rKey => {
+                roleOpts += `<option value="${rKey}" ${usr.role === rKey ? 'selected' : ''}>${ROLE_MAP[rKey]}</option>`;
+            });
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="text-center fw-bold small">${usr.name || '未填'}</td>
-                <td class="text-center small">${usr.station || '未填'}</td>
-                <td class="text-center small">${roleName}</td>
-                <td class="text-center font-monospace small">${u}</td>
-                <td><input type="password" class="form-control form-control-sm font-monospace" id="reset_pwd_${u}" placeholder="輸入新密碼"></td>
+                <td><input type="text" class="form-control form-control-sm fw-bold" id="usr_name_${u}" value="${usr.name || ''}"></td>
+                <td><select class="form-select form-select-sm" id="usr_st_${u}">${stationOpts}</select></td>
+                <td><select class="form-select form-select-sm fw-bold text-primary" id="usr_role_${u}">${roleOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm font-monospace" id="usr_uname_${u}" value="${u}"></td>
+                <td><input type="password" class="form-control form-control-sm font-monospace" id="usr_pwd_${u}" value="${usr.password || ''}"></td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-primary py-0 px-2 me-1" onclick="saveResetPassword('${u}')">更改密碼</button>
-                    ${u !== 'admin' ? `<button class="btn btn-sm btn-danger py-0 px-2" onclick="deleteRegisteredUser('${u}')">刪除</button>` : ''}
+                    <button class="btn btn-sm btn-primary py-0 px-2 me-1 fw-bold" onclick="saveUserDataChanges('${u}')"><i class="fa-solid fa-floppy-disk me-1"></i>儲存修改</button>
+                    ${u !== 'admin' ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteRegisteredUser('${u}')">刪除</button>` : ''}
                 </td>
             `;
             regTbody.appendChild(tr);
@@ -1924,39 +2037,60 @@
                 name: req.name,
                 status: 'approved'
             };
+            if (window.systemData.rejectedRequests) delete window.systemData.rejectedRequests[req.username];
             saveSystemData();
             renderAccountRequestsUI();
-            alert(`✅ 已成功核准 【${req.name}】 (${req.username}) 之權限！`);
+            alert(`✅ 已成功核准 【${req.name}】 (${req.username}) 之權限，該帳號已可登入使用！`);
         }
     }
 
-    function rejectAccountRequest(index) {
+    function rejectAccountRequestWithReason(index) {
         const reqs = window.systemData.accountRequests || [];
-        if (reqs[index]) {
-            reqs[index].status = 'rejected';
-            saveSystemData();
-            renderAccountRequestsUI();
-        }
-    }
+        const req = reqs[index];
+        if (req) {
+            const reason = prompt(`請輸入退回【${req.name} (${req.username})】權限申請的原因：`, "資料填寫有誤或身分不符");
+            if (reason === null) return;
+            const finalReason = reason.trim() || "未註明原因";
 
-    function deleteAccountRequest(index) {
-        if (confirm("確定要刪除這筆申請紀錄？")) {
+            if (!window.systemData.rejectedRequests) window.systemData.rejectedRequests = {};
+            window.systemData.rejectedRequests[req.username] = finalReason;
+
             window.systemData.accountRequests.splice(index, 1);
             saveSystemData();
             renderAccountRequestsUI();
+            alert(`✅ 已退回 【${req.name}】 的權限申請，並已註記原因！`);
         }
     }
 
-    function saveResetPassword(username) {
-        const pwdEl = document.getElementById(`reset_pwd_${username}`);
-        const newPwd = pwdEl ? pwdEl.value.trim() : "";
-        if (!newPwd) { alert("⚠️ 請輸入新密碼！"); return; }
-        if (window.systemData.users && window.systemData.users[username]) {
-            window.systemData.users[username].password = newPwd;
-            saveSystemData();
-            pwdEl.value = "";
-            alert(`✅ 帳號 【${username}】 之密碼已成功更新！`);
+    function saveUserDataChanges(oldUsername) {
+        const nameVal = document.getElementById(`usr_name_${oldUsername}`).value.trim();
+        const stVal = document.getElementById(`usr_st_${oldUsername}`).value;
+        const roleVal = document.getElementById(`usr_role_${oldUsername}`).value;
+        const newUnameVal = document.getElementById(`usr_uname_${oldUsername}`).value.trim();
+        const pwdVal = document.getElementById(`usr_pwd_${oldUsername}`).value.trim();
+
+        if (!nameVal || !newUnameVal || !pwdVal) {
+            alert("⚠️ 姓名、帳號與密碼均不能為空白！");
+            return;
         }
+
+        if (newUnameVal !== oldUsername && window.systemData.users[newUnameVal]) {
+            alert(`⚠️ 帳號 【${newUnameVal}】 已被其他人員使用，請更換新帳號！`);
+            return;
+        }
+
+        delete window.systemData.users[oldUsername];
+        window.systemData.users[newUnameVal] = {
+            name: nameVal,
+            station: stVal,
+            role: roleVal,
+            password: pwdVal,
+            status: 'approved'
+        };
+
+        saveSystemData();
+        renderAccountRequestsUI();
+        alert(`✅ 帳號 【${newUnameVal}】 之人員權限與資料已成功儲存！`);
     }
 
     function deleteRegisteredUser(username) {
@@ -2036,6 +2170,7 @@
         });
         ensureEquipmentOrdering();
         saveSystemData();
+        renderHomeDutyTable();
         alert("✅ 測速儀器設定已成功儲存與重新排序！");
     }
 
