@@ -206,6 +206,7 @@
                             <li><a class="sidebar-nav-item" id="snav-hq-46-3" onclick="selectPage('hq-46-3')"><i class="fa-solid fa-map-location-dot me-2"></i>4.6.3 管理勤務路段</a></li>
                             <li><a class="sidebar-nav-item" id="snav-hq-46-4" onclick="selectPage('hq-46-4')"><i class="fa-solid fa-users-gear me-2"></i>4.6.4 管理勤務人員</a></li>
                             <li><a class="sidebar-nav-item" id="snav-hq-46-5" onclick="selectPage('hq-46-5')"><i class="fa-solid fa-video me-2"></i>4.6.5 測速儀器設定</a></li>
+                            <li><a class="sidebar-nav-item" id="snav-hq-46-6" onclick="selectPage('hq-46-6')"><i class="fa-solid fa-sitemap me-2"></i>4.6.6 管理系統單位名稱</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -374,7 +375,7 @@
                 </div>
             </div>
 
-            <!-- 4.1 地點與儀器核定與刪除審核 (更新：聯動格式) -->
+            <!-- 4.1 地點與儀器核定與刪除審核 -->
             <div class="tab-pane fade" id="hq-41-content">
                 <div class="card shadow-sm mb-3 border-danger">
                     <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
@@ -516,7 +517,7 @@
                 </div>
             </div>
 
-            <!-- 4.4 人員嘉獎統計 (更新：更名為第一季至第四季) -->
+            <!-- 4.4 人員嘉獎統計 -->
             <div class="tab-pane fade" id="hq-44-content">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -580,9 +581,8 @@
                 </div>
             </div>
 
-            <!-- 4.6.1 管理與帳號審核專區 (新增：分局管理者直接新增人員卡片) -->
+            <!-- 4.6.1 管理與帳號審核專區 -->
             <div class="tab-pane fade" id="hq-46-1-content">
-                <!-- 新增卡片：分局管理者直接新增人員帳號權限 -->
                 <div class="card shadow-sm border-primary mb-3">
                     <div class="card-header bg-primary text-white fw-bold small"><i class="fa-solid fa-user-plus me-2"></i>分局管理者直接新增人員帳號權限 (由分局主管/承辦人建立)</div>
                     <div class="card-body bg-light p-3">
@@ -686,10 +686,10 @@
                 </div>
             </div>
 
-            <!-- 4.6.4 管理勤務人員 -->
+            <!-- 4.6.4 管理勤務人員 (更新：已含分局交通組與動態選單) -->
             <div class="tab-pane fade" id="hq-46-4-content">
                 <div class="card shadow-sm" style="max-width: 600px;">
-                    <div class="card-header admin-header small"><i class="fa-solid fa-users-gear me-2"></i>4.6.4 管理勤務人員</div>
+                    <div class="card-header admin-header small"><i class="fa-solid fa-users-gear me-2"></i>4.6.4 管理勤務人員 (含分局交通組與各單位)</div>
                     <div class="card-body">
                         <div class="mb-2"><label class="form-label small fw-bold">選擇單位：</label><select class="form-select form-select-sm" id="adminOfficerStationSelect" onchange="renderAdminOfficerList()"></select></div>
                         <div class="input-group input-group-sm mb-3"><input type="text" class="form-control" id="adminNewOfficerInput" placeholder="新同仁姓名"><button class="btn btn-primary fw-bold" onclick="adminAddOfficer()"><i class="fa-solid fa-plus me-1"></i>新增人員</button></div>
@@ -698,9 +698,8 @@
                 </div>
             </div>
 
-            <!-- 4.6.5 測速儀器設定 (新增：裝備狀態選項卡片) -->
+            <!-- 4.6.5 測速儀器設定 -->
             <div class="tab-pane fade" id="hq-46-5-content">
-                <!-- 新增卡片：裝備當前狀態下拉選單維護 -->
                 <div class="card shadow-sm border-info mb-3">
                     <div class="card-header bg-info text-dark fw-bold small"><i class="fa-solid fa-tags me-2"></i>裝備狀態下拉選項維護 (連動4.2與4.6.5下拉選單)</div>
                     <div class="card-body bg-light">
@@ -739,6 +738,36 @@
                                     </tr>
                                 </thead>
                                 <tbody id="adminEquipEditTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.6.6 新增卡片：管理系統單位名稱 (可新增、修改、刪除) -->
+            <div class="tab-pane fade" id="hq-46-6-content">
+                <div class="card shadow-sm border-dark" style="max-width: 750px;">
+                    <div class="card-header bg-dark text-white fw-bold small"><i class="fa-solid fa-sitemap me-2"></i>4.6.6 管理系統單位名稱 (新增、修改、刪除單位)</div>
+                    <div class="card-body">
+                        <div class="p-3 mb-3 bg-light border rounded">
+                            <h6 class="fw-bold text-primary mb-2 small"><i class="fa-solid fa-plus me-1"></i>新增系統單位：</h6>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="newStationNameInput" placeholder="例如: 歸仁交通分隊 或 新設派出所">
+                                <button class="btn btn-primary fw-bold px-3" onclick="adminAddNewStation()"><i class="fa-solid fa-plus me-1"></i>新增單位</button>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-2 small text-secondary"><i class="fa-solid fa-list-check me-1"></i>現有單位名稱維護：</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0">
+                                <thead class="table-secondary text-center small">
+                                    <tr>
+                                        <th style="width: 60px;">順序</th>
+                                        <th>單位名稱</th>
+                                        <th style="width: 180px;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminStationEditTbody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -868,7 +897,8 @@
 
     let currentUser = null;
 
-    const STATION_ORDER = ["太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
+    // 預設單位清單（包含分局交通組與傳統十個派出所）
+    const DEFAULT_STATIONS = ["分局交通組", "太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
 
     const DEFAULT_EQUIPMENTS = {
         "LASER-1": { name: "雷射測速槍 1號機", baseCode: "SPD-1150001", currentStatus: "分局(保管)" },
@@ -896,13 +926,14 @@
     window.defaultSystemData = {
         adminUsername: "admin",
         hqPassword: "Kg@2394175",
-        stations: STATION_ORDER,
+        stations: DEFAULT_STATIONS,
         users: {
             "admin": { password: "Kg@2394175", role: "hq_supervisor", station: "歸仁分局", name: "分局長官", status: "approved" }
         },
         accountRequests: [],
         rejectedRequests: {},
         officers: {
+            "分局交通組": ["交通組幹事", "交通隊隊員"],
             "太廟派出所": ["吳宣凱", "蘇家平", "張晉源", "陳慶徽"],
             "仁德分駐所": ["方士翔", "李昱宏", "王英鑫"],
             "德南派出所": ["梁育誠", "林彥甫"],
@@ -915,6 +946,7 @@
             "龍崎分駐所": ["王裕城", "李冠偉"]
         },
         locations: {
+            "分局交通組": ["轄區重大交通路段", "市道182線", "台39線"],
             "太廟派出所": ["仁德區中正路一段", "仁德區高速一街一段"],
             "仁德分駐所": ["仁德區高速一街一段", "仁德區中山路", "仁德區中正路二段", "仁德區文華路三段"],
             "德南派出所": ["仁德區中正路一段", "仁德區崑崙路", "仁德區德崙路"],
@@ -957,27 +989,15 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
-        
-        // Populate station dropdowns for admin & apply form
-        ["applyStation", "adminAddStation"].forEach(sId => {
-            const el = document.getElementById(sId);
-            if (el) {
-                el.innerHTML = "";
-                STATION_ORDER.forEach(st => {
-                    const opt = document.createElement('option');
-                    opt.value = st; opt.innerText = st;
-                    el.appendChild(opt);
-                });
-                if (sId === "adminAddStation") {
-                    const optHq = document.createElement('option');
-                    optHq.value = "歸仁分局"; optHq.innerText = "歸仁分局";
-                    el.appendChild(optHq);
-                }
-            }
-        });
-
         checkLoginState();
     });
+
+    function getStationList() {
+        if (!window.systemData.stations || window.systemData.stations.length === 0) {
+            window.systemData.stations = DEFAULT_STATIONS;
+        }
+        return window.systemData.stations;
+    }
 
     function checkLoginState() {
         if (!currentUser) {
@@ -1126,7 +1146,8 @@
             'hq-46-2': '後台系統設定 > 4.6.2 管理選填時段',
             'hq-46-3': '後台系統設定 > 4.6.3 管理勤務路段',
             'hq-46-4': '後台系統設定 > 4.6.4 管理勤務人員',
-            'hq-46-5': '後台系統設定 > 4.6.5 測速儀器設定'
+            'hq-46-5': '後台系統設定 > 4.6.5 測速儀器設定',
+            'hq-46-6': '後台系統設定 > 4.6.6 管理系統單位名稱'
         };
         document.getElementById("pageTitle").innerText = titles[pageId] || '歸仁分局系統';
 
@@ -1144,6 +1165,7 @@
             initAdminLists();
             if (pageId === 'hq-46-1') renderAccountRequestsUI();
             else if (pageId === 'hq-46-5') renderAdminEquipSettings();
+            else if (pageId === 'hq-46-6') renderAdminStationSettings();
         }
     }
 
@@ -1168,6 +1190,7 @@
             initAdminLists();
             renderAccountRequestsUI();
             renderAdminEquipSettings();
+            renderAdminStationSettings();
         }
     };
 
@@ -1231,16 +1254,23 @@
         }
     }
 
+    // 動態更新全系統的所有單位下拉選單
     function populateStationDropdowns() {
-        ["stationSelect", "adminLocStationSelect", "adminOfficerStationSelect", "modalLogStationSelect"].forEach(sId => {
+        const stations = getStationList();
+
+        ["applyStation", "adminAddStation", "stationSelect", "adminLocStationSelect", "adminOfficerStationSelect", "modalLogStationSelect"].forEach(sId => {
             const el = document.getElementById(sId);
             if (!el) return;
             const currentVal = el.value;
             el.innerHTML = "";
-            (STATION_ORDER || []).forEach(st => {
+            stations.forEach(st => {
                 const opt = document.createElement("option"); opt.value = st; opt.innerText = st; el.appendChild(opt);
             });
-            const optHq = document.createElement("option"); optHq.value = "歸仁分局"; optHq.innerText = "歸仁分局"; el.appendChild(optHq);
+            
+            // 系統管理者專用分局選項
+            if (sId === "applyStation" || sId === "adminAddStation" || sId === "modalLogStationSelect") {
+                const optHq = document.createElement("option"); optHq.value = "歸仁分局"; optHq.innerText = "歸仁分局"; el.appendChild(optHq);
+            }
             if (currentVal) el.value = currentVal;
         });
 
@@ -1572,7 +1602,6 @@
         return false;
     }
 
-    // 1. 4.1 核心更新：測速儀器下拉清單格式同步顯示當前狀態
     function renderHqMasterDutyTable() {
         const tbody = document.getElementById("hqMasterDutyTbody");
         tbody.innerHTML = "";
@@ -1589,7 +1618,6 @@
                 const isBusy = isEquipmentBusyOnSlot(k, rec.date, rec.timeSlot, rec.id);
                 const busyLabel = isBusy ? " ⚠️ (該時段已指派)" : "";
                 
-                // 格式：雷射測速槍 1號機 (分局(保管))
                 const displayText = `${eq.name} (${currentStatus})${busyLabel}`;
                 equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''} ${isBusy && rec.assignedEquip !== k ? 'disabled' : ''}>${displayText}</option>`;
             });
@@ -1627,6 +1655,7 @@
         tbody.innerHTML = "";
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
         const allOfficers = getAllOfficersList();
+        const stations = getStationList();
         ensureStatusOptions();
 
         Object.keys(window.systemData.equipments || {}).forEach(k => {
@@ -1634,7 +1663,7 @@
             const keeper = window.systemData.equipKeepers[k] || {};
 
             let stationOpts = `<option value="">--請選擇單位--</option>`;
-            STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
+            stations.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
             stationOpts += `<option value="歸仁分局" ${keeper.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
             let officerOpts = `<option value="">--選擇保管人--</option>`;
@@ -1757,6 +1786,7 @@
         if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
 
         let hasLogs = false;
+        const stations = getStationList();
         ensureStatusOptions();
 
         Object.keys(window.systemData.equipments || {}).forEach(k => {
@@ -1765,7 +1795,7 @@
             logs.forEach((lg, idx) => {
                 hasLogs = true;
                 let stationOpts = '';
-                STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${lg.station === st ? 'selected' : ''}>${st}</option>`);
+                stations.forEach(st => stationOpts += `<option value="${st}" ${lg.station === st ? 'selected' : ''}>${st}</option>`);
                 stationOpts += `<option value="歸仁分局" ${lg.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
                 let statusOpts = '';
@@ -1927,12 +1957,12 @@
         }
     }
 
-    // 4. 4.4 人員嘉獎統計：更新標頭為 第一季至第四季
     function renderAwardTable() {
         const tbody = document.getElementById("awardTbody");
         tbody.innerHTML = "";
+        const stations = getStationList();
 
-        STATION_ORDER.forEach(st => {
+        stations.forEach(st => {
             const officerList = window.systemData.officers[st] || [];
             officerList.forEach(off => {
                 const offDuty = (window.systemData.dutyRecords || []).filter(r => {
@@ -2011,8 +2041,9 @@
         tbody.innerHTML = "";
         let grandTotal = filteredDuty.length;
         let locCountsMap = {}; let timeCountsMap = {}; (window.systemData.timeSlots || []).forEach(t => timeCountsMap[t] = 0);
+        const stations = getStationList();
 
-        STATION_ORDER.forEach(st => {
+        stations.forEach(st => {
             (window.systemData.locations[st] || []).forEach(loc => {
                 const tr = document.createElement("tr"); tr.innerHTML = `<td class="small">${st}</td><td class="fw-bold small">${loc}</td>`;
                 let locTotal = 0;
@@ -2040,7 +2071,6 @@
         timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#27ae60', '#e67e22', '#e74c3c', '#9b59b6', '#34495e', '#16a085', '#f39c12', '#d35400'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
-    // 3. 4.6.1 核心更新：管理者直接新增人員帳號
     function adminDirectAddUser() {
         const name = document.getElementById('adminAddName').value.trim();
         const station = document.getElementById('adminAddStation').value;
@@ -2107,13 +2137,14 @@
         const regTbody = document.getElementById('registeredUsersTbody');
         regTbody.innerHTML = "";
         const users = window.systemData.users || {};
+        const stations = getStationList();
 
         Object.keys(users).forEach(u => {
             if (u === MASTER_SUPER_USER) return;
             const usr = users[u];
 
             let stationOpts = '';
-            STATION_ORDER.forEach(st => stationOpts += `<option value="${st}" ${usr.station === st ? 'selected' : ''}>${st}</option>`);
+            stations.forEach(st => stationOpts += `<option value="${st}" ${usr.station === st ? 'selected' : ''}>${st}</option>`);
             stationOpts += `<option value="歸仁分局" ${usr.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
             let roleOpts = '';
@@ -2217,7 +2248,6 @@
         }
     }
 
-    // 2. 4.6.5 核心更新：新增與管理裝備狀態選項
     function adminAddEquipStatusOption() {
         const val = document.getElementById("newEquipStatusOptionInput").value.trim();
         if (!val) { alert("⚠️ 請輸入狀態名稱！"); return; }
@@ -2276,7 +2306,6 @@
         ensureEquipmentOrdering();
         ensureStatusOptions();
 
-        // 渲染狀態標籤組
         const badgeGroup = document.getElementById("equipStatusOptionBadgeGroup");
         if (badgeGroup) {
             badgeGroup.innerHTML = "";
@@ -2333,6 +2362,94 @@
         alert("✅ 測速儀器設定已成功儲存與重新排序！");
     }
 
+    // 4.6.6 卡片管理：新增、修改與刪除單位名稱
+    function renderAdminStationSettings() {
+        const tbody = document.getElementById("adminStationEditTbody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const stations = getStationList();
+
+        stations.forEach((st, idx) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center fw-bold text-muted small">${idx + 1}</td>
+                <td><input type="text" class="form-control form-control-sm fw-bold" id="stNameInput_${idx}" value="${st}"></td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-primary py-0 px-2 me-1 fw-bold" onclick="adminRenameStation(${idx})"><i class="fa-solid fa-floppy-disk me-1"></i>儲存</button>
+                    <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="adminDeleteStation(${idx})">刪除</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function adminAddNewStation() {
+        const name = document.getElementById("newStationNameInput").value.trim();
+        if (!name) { alert("⚠️ 請輸入單位名稱！"); return; }
+        const stations = getStationList();
+        if (stations.includes(name)) { alert("⚠️ 該單位名稱已存在！"); return; }
+
+        stations.push(name);
+        if (!window.systemData.officers[name]) window.systemData.officers[name] = [];
+        if (!window.systemData.locations[name]) window.systemData.locations[name] = [];
+
+        saveSystemData();
+        document.getElementById("newStationNameInput").value = "";
+        populateStationDropdowns();
+        renderAdminStationSettings();
+        alert(`✅ 已成功新增單位 【${name}】！`);
+    }
+
+    function adminRenameStation(index) {
+        const stations = getStationList();
+        const oldName = stations[index];
+        const newName = document.getElementById(`stNameInput_${index}`).value.trim();
+
+        if (!newName) { alert("⚠️ 單位名稱不得為空白！"); return; }
+        if (oldName === newName) return;
+
+        if (stations.includes(newName)) { alert(`⚠️ 單位名稱 【${newName}】 已存在！`); return; }
+
+        // 更新單位陣列
+        stations[index] = newName;
+
+        // 搬移人員與路段資料
+        if (window.systemData.officers[oldName]) {
+            window.systemData.officers[newName] = window.systemData.officers[oldName];
+            delete window.systemData.officers[oldName];
+        }
+        if (window.systemData.locations[oldName]) {
+            window.systemData.locations[newName] = window.systemData.locations[oldName];
+            delete window.systemData.locations[oldName];
+        }
+
+        // 更新過往勤務紀錄
+        (window.systemData.dutyRecords || []).forEach(r => {
+            if (r.station === oldName) r.station = newName;
+        });
+
+        saveSystemData();
+        populateStationDropdowns();
+        renderAdminStationSettings();
+        alert(`✅ 單位名稱已成功由 【${oldName}】 修改為 【${newName}】！`);
+    }
+
+    function adminDeleteStation(index) {
+        const stations = getStationList();
+        const targetName = stations[index];
+
+        if (confirm(`確定要刪除單位 【${targetName}】？\n注意：刪除後將同步移除該單位對應的人員與路段設定。`)) {
+            stations.splice(index, 1);
+            delete window.systemData.officers[targetName];
+            delete window.systemData.locations[targetName];
+
+            saveSystemData();
+            populateStationDropdowns();
+            renderAdminStationSettings();
+            alert(`✅ 已成功刪除單位 【${targetName}】！`);
+        }
+    }
+
     function initAdminLists() { renderAdminTimeSlotList(); renderAdminLocList(); renderAdminOfficerList(); }
 
     function renderAdminTimeSlotList() {
@@ -2355,7 +2472,8 @@
     function deleteAdminTimeSlot(idx) { if (confirm("確定要刪除這個時段選項？")) { window.systemData.timeSlots.splice(idx, 1); saveSystemData(); renderAdminTimeSlotList(); } }
 
     function renderAdminLocList() {
-        const st = document.getElementById("adminLocStationSelect").value || STATION_ORDER[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
+        const stations = getStationList();
+        const st = document.getElementById("adminLocStationSelect").value || stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
         (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">${loc} <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button></li>`);
     }
     function adminAddLocation() {
@@ -2365,7 +2483,8 @@
     function deleteAdminLoc(st, idx) { window.systemData.locations[st].splice(idx, 1); saveSystemData(); renderAdminLocList(); }
 
     function renderAdminOfficerList() {
-        const st = document.getElementById("adminOfficerStationSelect").value || STATION_ORDER[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
+        const stations = getStationList();
+        const st = document.getElementById("adminOfficerStationSelect").value || stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
         (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">${off} <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button></li>`);
     }
     function adminAddOfficer() {
