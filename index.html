@@ -265,7 +265,7 @@
                         <a class="sidebar-nav-item text-white fw-bold d-flex justify-content-between align-items-center" id="snav-hq-toggle" onclick="toggleHqGroup(event)">
                             <span>
                                 <span id="hqParentDot" class="d-none"><span class="dot-badge-red"></span></span>
-                                <i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">分局權限專區</span>
+                                <i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">管理與統計專區</span>
                             </span>
                             <i class="fa-solid fa-chevron-down small text-white" id="hqChevron"></i>
                         </a>
@@ -1006,6 +1006,7 @@
                                     <div class="card border-secondary">
                                         <div class="card-header card-header-sub fw-bold small py-2"><i class="fa-solid fa-list me-1"></i>3. 左側選單子頁名稱</div>
                                         <div class="card-body bg-white">
+                                            <div class="mb-2"><label class="form-label small mb-1 fw-bold text-primary">專區群組名稱 (原分局權限專區)：</label><input type="text" class="form-control form-control-sm border-primary" id="titleInput_snav_hq_group"></div>
                                             <div class="mb-2"><label class="form-label small mb-1 fw-bold">首頁：</label><input type="text" class="form-control form-control-sm" id="titleInput_snav_home"></div>
                                             <div class="mb-2"><label class="form-label small mb-1 fw-bold">各所選填：</label><input type="text" class="form-control form-control-sm" id="titleInput_snav_station"></div>
                                             <div class="mb-2"><label class="form-label small mb-1 fw-bold">案件管制表：</label><input type="text" class="form-control form-control-sm" id="titleInput_snav_case"></div>
@@ -1211,6 +1212,7 @@
         snav_home: "首頁 (當月總表)",
         snav_station: "各所選填勤務",
         snav_case: "測速案件管制表",
+        snav_hq_group: "管理與統計專區",
         snav_41: "4.1 地點與儀器核定",
         snav_42: "4.2 測速儀保管與履歷",
         snav_43: "4.3 檢定證書(PDF)",
@@ -1447,6 +1449,7 @@
         document.getElementById("topTabAdminTitle").innerText = titles.topTabAdmin || DEFAULT_TITLES.topTabAdmin;
         document.getElementById("trafficModulePageTitle").innerText = titles.topTabTraffic || DEFAULT_TITLES.topTabTraffic;
 
+        document.getElementById("snav-text-hq").innerText = titles.snav_hq_group || DEFAULT_TITLES.snav_hq_group;
         document.getElementById("snav-text-home").innerText = titles.snav_home;
         document.getElementById("snav-text-station").innerText = titles.snav_station;
         document.getElementById("snav-text-case").innerText = titles.snav_case;
@@ -1717,15 +1720,16 @@
         if (targetContent) targetContent.classList.add("show", "active");
 
         const titles = window.systemData.customTitles || DEFAULT_TITLES;
+        const groupName = titles.snav_hq_group || DEFAULT_TITLES.snav_hq_group;
         const titleMap = {
             'home': titles.snav_home,
             'station': titles.snav_station,
             'case': titles.snav_case,
-            'hq-41': `分局權限 > ${titles.snav_41}`,
-            'hq-42': `分局權限 > ${titles.snav_42}`,
-            'hq-43': `分局權限 > ${titles.snav_43}`,
-            'hq-44': `分局權限 > ${titles.snav_44}`,
-            'hq-45': `分局權限 > ${titles.snav_45}`,
+            'hq-41': `${groupName} > ${titles.snav_41}`,
+            'hq-42': `${groupName} > ${titles.snav_42}`,
+            'hq-43': `${groupName} > ${titles.snav_43}`,
+            'hq-44': `${groupName} > ${titles.snav_44}`,
+            'hq-45': `${groupName} > ${titles.snav_45}`,
             'hq-46-2': '後台系統設定 > 4.6.2 管理選填時段',
             'hq-46-3': '後台系統設定 > 4.6.3 管理勤務路段',
             'hq-46-4': '後台系統設定 > 4.6.4 管理勤務人員',
@@ -1804,6 +1808,7 @@
         document.getElementById('titleInput_topTabTraffic').value = titles.topTabTraffic || DEFAULT_TITLES.topTabTraffic;
         document.getElementById('titleInput_topTabAdmin').value = titles.topTabAdmin || DEFAULT_TITLES.topTabAdmin;
 
+        document.getElementById('titleInput_snav_hq_group').value = titles.snav_hq_group || DEFAULT_TITLES.snav_hq_group;
         document.getElementById('titleInput_snav_home').value = titles.snav_home || "";
         document.getElementById('titleInput_snav_station').value = titles.snav_station || "";
         document.getElementById('titleInput_snav_case').value = titles.snav_case || "";
@@ -1826,6 +1831,7 @@
             topTabTraffic: document.getElementById('titleInput_topTabTraffic').value.trim() || DEFAULT_TITLES.topTabTraffic,
             topTabAdmin: document.getElementById('titleInput_topTabAdmin').value.trim() || DEFAULT_TITLES.topTabAdmin,
 
+            snav_hq_group: document.getElementById('titleInput_snav_hq_group').value.trim() || DEFAULT_TITLES.snav_hq_group,
             snav_home: document.getElementById('titleInput_snav_home').value.trim() || DEFAULT_TITLES.snav_home,
             snav_station: document.getElementById('titleInput_snav_station').value.trim() || DEFAULT_TITLES.snav_station,
             snav_case: document.getElementById('titleInput_snav_case').value.trim() || DEFAULT_TITLES.snav_case,
