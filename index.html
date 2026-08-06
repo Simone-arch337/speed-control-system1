@@ -27,76 +27,45 @@
             measurementId: "G-MH7EL6B367"
         };
 
-        window.activeDbNode = localStorage.getItem('guiRen_preferredNode') || 'guiRenSystemV14DB';
-
         try {
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
+            // 固定讀取主要資料庫節點
+            window.dbRef = db.ref('guiRenSystemV14DB');
+
+            // 🛡️ 鐵律 1：絕對不允許系統自動將空資料寫入雲端覆蓋！只在按下儲存且有資料時才同步
             window.saveSystemDataToCloud = function(data) {
-                // 只有在明確呼叫儲存且有資料時才寫入當前指定的節點
-                if (window.dbRef && data && data.dutyRecords) {
+                if (window.dbRef && data && data.dutyRecords && data.dutyRecords.length > 0) {
                     window.dbRef.set(data).then(() => {
-                        console.log("雲端資料同步成功，寫入節點：", window.activeDbNode);
+                        console.log("雲端資料手動儲存成功");
                     }).catch((error) => {
                         console.error("雲端資料同步失敗：", error);
                     });
+                } else {
+                    console.warn("⚠️ 系統已自動阻擋空白資料寫入，保護雲端資料安全！");
                 }
             };
 
-            window.connectToNode = function(nodeName) {
-                window.activeDbNode = nodeName;
-                localStorage.setItem('guiRen_preferredNode', nodeName);
-                window.dbRef = db.ref(nodeName);
-
-                window.dbRef.on('value', (snapshot) => {
-                    let data = snapshot.val();
-                    if (data && (data.dutyRecords || data.caseRecords)) {
-                        window.systemData = data;
-                        console.log(`成功載入節點 [${nodeName}] 的資料！`);
-                    } else {
-                        if (!window.systemData) window.systemData = window.defaultSystemData;
+            // 🛡️ 鐵律 2：只做唯讀讀取，讀不到也絕不主動寫入預設資料去覆蓋雲端
+            window.dbRef.on('value', (snapshot) => {
+                let data = snapshot.val();
+                if (data && (data.dutyRecords || data.caseRecords)) {
+                    window.systemData = data;
+                } else {
+                    if (!window.systemData) {
+                        window.systemData = window.defaultSystemData;
                     }
-                    if (window.refreshAllUI) window.refreshAllUI();
-                    
-                    const statusEl = document.getElementById("cloudStatusBadge");
-                    if (statusEl) {
-                        statusEl.innerHTML = `<i class="fa-solid fa-database me-1 text-success"></i>節點: ${nodeName}`;
-                    }
-                });
-            };
-
-            // 🔍 啟動全節點救援搜尋
-            window.scanAllCloudNodes = function() {
-                const possibleNodes = ['guiRenSystemDB', 'guiRenSystemV14DB', 'guiRenSystemV15DB', 'guiRenSystemV13DB'];
-                const selector = document.getElementById("nodeSelectorSelect");
-                if (selector) selector.innerHTML = "";
-
-                possibleNodes.forEach(node => {
-                    db.ref(node).once('value', (snap) => {
-                        const val = snap.val();
-                        let count = 0;
-                        if (val && val.dutyRecords) count = val.dutyRecords.length;
-                        
-                        if (selector) {
-                            const opt = document.createElement("option");
-                            opt.value = node;
-                            opt.innerText = `${node} (存有 ${count} 筆勤務紀錄)`;
-                            if (node === window.activeDbNode) opt.selected = true;
-                            selector.appendChild(opt);
-                        }
-
-                        if (count > 0 && node !== window.activeDbNode) {
-                            const alertBox = document.getElementById("nodeFinderAlert");
-                            if (alertBox) alertBox.classList.remove("d-none");
-                        }
-                    });
-                });
-            };
-
-            // 初始化連線
-            window.connectToNode(window.activeDbNode);
-
+                }
+                if (window.refreshAllUI) window.refreshAllUI();
+                
+                const statusEl = document.getElementById("cloudStatusBadge");
+                if (statusEl) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-shield-halved me-1 text-success"></i>唯讀安全連線中';
+                }
+            }, (error) => {
+                console.error("Firebase 連線失敗：", error);
+            });
         } catch (e) {
             console.error("Firebase 初始化失敗：", e);
         }
@@ -191,7 +160,7 @@
             100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
-        /* 🖼️ 右側區域背景淡化水彩插畫 (透明度 15%) */
+        /* 🖼️ 右側區域背景淡化 15% */
         #content {
             width: 100%;
             padding: 18px;
@@ -291,22 +260,6 @@
 
     <!-- 主內容區 Content -->
     <div id="content">
-        
-        <!-- 🔍 資料救援與節點切換提示列 -->
-        <div class="alert alert-warning border-warning shadow-sm mb-3 d-none" id="nodeFinderAlert">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <div>
-                    <i class="fa-solid fa-magnifying-glass-location me-2 fs-5 text-dark"></i>
-                    <strong class="text-dark">系統檢測到雲端資料庫節點：</strong>
-                    <span class="small text-muted">如果當前頁面的資料不是您最新的內容，請切換至有紀錄的節點：</span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <select class="form-select form-select-sm w-auto fw-bold text-dark" id="nodeSelectorSelect"></select>
-                    <button class="btn btn-sm btn-dark fw-bold" onclick="switchSelectedNode()"><i class="fa-solid fa-arrows-rotate me-1"></i>切換節點並載入</button>
-                </div>
-            </div>
-        </div>
-
         <div class="d-flex align-items-center mb-3 border-bottom pb-2">
             <button type="button" id="sidebarCollapse" class="btn btn-sm btn-dark d-lg-none me-2" onclick="toggleSidebar()">
                 <i class="fa-solid fa-bars"></i>
@@ -581,7 +534,6 @@
         }
 
         checkLoginState();
-        if (window.scanAllCloudNodes) window.scanAllCloudNodes();
 
         ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
             window.addEventListener(evtName, resetInactivityTimer, true);
@@ -622,14 +574,6 @@
         }
 
         alert("帳號或密碼錯誤！");
-    }
-
-    function switchSelectedNode() {
-        const selector = document.getElementById("nodeSelectorSelect");
-        if (selector && selector.value) {
-            window.connectToNode(selector.value);
-            alert(`✅ 已成功切換至資料庫節點 [${selector.value}]！`);
-        }
     }
 
     function logoutSystem() {
