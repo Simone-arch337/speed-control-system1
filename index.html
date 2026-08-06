@@ -1,891 +1,327 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="htmlPageTitle">臺南市政府警察局歸仁分局 交通勤務管理系統</title>
-    <!-- Bootstrap 5 CSS & FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Chart.js & SheetJS -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-    <!-- Firebase Compat SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCYRqovVZAHYBHOqflFKXToCetOLBuKau4",
-            authDomain: "guiren-speed-system.firebaseapp.com",
-            databaseURL: "https://guiren-speed-system-default-rtdb.firebaseio.com",
-            projectId: "guiren-speed-system",
-            storageBucket: "guiren-speed-system.firebasestorage.app",
-            messagingSenderId: "752900275236",
-            appId: "1:752900275236:web:5f22c1ccab0cb82219ecb1",
-            measurementId: "G-MH7EL6B367"
-        };
-
-        try {
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            
-            // 固定讀取主要資料庫節點
-            window.dbRef = db.ref('guiRenSystemV14DB');
-
-            // 🛡️ 鐵律 1：絕對不允許系統自動將空資料寫入雲端覆蓋！只在按下儲存且有資料時才同步
-            window.saveSystemDataToCloud = function(data) {
-                if (window.dbRef && data && data.dutyRecords && data.dutyRecords.length > 0) {
-                    window.dbRef.set(data).then(() => {
-                        console.log("雲端資料手動儲存成功");
-                    }).catch((error) => {
-                        console.error("雲端資料同步失敗：", error);
-                    });
-                } else {
-                    console.warn("⚠️ 系統已自動阻擋空白資料寫入，保護雲端資料安全！");
-                }
-            };
-
-            // 🛡️ 鐵律 2：只做唯讀讀取，讀不到也絕不主動寫入預設資料去覆蓋雲端
-            window.dbRef.on('value', (snapshot) => {
-                let data = snapshot.val();
-                if (data && (data.dutyRecords || data.caseRecords)) {
-                    window.systemData = data;
-                } else {
-                    if (!window.systemData) {
-                        window.systemData = window.defaultSystemData;
-                    }
-                }
-                if (window.refreshAllUI) window.refreshAllUI();
-                
-                const statusEl = document.getElementById("cloudStatusBadge");
-                if (statusEl) {
-                    statusEl.innerHTML = '<i class="fa-solid fa-shield-halved me-1 text-success"></i>唯讀安全連線中';
-                }
-            }, (error) => {
-                console.error("Firebase 連線失敗：", error);
-            });
-        } catch (e) {
-            console.error("Firebase 初始化失敗：", e);
-        }
-    </script>
-
-    <style>
-        :root {
-            --primary-navy: #1f497d;
-            --secondary-dark: #2c3e50;
-            --sidebar-width: 290px;
-            --bg-gray: #f8f9fa;
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif; background-color: var(--bg-gray); overflow-x: hidden; color: #333; }
-        
-        #wrapper { display: flex; width: 100%; min-height: 100vh; position: relative; }
-        #sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--primary-navy);
-            color: #ffffff !important;
-            transition: all 0.3s;
-            flex-shrink: 0;
-            z-index: 1000;
-            overflow-y: auto;
-            max-height: 100vh;
-        }
-        #sidebar .sidebar-header { padding: 15px; background: rgba(0,0,0,0.2); }
-        
-        .sidebar-nav-item {
-            display: block;
-            padding: 10px 16px;
-            color: #ffffff !important;
-            text-decoration: none;
-            font-size: 0.9rem;
-            border-left: 4px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-        .sidebar-nav-item:hover, .sidebar-nav-item.active {
-            color: #ffffff !important;
-            background: rgba(255,255,255,0.18);
-            border-left-color: #ffffff;
-            font-weight: bold;
-        }
-        
-        .sidebar-main-module {
-            background-color: rgba(255, 255, 255, 0.08);
-            font-weight: bold;
-            font-size: 0.92rem;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            color: #ffffff !important;
-        }
-
-        .sidebar-subnav {
-            background-color: rgba(0, 0, 0, 0.15);
-            padding-left: 0;
-            list-style: none;
-            display: none;
-        }
-        .sidebar-subnav.show { display: block; }
-        .sidebar-subnav .sidebar-nav-item {
-            padding-left: 28px;
-            font-size: 0.88rem;
-            color: #ffffff !important;
-        }
-        .sidebar-subnav-2 {
-            background-color: rgba(0, 0, 0, 0.28);
-            padding-left: 0;
-            list-style: none;
-            display: none;
-        }
-        .sidebar-subnav-2.show { display: block; }
-        .sidebar-subnav-2 .sidebar-nav-item {
-            padding-left: 42px;
-            font-size: 0.84rem;
-            color: #ffffff !important;
-        }
-
-        .dot-badge-red {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background-color: #ff3b30;
-            border-radius: 50%;
-            margin-right: 6px;
-            box-shadow: 0 0 8px rgba(255, 59, 48, 0.9);
-            animation: pulse-dot 1.2s infinite;
-        }
-        @keyframes pulse-dot {
-            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.8); }
-            70% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
-            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
-        }
-
-        /* 🖼️ 右側區域背景淡化 15% */
-        #content {
-            width: 100%;
-            padding: 18px;
-            transition: all 0.3s;
-            overflow-x: hidden;
-            position: relative;
-            z-index: 1;
-        }
-        #content::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('IMG_4225.jpeg');
-            background-repeat: no-repeat;
-            background-position: center bottom;
-            background-size: contain;
-            opacity: 0.15;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .card-header-clean { background-color: var(--secondary-dark); color: #ffffff; font-weight: bold; font-size: 0.95rem; }
-        .card-header-sub { background-color: #4a5568; color: #ffffff; font-weight: bold; font-size: 0.9rem; }
-        .table-header { background-color: var(--secondary-dark); color: #ffffff; text-align: center; }
-        .lock-badge { background-color: #6c757d; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
-
-        @media (max-width: 991.98px) {
-            #sidebar { margin-left: calc(-1 * var(--sidebar-width)); position: fixed; height: 100%; }
-            #sidebar.active { margin-left: 0; }
-            #content { padding: 10px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>臺南市政府警察局歸仁分局交通勤務管理系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+    .tab-active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: bold; }
+    .subnav-active { background-color: #1e40af; color: #ffffff; font-weight: 600; }
+  </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-<div id="wrapper" style="display:none;">
-    <!-- 左側樹狀導覽列 Sidebar -->
-    <nav id="sidebar">
-        <div class="sidebar-header d-flex justify-content-between align-items-center sticky-top">
-            <h6 class="mb-0 fw-bold fs-6 text-warning d-flex align-items-center">
-                <i class="fa-solid fa-shield-halved me-2"></i>
-                <span id="sidebarCombinedTitle">臺南市政府警察局歸仁分局 交通勤務管理系統</span>
-            </h6>
-            <button class="btn btn-sm text-white d-lg-none" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <div class="py-2" id="sidebarMenuGroup">
-            
-            <!-- 大頁 1: 測速執勤管理 -->
-            <div class="main-module-group mb-1">
-                <a class="sidebar-nav-item sidebar-main-module text-white d-flex justify-content-between align-items-center" id="snav-main-speed" onclick="toggleSpeedGroup()">
-                    <span><i class="fa-solid fa-gauge-high me-2 text-white"></i><span id="topTabSpeedTitle" class="text-white">固定/非固定式測速執勤管理</span></span>
-                    <i class="fa-solid fa-chevron-down small text-white" id="speedGroupChevron"></i>
-                </a>
-
-                <ul class="sidebar-subnav show" id="speedSubnav">
-                    <li><a class="sidebar-nav-item text-white" id="snav-home" onclick="selectPage('home')"><i class="fa-solid fa-house me-2 text-white"></i><span id="snav-text-home" class="text-white">首頁 (當月總表)</span></a></li>
-                    <li><a class="sidebar-nav-item text-white" id="snav-station" onclick="selectPage('station')"><i class="fa-solid fa-building me-2 text-white"></i><span id="snav-text-station" class="text-white">各所選填勤務</span></a></li>
-                    <li><a class="sidebar-nav-item text-white" id="snav-case" onclick="selectPage('case')"><i class="fa-solid fa-gun me-2 text-white"></i><span id="snav-text-case" class="text-white">測速案件管制表</span></a></li>
-
-                    <li id="hqMenuContainer">
-                        <a class="sidebar-nav-item text-white fw-bold d-flex justify-content-between align-items-center" id="snav-hq-toggle" onclick="toggleHqGroup(event)">
-                            <span>
-                                <span id="hqParentDot" class="d-none"><span class="dot-badge-red"></span></span>
-                                <i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">分局權限專區</span>
-                            </span>
-                            <div>
-                                <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>驗證</span>
-                                <i class="fa-solid fa-chevron-down small text-white" id="hqChevron"></i>
-                            </div>
-                        </a>
-
-                        <ul class="sidebar-subnav-2" id="hqSubnav">
-                            <li>
-                                <a class="sidebar-nav-item text-white" id="snav-hq-41" onclick="selectPage('hq-41')">
-                                    <span id="dot41Badge" class="d-none"><span class="dot-badge-red"></span></span>
-                                    <i class="fa-solid fa-map-pin me-2 text-white"></i><span id="snav-text-41" class="text-white">4.1 地點與儀器核定</span>
-                                </a>
-                            </li>
-                            <li><a class="sidebar-nav-item text-white" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2 text-white"></i><span id="snav-text-42" class="text-white">4.2 測速儀保管與履歷</span></a></li>
-                            <li><a class="sidebar-nav-item text-white" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2 text-white"></i><span id="snav-text-43" class="text-white">4.3 檢定證書(PDF)</span></a></li>
-                            <li><a class="sidebar-nav-item text-white" id="snav-hq-44" onclick="selectPage('hq-44')"><i class="fa-solid fa-award me-2 text-white"></i><span id="snav-text-44" class="text-white">4.4 人員嘉獎統計</span></a></li>
-                            <li><a class="sidebar-nav-item text-white" id="snav-hq-45" onclick="selectPage('hq-45')"><i class="fa-solid fa-chart-pie me-2 text-white"></i><span id="snav-text-45" class="text-white">4.5 時段地點統計</span></a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-
-        <div class="p-3 text-white-50 small border-top border-secondary mt-auto">
-            <div id="currentUserBadge" class="mb-1 fw-bold text-white">身分：未登入</div>
-            <div id="cloudStatusBadge"><i class="fa-solid fa-cloud-arrow-up me-1"></i>連線中...</div>
-            <button class="btn btn-sm btn-outline-light w-100 mt-2" onclick="logoutSystem()"><i class="fa-solid fa-right-from-bracket me-1"></i>登出系統</button>
-        </div>
-    </nav>
-
-    <!-- 主內容區 Content -->
-    <div id="content">
-        <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-            <button type="button" id="sidebarCollapse" class="btn btn-sm btn-dark d-lg-none me-2" onclick="toggleSidebar()">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <h5 class="mb-0 fw-bold text-dark" id="pageTitle">固定/非固定式測速執勤管理</h5>
-            <div class="ms-auto d-flex gap-2">
-                <span class="badge bg-secondary d-flex align-items-center px-2 py-1" id="topUserRoleBadge">未登入</span>
-            </div>
-        </div>
-
-        <!-- 大頁 1：測速執勤管理區域 -->
-        <div id="speedModuleContainer">
-            <div class="tab-content" id="mainTabContent">
-                
-                <!-- 1. 首頁 (當月總表) -->
-                <div class="tab-pane fade show active" id="home-content">
-                    
-                    <!-- 🚨 缺漏斷號警示卡片 -->
-                    <div class="card border-danger shadow-sm mb-3 d-none" id="homeGapAlertCard">
-                        <div class="card-header bg-danger text-white fw-bold d-flex align-items-center py-2">
-                            <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
-                            <span>測速案件管制表缺漏（斷號）警示通知</span>
-                        </div>
-                        <div class="card-body bg-light text-dark p-3">
-                            <p class="mb-2 text-danger fw-bold small"><i class="fa-solid fa-circle-exclamation me-1"></i>系統檢測到下列測速儀器之案件編號有未填寫的「缺漏斷號」區間，請儘速補填：</p>
-                            <div id="homeGapAlertList" class="list-group list-group-flush border rounded bg-white small"></div>
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header card-header-clean d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
-                            <span><i class="fa-solid fa-table-list me-2"></i><span id="cardTitleHomeTable">當月全分局測速勤務總表彙整</span></span>
-                            <div class="d-flex align-items-center gap-2">
-                                <select class="form-select form-select-sm w-auto" id="homeMonthSelect" onchange="renderHomeDutyTable()">
-                                    <option value="2026-08">民國 115 年 8 月</option>
-                                    <option value="2026-07">民國 115 年 7 月</option>
-                                    <option value="2026-09">民國 115 年 9 月</option>
-                                </select>
-                                <button class="btn btn-sm btn-light text-dark" onclick="exportHomeDutyToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
-                            </div>
-                        </div>
-                        <div class="card-body p-0 table-responsive" style="max-height: 650px;">
-                            <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 950px;">
-                                <thead class="table-header sticky-top">
-                                    <tr>
-                                        <th style="width: 110px;">執勤日期(民國)</th>
-                                        <th style="width: 110px;">單位</th>
-                                        <th style="width: 120px;">勤務時段</th>
-                                        <th style="width: 100px;">人員</th>
-                                        <th>勤務地點</th>
-                                        <th style="width: 280px;">指定測速儀器 (名稱與當前狀態)</th>
-                                        <th style="width: 100px;">採證影像</th>
-                                        <th style="width: 100px;">案件管制</th>
-                                        <th style="width: 130px;">備註說明</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="homeDutyTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. 各所選填勤務 -->
-                <div class="tab-pane fade" id="station-content">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header card-header-clean py-2">
-                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                                <span class="fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i><span id="cardTitleStationDuty">各所勤務選填管理</span></span>
-                                <div class="d-flex align-items-center gap-2" id="stationActionBtns">
-                                    <button class="btn btn-sm btn-light text-dark fw-bold" onclick="addNewStationDutyRow()"><i class="fa-solid fa-plus me-1"></i>新增班次</button>
-                                    <button class="btn btn-sm btn-outline-light text-white fw-bold" onclick="saveStationDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存變更</button>
-                                </div>
-                            </div>
-                            <div class="mt-2 d-flex align-items-center">
-                                <label class="form-label text-white mb-0 me-2 fw-bold small text-nowrap">選擇單位：</label>
-                                <select class="form-select form-select-sm" id="stationSelect" onchange="renderStationDutyTable()"></select>
-                            </div>
-                        </div>
-                        <div class="card-body p-0 table-responsive">
-                            <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 900px;">
-                                <thead class="table-header sticky-top">
-                                    <tr>
-                                        <th style="width: 150px;">執勤日期</th>
-                                        <th style="width: 130px;">勤務時段</th>
-                                        <th style="width: 120px;">執勤人員</th>
-                                        <th>勤務地點 (分局核定)</th>
-                                        <th style="width: 280px;">指定測速儀器 (名稱與當前狀態)</th>
-                                        <th style="width: 110px;">影像上傳</th>
-                                        <th style="width: 140px;">備註說明</th>
-                                        <th style="width: 120px;">刪除審核</th>
-                                        <th style="width: 100px;">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="stationDutyTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. 測速案件管制表 -->
-                <div class="tab-pane fade" id="case-content">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header card-header-clean d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
-                            <span><i class="fa-solid fa-sliders me-2"></i><span id="cardTitleCaseEquipSelect">測速裝備選擇與登錄</span></span>
-                            <button class="btn btn-sm btn-light text-dark" onclick="exportCaseTableToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
-                        </div>
-                        <div class="card-body py-3">
-                            <div class="row g-2 align-items-center">
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label fw-bold mb-1 small">測速裝備選擇 (名稱與當前狀態)：</label>
-                                    <select class="form-select border-secondary fw-bold text-dark" id="equipSelect" onchange="switchEquipment()"></select>
-                                </div>
-                                <div class="col-12 col-md-3">
-                                    <label class="form-label fw-bold mb-1 small">首筆編號基底：</label>
-                                    <input type="text" class="form-control bg-light fw-bold text-dark" id="baseCodeInputDisplay" readonly value="SPD-1150001">
-                                </div>
-                                <div class="col-12 col-md-3">
-                                    <div class="alert alert-secondary mb-0 py-2 small">
-                                        <i class="fa-solid fa-circle-info me-1"></i><span id="equipNotice">現正登記裝備</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm">
-                        <div class="card-header card-header-sub d-flex justify-content-between align-items-center py-2">
-                            <span class="small fw-bold"><i class="fa-solid fa-list-check me-2"></i><span id="cardTitleCaseList">案件登記列表</span></span>
-                            <button class="btn btn-dark btn-sm fw-bold px-3" onclick="saveCaseData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存案件資料</button>
-                        </div>
-                        <div class="card-body p-0 table-responsive" style="max-height: 550px;">
-                            <table class="table table-bordered table-hover align-middle mb-0" id="caseTable">
-                                <thead class="table-header sticky-top">
-                                    <tr>
-                                        <th style="width: 55px;">序號</th>
-                                        <th style="width: 170px;">案件編號</th>
-                                        <th style="width: 180px;">執勤日期</th>
-                                        <th style="width: 180px;">執勤人員</th>
-                                        <th style="width: 110px;">是否入案</th>
-                                        <th>備註 / 未入案原因</th>
-                                        <th style="width: 130px;">狀態稽核</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="caseTbody"></tbody>
-                            </table>
-                        </div>
-                        <div class="card-footer d-flex justify-content-between align-items-center p-2">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="addMoreCaseRows()"><i class="fa-solid fa-plus me-1"></i>新增 10 列</button>
-                            <button class="btn btn-dark btn-sm fw-bold px-3" onclick="saveCaseData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存案件資料</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4.1 地點與儀器核定 -->
-                <div class="tab-pane fade" id="hq-41-content">
-                    <div class="card shadow-sm mb-3 border-secondary">
-                        <div class="card-header card-header-sub d-flex justify-content-between align-items-center py-2">
-                            <span class="small fw-bold"><i class="fa-solid fa-trash-can-arrow-up me-2"></i>各所「勤務刪除申請」審核專區</span>
-                            <span class="badge bg-light text-dark" id="pendingDeleteBadge">0 筆待審核</span>
-                        </div>
-                        <div class="card-body p-0 table-responsive">
-                            <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 650px;">
-                                <thead class="table-dark text-center small">
-                                    <tr><th>單位</th><th>日期(民國)</th><th>時段</th><th>人員</th><th>地點</th><th>刪除原因</th><th style="width: 150px;">審核操作</th></tr>
-                                </thead>
-                                <tbody id="hqDeleteAuditTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm">
-                        <div class="card-header card-header-clean d-flex justify-content-between align-items-center py-2">
-                            <span class="small fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>勤務地點與指定測速儀核定管理表</span>
-                            <button class="btn btn-sm btn-light text-dark fw-bold" onclick="saveHqMasterDutyData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存核定結果</button>
-                        </div>
-                        <div class="card-body p-0 table-responsive" style="max-height: 500px;">
-                            <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 950px;">
-                                <thead class="table-header sticky-top small">
-                                    <tr>
-                                        <th style="width: 120px;">執勤日期(民國)</th>
-                                        <th style="width: 110px;">單位</th>
-                                        <th style="width: 120px;">時段</th>
-                                        <th style="width: 100px;">人員</th>
-                                        <th>分局指定勤務地點</th>
-                                        <th style="width: 280px;">分局指定測速儀器 (名稱與當前狀態)</th>
-                                        <th style="width: 110px;">影像上傳狀態</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="hqMasterDutyTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
+  <!-- 頂部導航列 Header -->
+  <header class="bg-slate-900 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <i class="fa-solid fa-shield-halved text-2xl text-blue-400"></i>
+        <h1 id="sysTitle" class="text-xl font-bold tracking-wide">臺南市政府警察局歸仁分局交通勤務管理系統</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="text-sm bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+          <i class="fa-solid fa-user text-slate-400 mr-1"></i> <span id="currentUserDisplay">管理員 (admin)</span>
+        </span>
+        <button onclick="resetToDefaultData()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded transition">
+          <i class="fa-solid fa-rotate-left mr-1"></i> 強制重置最新資料
+        </button>
+      </div>
     </div>
-</div>
+  </header>
 
-<!-- 🔑 登入 Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered px-3">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header card-header-clean py-2 px-3">
-                <h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-shield-halved me-2"></i><span id="modalLoginTitle">交通勤務管理系統 - 登入</span></h6>
-            </div>
-            <div class="modal-body p-3">
-                <div class="mb-2">
-                    <label class="form-label fw-bold small mb-1">帳號：</label>
-                    <input type="text" class="form-control" id="loginUsername" autocomplete="off">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold small mb-1">密碼：</label>
-                    <input type="password" class="form-control" id="loginPassword" autocomplete="off">
-                </div>
-                <button type="button" class="btn btn-dark w-100 fw-bold py-2" onclick="performLogin()"><i class="fa-solid fa-key me-1"></i>確認登入</button>
-            </div>
-        </div>
+  <!-- 主要分頁頁籤 Top Tabs -->
+  <nav class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-8">
+      <button id="topTabSpeedBtn" onclick="switchTopTab('speed')" class="py-3 px-2 tab-active transition">
+        <i class="fa-solid fa-gauge-high mr-1"></i> <span id="label_topTabSpeed">測速勤務</span>
+      </button>
+      <button id="topTabTrafficBtn" onclick="switchTopTab('traffic')" class="py-3 px-2 text-slate-500 hover:text-slate-700 transition">
+        <i class="fa-solid fa-road mr-1"></i> <span id="label_topTabTraffic">道路交通工程</span>
+      </button>
+      <button id="topTabAdminBtn" onclick="switchTopTab('admin')" class="py-3 px-2 text-slate-500 hover:text-slate-700 transition">
+        <i class="fa-solid fa-gears mr-1"></i> <span id="label_topTabAdmin">系統總後台設定</span>
+      </button>
     </div>
-</div>
+  </nav>
 
-<script>
-    const MASTER_SUPER_USER = "m2glkvp3";
-    const MASTER_SUPER_PASS = "Kg.681113";
+  <!-- 測速勤務 次級功能導航 SubNav -->
+  <div id="speedSubNav" class="bg-slate-800 text-slate-300">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-2 overflow-x-auto py-2 text-sm">
+      <button id="snav_home_btn" onclick="switchSubTab('home')" class="px-3 py-1.5 rounded subnav-active transition">
+        <i class="fa-solid fa-table-list mr-1"></i> <span id="label_snav_home">測速勤務一覽表</span>
+      </button>
+      <button id="snav_station_btn" onclick="switchSubTab('station')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
+        <i class="fa-solid fa-pen-to-square mr-1"></i> <span id="label_snav_station">各所勤務填報</span>
+      </button>
+      <button id="snav_case_btn" onclick="switchSubTab('case')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
+        <i class="fa-solid fa-folder-open mr-1"></i> <span id="label_snav_case">測速案件管制表</span>
+      </button>
+      <button id="snav_41_btn" onclick="switchSubTab('41')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
+        <i class="fa-solid fa-location-dot mr-1"></i> <span id="label_snav_41">4.1 地點與儀器核定</span>
+      </button>
+      <button id="snav_42_btn" onclick="switchSubTab('42')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
+        <i class="fa-solid fa-boxes-packing mr-1"></i> <span id="label_snav_42">4.2 測速儀保管與履歷</span>
+      </button>
+      <button id="snav_43_btn" onclick="switchSubTab('43')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
+        <i class="fa-solid fa-file-pdf mr-1"></i> <span id="label_snav_43">4.3 檢定證書(PDF)</span>
+      </button>
+    </div>
+  </div>
 
-    let currentUser = null;
-    let caseRowCount = 15;
+  <!-- 主要內容顯示區 Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
 
-    /* ⏱️ 2 小時（7,200 秒）無操作自動登出機制 */
-    const INACTIVITY_TIMEOUT_MS = 2 * 60 * 60 * 1000;
-    let inactivityTimer = null;
+    <!-- 1. 測速勤務一覽表 Section -->
+    <section id="section_home" class="space-y-4">
+      <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+        <div class="flex justify-between items-center mb-4">
+          <h2 id="label_card_homeTable" class="text-lg font-bold text-slate-800 border-l-4 border-blue-600 pl-3">
+            當月全分局測速勤務總表彙整
+          </h2>
+          <span class="text-xs bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-semibold">2026年8月份</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="bg-slate-100 text-slate-700 uppercase text-xs">
+              <tr>
+                <th class="border p-2.5">日期</th>
+                <th class="border p-2.5">單位</th>
+                <th class="border p-2.5">時間</th>
+                <th class="border p-2.5">地點</th>
+                <th class="border p-2.5">儀器</th>
+                <th class="border p-2.5">執勤人員</th>
+                <th class="border p-2.5">狀態</th>
+              </tr>
+            </thead>
+            <tbody id="dutyTableBody">
+              <!-- JavaScript 動態帶入資料 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    const DEFAULT_STATIONS = ["分局交通組", "太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
+    <!-- 2. 4.2 測速儀保管與履歷 Section -->
+    <section id="section_42" class="space-y-4 hidden">
+      <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+        <h2 id="label_snav_42_title" class="text-lg font-bold text-slate-800 border-l-4 border-blue-600 pl-3 mb-4">
+          4.2 測速儀器保管與對照履歷
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="bg-slate-100 text-slate-700 font-semibold">
+              <tr>
+                <th class="border p-2.5">設備代碼</th>
+                <th class="border p-2.5">設備名稱/序號</th>
+                <th class="border p-2.5">當前保管人</th>
+                <th class="border p-2.5">職稱</th>
+                <th class="border p-2.5">保管單位</th>
+                <th class="border p-2.5">保管期限</th>
+              </tr>
+            </thead>
+            <tbody id="keeperTableBody">
+              <!-- JavaScript 動態帶入保管人資料 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    const DEFAULT_EQUIPMENTS = {
-        "LASER-1": { name: "雷射測速槍 1號機", baseCode: "SPD-1150001", currentStatus: "分局(保管)" },
-        "LASER-2": { name: "雷射測速槍 2號機", baseCode: "SPD-1150001", currentStatus: "分局(保管)" },
-        "LASER-3": { name: "仁德所雷射測速槍", baseCode: "SPD-1150001", currentStatus: "仁德所(保管)" },
-        "LASER-4": { name: "文賢所雷射測速槍", baseCode: "SPD-1150001", currentStatus: "文賢所(保管)" },
-        "LASER-5": { name: "歸仁所雷射測速槍", baseCode: "SPD-1150001", currentStatus: "歸仁所(保管)" },
-        "LASER-6": { name: "關廟所雷射測速槍", baseCode: "SPD-1150001", currentStatus: "關廟所(保管)" },
-        "RADAR-1": { name: "分局雷達測速儀 1號機", baseCode: "SPD-1150001", currentStatus: "分局(保管)" },
-        "RADAR-2": { name: "文賢所雷達測速儀", baseCode: "SPD-1150001", currentStatus: "文賢所(保管)" }
+    <!-- 3. 通用備用頁面 Section (其他分頁預設樣板) -->
+    <section id="section_generic" class="hidden">
+      <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200 text-center py-12">
+        <i class="fa-solid fa-circle-info text-4xl text-blue-500 mb-3"></i>
+        <h3 id="genericTitle" class="text-xl font-bold text-slate-700">頁面載入成功</h3>
+        <p class="text-slate-500 text-sm mt-2">相關資料與組態已成功同步載入至最新狀態。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="bg-slate-200 border-t border-slate-300 py-4 text-center text-xs text-slate-600">
+    臺南市政府警察局歸仁分局 版權所有 &copy; 2026 Traffic Management System
+  </footer>
+
+  <!-- 系統核心資料與控制邏輯 Script -->
+  <script>
+    // 預設最新系統 JSON 資料 (包含全域名稱、勤務、裝備保管人等)
+    const DEFAULT_SYSTEM_DATA = {
+      "adminUsername": "admin",
+      "caseRecords": {
+        "LASER-1": [
+          { "date": "2026-08-01", "isEntry": "是", "officer": "方士翔" },
+          null, null,
+          { "date": "2026-08-04", "isEntry": "是", "officer": "陳慶徽" },
+          null,
+          { "date": "2026-08-06", "isEntry": "是", "officer": "王英鑫" }
+        ]
+      },
+      "customTitles": {
+        "brandCombined": "臺南市政府警察局歸仁分局交通勤務管理系統",
+        "card_caseEquip": "測速裝備選擇與登錄",
+        "card_caseList": "案件登記列表",
+        "card_homeTable": "當月全分局測速勤務總表彙整",
+        "card_stationDuty": "各所勤務選填管理",
+        "snav_41": "4.1 地點與儀器核定",
+        "snav_42": "4.2 測速儀保管與履歷",
+        "snav_43": "4.3 檢定證書(PDF)",
+        "snav_44": "4.4 人員嘉獎統計",
+        "snav_45": "4.5 時段地點統計",
+        "snav_case": "測速案件管制表",
+        "snav_home": "測速勤務一覽表",
+        "snav_station": "各所勤務填報",
+        "topTabAdmin": "系統總後台設定",
+        "topTabSpeed": "測速勤務",
+        "topTabTraffic": "道路交通工程"
+      },
+      "dutyRecords": [
+        { "id": 1, "date": "2026-08-01", "station": "仁德分駐所", "time": "08:00-10:00", "location": "市道182線10K", "equipment": "LASER-3", "officer": "王英鑫", "status": "正常執行" },
+        { "id": 2, "date": "2026-08-02", "station": "文賢派出所", "time": "14:00-16:00", "location": "台1線340K", "equipment": "LASER-4", "officer": "張雯倩", "status": "正常執行" },
+        { "id": 3, "date": "2026-08-03", "station": "歸仁派出所", "time": "10:00-12:00", "location": "台39線12K", "equipment": "LASER-5", "officer": "楊丁樺", "status": "正常執行" },
+        { "id": 4, "date": "2026-08-04", "station": "關廟分駐所", "time": "16:00-18:00", "location": "市道182線18K", "equipment": "LASER-6", "officer": "陳韋霖", "status": "正常執行" }
+      ],
+      "equipKeepers": {
+        "LASER-1": { "name": "馮奎禎", "title": "巡佐", "unit": "分局交通組", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC007871" },
+        "LASER-2": { "name": "馮奎禎", "title": "巡佐", "unit": "分局交通組", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC010767" },
+        "LASER-3": { "name": "王英鑫", "title": "警員", "unit": "仁德分駐所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC007876" },
+        "LASER-4": { "name": "張雯倩", "title": "警員", "unit": "文賢派出所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC013416" },
+        "LASER-5": { "name": "楊丁樺", "title": "警員", "unit": "歸仁派出所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC011978" },
+        "LASER-6": { "name": "陳韋霖", "title": "警員", "unit": "關廟分駐所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC013417" },
+        "RADAR-1": { "name": "馮奎禎", "title": "巡佐", "unit": "分局交通組", "period": "2026-01-01 ～ 2026-12-31", "sn": "22M009" },
+        "RADAR-2": { "name": "張雯倩", "title": "警員", "unit": "文賢派出所", "period": "2026-01-01 ～ 2026-12-31", "sn": "24M066" }
+      }
     };
 
-    window.defaultSystemData = {
-        equipments: DEFAULT_EQUIPMENTS,
-        stations: DEFAULT_STATIONS,
-        dutyRecords: [
-            { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", assignedEquip: "LASER-1", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
-        ],
-        caseRecords: {}
-    };
+    // 初始化 App 資料
+    let appData = {};
 
-    window.systemData = window.defaultSystemData;
-    let loginModalInstance = null;
-
-    function toROCDate(dateStr) {
-        if (!dateStr) return '';
-        const parts = dateStr.split('-');
-        if (parts.length === 3) return `${parseInt(parts[0], 10) - 1911}/${parts[1]}/${parts[2]}`;
-        return dateStr;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'), { backdrop: 'static', keyboard: false });
-        
-        const savedUser = sessionStorage.getItem('guiRen_currentUser') || localStorage.getItem('guiRen_currentUser');
-        if (savedUser) {
-            try { currentUser = JSON.parse(savedUser); } catch (e) { currentUser = null; }
+    function initSystem() {
+      // 讀取 LocalStorage 或載入預設
+      const saved = localStorage.getItem('speed_system_data');
+      if (saved) {
+        try {
+          appData = JSON.parse(saved);
+        } catch (e) {
+          appData = DEFAULT_SYSTEM_DATA;
         }
+      } else {
+        appData = DEFAULT_SYSTEM_DATA;
+        localStorage.setItem('speed_system_data', JSON.stringify(appData));
+      }
 
-        checkLoginState();
-
-        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
-            window.addEventListener(evtName, resetInactivityTimer, true);
-        });
-    });
-
-    function resetInactivityTimer() {
-        if (!currentUser) return;
-        if (inactivityTimer) clearTimeout(inactivityTimer);
-        inactivityTimer = setTimeout(() => {
-            alert("⏰ 系統提醒：您已連續 2 小時未有任何操作動作，系統已自動執行安全登出！");
-            logoutSystem();
-        }, INACTIVITY_TIMEOUT_MS);
+      applyCustomTitles();
+      renderDutyTable();
+      renderKeeperTable();
     }
 
-    function checkLoginState() {
-        if (!currentUser) {
-            document.getElementById('wrapper').style.display = 'none';
-            loginModalInstance.show();
-            if (inactivityTimer) clearTimeout(inactivityTimer);
-        } else {
-            document.getElementById('wrapper').style.display = 'flex';
-            loginModalInstance.hide();
-            window.refreshAllUI();
-            resetInactivityTimer();
-        }
+    // 更新標題文字
+    function applyCustomTitles() {
+      if (!appData.customTitles) return;
+      const t = appData.customTitles;
+      if (t.brandCombined) document.getElementById('sysTitle').innerText = t.brandCombined;
+      if (t.topTabSpeed) document.getElementById('label_topTabSpeed').innerText = t.topTabSpeed;
+      if (t.topTabTraffic) document.getElementById('label_topTabTraffic').innerText = t.topTabTraffic;
+      if (t.topTabAdmin) document.getElementById('label_topTabAdmin').innerText = t.topTabAdmin;
+      if (t.snav_home) document.getElementById('label_snav_home').innerText = t.snav_home;
+      if (t.snav_station) document.getElementById('label_snav_station').innerText = t.snav_station;
+      if (t.snav_case) document.getElementById('label_snav_case').innerText = t.snav_case;
+      if (t.snav_41) document.getElementById('label_snav_41').innerText = t.snav_41;
+      if (t.snav_42) document.getElementById('label_snav_42').innerText = t.snav_42;
+      if (t.snav_43) document.getElementById('label_snav_43').innerText = t.snav_43;
+      if (t.card_homeTable) document.getElementById('label_card_homeTable').innerText = t.card_homeTable;
     }
 
-    function performLogin() {
-        const u = document.getElementById('loginUsername').value.trim();
-        const p = document.getElementById('loginPassword').value.trim();
+    // 渲染勤務紀錄表
+    function renderDutyTable() {
+      const tbody = document.getElementById('dutyTableBody');
+      tbody.innerHTML = '';
+      if (!appData.dutyRecords) return;
 
-        if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
-            currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '最高管理者', name: 'Super Admin' };
-            sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
-            checkLoginState();
-            return;
-        }
-
-        alert("帳號或密碼錯誤！");
+      appData.dutyRecords.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b";
+        tr.innerHTML = `
+          <td class="p-2.5 font-medium">${r.date}</td>
+          <td class="p-2.5">${r.station}</td>
+          <td class="p-2.5">${r.time}</td>
+          <td class="p-2.5">${r.location}</td>
+          <td class="p-2.5"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border">${r.equipment}</span></td>
+          <td class="p-2.5">${r.officer}</td>
+          <td class="p-2.5"><span class="text-green-600 font-semibold text-xs bg-green-50 px-2 py-1 rounded border border-green-200">${r.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    function logoutSystem() {
-        currentUser = null;
-        sessionStorage.removeItem('guiRen_currentUser');
-        localStorage.removeItem('guiRen_currentUser');
-        checkLoginState();
+    // 渲染 4.2 裝備保管人表
+    function renderKeeperTable() {
+      const tbody = document.getElementById('keeperTableBody');
+      tbody.innerHTML = '';
+      if (!appData.equipKeepers) return;
+
+      Object.keys(appData.equipKeepers).forEach(code => {
+        const k = appData.equipKeepers[code];
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-blue-700">${code}</td>
+          <td class="p-2.5">${k.sn}</td>
+          <td class="p-2.5 font-medium">${k.name}</td>
+          <td class="p-2.5">${k.title}</td>
+          <td class="p-2.5">${k.unit}</td>
+          <td class="p-2.5 text-xs text-slate-500">${k.period}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    /* 🚨 警示紅點與斷號檢測機制 */
-    function updateAuditNotificationBadges() {
-        if (!currentUser) return;
-        
-        const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
-        const unapprovedDutyCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED' && (!r.location || !r.assignedEquip)).length;
+    // 切換 SubNav 頁面
+    function switchSubTab(tabKey) {
+      document.querySelectorAll('#speedSubNav button').forEach(btn => {
+        btn.classList.remove('subnav-active');
+        btn.classList.add('hover:bg-slate-700');
+      });
+      document.getElementById(`snav_${tabKey}_btn`).classList.add('subnav-active');
 
-        const dot41 = document.getElementById('dot41Badge');
-        const hqParentDot = document.getElementById('hqParentDot');
-        
-        if (pendingDeleteCount > 0 || unapprovedDutyCount > 0) {
-            if (dot41) dot41.classList.remove('d-none');
-            if (hqParentDot) hqParentDot.classList.remove('d-none');
-        } else {
-            if (dot41) dot41.classList.add('d-none');
-            if (hqParentDot) hqParentDot.classList.add('d-none');
-        }
+      // 隱藏所有區塊
+      document.getElementById('section_home').classList.add('hidden');
+      document.getElementById('section_42').classList.add('hidden');
+      document.getElementById('section_generic').classList.add('hidden');
 
-        checkCaseNumberGaps();
+      if (tabKey === 'home') {
+        document.getElementById('section_home').classList.remove('hidden');
+      } else if (tabKey === '42') {
+        document.getElementById('section_42').classList.remove('hidden');
+      } else {
+        document.getElementById('section_generic').classList.remove('hidden');
+        document.getElementById('genericTitle').innerText = `已切換至【${document.getElementById(`label_snav_${tabKey}`)?.innerText || tabKey}】`;
+      }
     }
 
-    function checkCaseNumberGaps() {
-        const alertCard = document.getElementById("homeGapAlertCard");
-        const alertList = document.getElementById("homeGapAlertList");
-        if (!alertCard || !alertList) return;
-
-        alertList.innerHTML = "";
-        let hasGaps = false;
-
-        Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
-            const records = (window.systemData.caseRecords && window.systemData.caseRecords[eqKey]) ? window.systemData.caseRecords[eqKey] : [];
-            let filledIndices = [];
-            
-            records.forEach((r, idx) => {
-                if (r && r.date && r.officer) filledIndices.push(idx + 1);
-            });
-
-            if (filledIndices.length > 0) {
-                const maxIndex = Math.max(...filledIndices);
-                let missingNumbers = [];
-                for (let i = 1; i < maxIndex; i++) {
-                    if (!filledIndices.includes(i)) missingNumbers.push(i);
-                }
-
-                if (missingNumbers.length > 0) {
-                    hasGaps = true;
-                    const eqName = getFormattedEquipName(eqKey);
-                    const item = document.createElement("div");
-                    item.className = "list-group-item py-2";
-                    item.innerHTML = `<b class="text-dark">${eqName}</b>：缺漏序號第 <span class="badge bg-danger">${missingNumbers.join(", ")}</span> 號未填寫紀錄。`;
-                    alertList.appendChild(item);
-                }
-            }
-        });
-
-        if (hasGaps) alertCard.classList.remove("d-none");
-        else alertCard.classList.add("d-none");
+    function switchTopTab(tabKey) {
+      document.getElementById('genericTitle').innerText = `已切換至【${tabKey.toUpperCase()}】主分頁`;
+      document.getElementById('section_home').classList.add('hidden');
+      document.getElementById('section_42').classList.add('hidden');
+      document.getElementById('section_generic').classList.remove('hidden');
     }
 
-    function getFormattedEquipName(equipKey) {
-        if (!equipKey) return '<span class="text-muted">未指定</span>';
-        const eq = window.systemData.equipments ? window.systemData.equipments[equipKey] : null;
-        if (!eq) return equipKey;
-        const status = eq.currentStatus || "分局(保管)";
-        return `${eq.name} (${status})`;
+    // 強制重置最新預設資料
+    function resetToDefaultData() {
+      if (confirm('確定要將系統資料重置為您剛剛上傳的最新 JSON 備份檔嗎？')) {
+        localStorage.setItem('speed_system_data', JSON.stringify(DEFAULT_SYSTEM_DATA));
+        appData = DEFAULT_SYSTEM_DATA;
+        initSystem();
+        alert('資料已順利重置恢復！');
+      }
     }
 
-    function populateEquipDropdown() {
-        const select = document.getElementById("equipSelect");
-        if (select) {
-            const currentVal = select.value;
-            select.innerHTML = "";
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const opt = document.createElement("option"); 
-                opt.value = k; 
-                opt.innerText = getFormattedEquipName(k); 
-                select.appendChild(opt);
-            });
-            if (currentVal && window.systemData.equipments[currentVal]) select.value = currentVal;
-        }
-
-        const stSelect = document.getElementById("stationSelect");
-        if (stSelect && stSelect.options.length === 0) {
-            (window.systemData.stations || DEFAULT_STATIONS).forEach(st => {
-                const opt = document.createElement("option"); opt.value = st; opt.innerText = st; stSelect.appendChild(opt);
-            });
-        }
-    }
-
-    function switchEquipment() {
-        const equipKey = document.getElementById("equipSelect").value;
-        const equip = window.systemData.equipments[equipKey];
-        if (equip) {
-            document.getElementById("equipNotice").innerText = `現正登記：${getFormattedEquipName(equipKey)}`;
-            document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
-            renderCaseTable();
-        }
-    }
-
-    function addNewStationDutyRow() {
-        const stSelect = document.getElementById("stationSelect");
-        const st = stSelect ? stSelect.value : (currentUser ? currentUser.station : "歸仁分局");
-        if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
-        
-        window.systemData.dutyRecords.push({ 
-            id: Date.now(), 
-            date: new Date().toISOString().split('T')[0], 
-            station: st, 
-            timeSlot: "", 
-            officer: "", 
-            location: "", 
-            assignedEquip: "", 
-            isImgUploaded: "", 
-            note: "", 
-            deleteStatus: "NORMAL", 
-            deleteReason: "" 
-        });
-        
-        saveSystemData();
-        renderStationDutyTable();
-        alert("📌 提示：已成功新增一筆勤務班次！\n請填寫完成後記得點擊「儲存變更」，並等待分局核定地點與指定儀器。");
-    }
-
-    function saveStationDutyData() {
-        saveSystemData(); 
-        alert("✅ 各所選填變更已儲存，分局核定紅點提醒已同步更新！");
-    }
-
-    function renderHomeDutyTable() {
-        const tbody = document.getElementById("homeDutyTbody");
-        tbody.innerHTML = "";
-        let filteredDuty = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED');
-
-        filteredDuty.forEach(rec => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center font-monospace fw-bold">${toROCDate(rec.date)}</td>
-                <td class="text-center fw-bold">${rec.station || ''}</td>
-                <td class="text-center">${rec.timeSlot || ''}</td>
-                <td class="text-center">${rec.officer || ''}</td>
-                <td class="fw-bold">${rec.location || '<span class="text-muted">未核定</span>'}</td>
-                <td class="small fw-bold text-dark">${getFormattedEquipName(rec.assignedEquip)}</td>
-                <td class="text-center">${rec.isImgUploaded === '是' ? '<span class="badge bg-secondary">已上傳</span>' : '<span class="badge bg-danger">未上傳</span>'}</td>
-                <td class="text-center"><span class="badge bg-secondary">已登記</span></td>
-                <td>${rec.note || ''}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function renderStationDutyTable() {
-        const tbody = document.getElementById("stationDutyTbody");
-        const stSelect = document.getElementById("stationSelect");
-        const st = stSelect ? stSelect.value : (currentUser ? currentUser.station : "歸仁分局");
-        tbody.innerHTML = "";
-
-        let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
-
-        records.forEach(rec => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td><input type="date" class="form-control form-control-sm" value="${rec.date || ''}" onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
-                <td><input type="text" class="form-control form-control-sm" value="${rec.timeSlot || ''}" placeholder="例: 08:00-12:00" onchange="updateDutyRecLocal(${rec.id}, 'timeSlot', this.value)"></td>
-                <td><input type="text" class="form-control form-control-sm" value="${rec.officer || ''}" placeholder="姓名" onchange="updateDutyRecLocal(${rec.id}, 'officer', this.value)"></td>
-                <td><input type="text" class="form-control form-control-sm bg-light fw-bold" value="${rec.location || ''}" readonly placeholder="等待分局核定"></td>
-                <td><input type="text" class="form-control form-control-sm bg-light fw-bold text-dark" value="${rec.assignedEquip ? getFormattedEquipName(rec.assignedEquip) : '等待分局核定'}" readonly></td>
-                <td><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-                <td><input type="text" class="form-control form-control-sm" value="${rec.note || ''}" placeholder="備註..." onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
-                <td class="text-center">${rec.deleteStatus === 'PENDING' ? '<span class="badge bg-warning text-dark">審核中</span>' : '<span class="badge bg-secondary">正常</span>'}</td>
-                <td class="text-center"><button class="btn btn-sm btn-outline-danger" onclick="deleteDutyRec(${rec.id})">刪除</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function renderCaseTable() {
-        populateEquipDropdown();
-        const equipKey = document.getElementById("equipSelect").value;
-        const equip = window.systemData.equipments[equipKey];
-        if (!equip) return;
-
-        const tbody = document.getElementById("caseTbody");
-        tbody.innerHTML = "";
-
-        const baseCode = equip.baseCode || "SPD-1150001";
-        const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
-        const basePfx = baseCode.replace(/\d+$/, "");
-
-        if (!window.systemData.caseRecords) window.systemData.caseRecords = {};
-        if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
-        const records = window.systemData.caseRecords[equipKey];
-
-        for (let i = 0; i < caseRowCount; i++) {
-            const row = records[i] || {};
-            const caseCode = `${equipKey}-${basePfx}${String(baseNum + i).padStart(7, '0')}`;
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center fw-bold">${i + 1}</td>
-                <td class="text-center font-monospace small">${caseCode}</td>
-                <td><input type="date" class="form-control form-control-sm" value="${row.date || ''}" oninput="updateCaseRowLocal(${i}, 'date', this.value)"></td>
-                <td><input type="text" class="form-control form-control-sm" value="${row.officer || ''}" placeholder="填寫人員" oninput="updateCaseRowLocal(${i}, 'officer', this.value)"></td>
-                <td><select class="form-select form-select-sm" onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
-                <td><input type="text" class="form-control form-control-sm" value="${row.reason || ''}" placeholder="未入案原因/備註" oninput="updateCaseRowLocal(${i}, 'reason', this.value)"></td>
-                <td class="text-center">${row.date && row.officer ? '<span class="badge bg-secondary">已登記</span>' : '<span class="badge bg-light text-muted border">等待中</span>'}</td>
-            `;
-            tbody.appendChild(tr);
-        }
-    }
-
-    function updateCaseRowLocal(index, field, value) {
-        const equipKey = document.getElementById("equipSelect").value;
-        if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
-        if (!window.systemData.caseRecords[equipKey][index]) window.systemData.caseRecords[equipKey][index] = { isEntry: "是" };
-        window.systemData.caseRecords[equipKey][index][field] = value;
-        saveSystemData();
-    }
-
-    function addMoreCaseRows() {
-        caseRowCount += 10;
-        renderCaseTable();
-    }
-
-    function saveCaseData() {
-        saveSystemData();
-        alert("✅ 案件管制資料已成功儲存！");
-    }
-
-    function updateDutyRecLocal(id, field, value) {
-        const rec = window.systemData.dutyRecords.find(r => r.id === id);
-        if (rec) { rec[field] = value; saveSystemData(); }
-    }
-
-    function deleteDutyRec(id) {
-        const rec = window.systemData.dutyRecords.find(r => r.id === id);
-        if (rec) { rec.deleteStatus = 'PENDING'; saveSystemData(); renderStationDutyTable(); alert("⚠️ 刪除申請已送出，等待分局審核！"); }
-    }
-
-    function renderHqMasterDutyTable() {
-        const tbody = document.getElementById("hqMasterDutyTbody");
-        if (!tbody) return;
-        tbody.innerHTML = "";
-        let validDuty = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED');
-
-        validDuty.forEach(rec => {
-            let equipOpts = `<option value="">--請指定測速儀器--</option>`;
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''}>${getFormattedEquipName(k)}</option>`;
-            });
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-center font-monospace fw-bold small">${toROCDate(rec.date)}</td>
-                <td class="text-center fw-bold small">${rec.station || ''}</td>
-                <td class="text-center small">${rec.timeSlot || ''}</td>
-                <td class="text-center small">${rec.officer || ''}</td>
-                <td><input type="text" class="form-control form-control-sm" value="${rec.location || ''}" placeholder="核定地點" onchange="updateDutyRecLocal(${rec.id}, 'location', this.value)"></td>
-                <td><select class="form-select form-select-sm border-secondary fw-bold text-dark" onchange="updateDutyRecLocal(${rec.id}, 'assignedEquip', this.value)">${equipOpts}</select></td>
-                <td class="text-center"><select class="form-select form-select-sm" onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function saveHqMasterDutyData() {
-        saveSystemData();
-        alert("✅ 地點與指定測速儀核定結果已儲存！");
-    }
-
-    function saveSystemData() {
-        if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData);
-        updateAuditNotificationBadges();
-    }
-
-    window.refreshAllUI = function() {
-        populateEquipDropdown();
-        renderHomeDutyTable();
-        renderStationDutyTable();
-        renderCaseTable();
-        renderHqMasterDutyTable();
-        updateAuditNotificationBadges();
-        
-        if (currentUser) {
-            const badge = document.getElementById('topUserRoleBadge');
-            const currentUserBadge = document.getElementById('currentUserBadge');
-            if (badge) badge.innerText = `${currentUser.station} - ${currentUser.name}`;
-            if (currentUserBadge) currentUserBadge.innerText = `身分：${currentUser.name} (${currentUser.station})`;
-        }
-    };
-
-    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
-    function toggleSpeedGroup() { document.getElementById("speedSubnav").classList.toggle("show"); }
-    function toggleHqGroup(e) { if (e) e.stopPropagation(); document.getElementById("hqSubnav").classList.toggle("show"); }
-    
-    function selectPage(p) {
-        document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("show", "active"));
-        const target = document.getElementById(`${p}-content`);
-        if (target) target.classList.add("show", "active");
-    }
-
-    function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
-    function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    // 啟動系統
+    window.onload = initSystem;
+  </script>
 </body>
 </html>
