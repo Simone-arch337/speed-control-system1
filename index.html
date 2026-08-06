@@ -31,8 +31,8 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
-            // 🔄 相容舊版本資料庫節點：若 V15 無資料，自動搜尋舊節點讀取
-            window.dbRef = db.ref('guiRenSystemV15DB');
+            // 綁定原始 Firebase 資料庫節點
+            window.dbRef = db.ref('guiRenSystemDB');
 
             window.saveSystemDataToCloud = function(data) {
                 if (window.dbRef) {
@@ -44,24 +44,24 @@
                 }
             };
 
-            // 嘗試讀取資料，若發現是空的則嘗試相容讀取舊節點 V14
+            // 自動讀取您原先儲存在雲端的資料
             window.dbRef.on('value', (snapshot) => {
                 let data = snapshot.val();
-                if (!data) {
-                    db.ref('guiRenSystemV14DB').once('value', (snap14) => {
-                        let data14 = snap14.val();
-                        if (data14) {
-                            window.systemData = data14;
-                            window.saveSystemDataToCloud(data14); // 自動將舊資料遷移至新節點
+                if (data) {
+                    window.systemData = data;
+                } else {
+                    // 若原始節點為空，搜尋備份節點 V15 / V14 確保資料不遺失
+                    db.ref('guiRenSystemV15DB').once('value', (s15) => {
+                        if (s15.val()) {
+                            window.systemData = s15.val();
                         } else {
                             window.systemData = window.defaultSystemData;
                         }
                         if (window.refreshAllUI) window.refreshAllUI();
                     });
-                } else {
-                    window.systemData = data;
-                    if (window.refreshAllUI) window.refreshAllUI();
+                    return;
                 }
+                if (window.refreshAllUI) window.refreshAllUI();
                 
                 const statusEl = document.getElementById("cloudStatusBadge");
                 if (statusEl) {
@@ -169,7 +169,7 @@
             100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
-        /* 🖼️ 右側區域背景淡化水彩插畫 */
+        /* 🖼️ 主區域背景淡化水彩插畫 (登入後大空白頁面淡化 15%) */
         #content {
             width: 100%;
             padding: 18px;
@@ -544,7 +544,7 @@
 
         checkLoginState();
 
-        // 監聽動作以重置 2 小時計時器
+        // 精確監聽使用者點擊與滑鼠移動，重置 2 小時計時器
         ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
             window.addEventListener(evtName, resetInactivityTimer, true);
         });
@@ -610,11 +610,11 @@
             if (hqParentDot) hqParentDot.classList.add('d-none');
         }
 
-        // 🔍 案件管制表斷號（跳號）檢查
+        // 🔍 檢查案件是否有缺漏跳號
         checkCaseNumberGaps();
     }
 
-    /* 🔍 檢查案件是否有缺漏跳號 */
+    /* 🔍 檢查案件管制表缺漏斷號 */
     function checkCaseNumberGaps() {
         const alertCard = document.getElementById("homeGapAlertCard");
         const alertList = document.getElementById("homeGapAlertList");
@@ -653,7 +653,7 @@
         else alertCard.classList.add("d-none");
     }
 
-    /* 🎯 格式統一：儀器名稱 (當前狀態) */
+    /* 🎯 統一格式：儀器名稱 (當前狀態) */
     function getFormattedEquipName(equipKey) {
         if (!equipKey) return '<span class="text-muted">未指定</span>';
         const eq = window.systemData.equipments ? window.systemData.equipments[equipKey] : null;
@@ -694,7 +694,7 @@
         }
     }
 
-    /* 📢 新增勤務跳出提示視窗 */
+    /* 📢 各單位人員點選新增勤務跳提醒 */
     function addNewStationDutyRow() {
         const stSelect = document.getElementById("stationSelect");
         const st = stSelect ? stSelect.value : (currentUser ? currentUser.station : "歸仁分局");
