@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>臺南市政府警察局歸仁分局交通勤務管理系統</title>
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,44 +12,45 @@
     body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
     .tab-active { border-bottom: 3px solid #1d4ed8; color: #1d4ed8; font-weight: bold; }
     .subnav-active { background-color: #1e40af; color: #ffffff; font-weight: 600; }
+    .field-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-  <!-- 頂部導航列 Header -->
+  <!-- Header -->
   <header class="bg-slate-900 text-white shadow-md">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <i class="fa-solid fa-shield-halved text-2xl text-blue-400"></i>
         <h1 id="sysTitle" class="text-xl font-bold tracking-wide">臺南市政府警察局歸仁分局交通勤務管理系統</h1>
       </div>
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-3">
         <span class="text-sm bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
           <i class="fa-solid fa-user text-slate-400 mr-1"></i> <span id="currentUserDisplay">管理員 (admin)</span>
         </span>
-        <button onclick="resetToDefaultData()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded transition">
-          <i class="fa-solid fa-rotate-left mr-1"></i> 強制重置最新資料
+        <button onclick="resetData()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded transition">
+          <i class="fa-solid fa-rotate-left mr-1"></i> 重置最新備份
         </button>
       </div>
     </div>
   </header>
 
-  <!-- 主要分頁頁籤 Top Tabs -->
+  <!-- Top Tabs -->
   <nav class="bg-white border-b border-slate-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 flex space-x-8">
-      <button id="topTabSpeedBtn" onclick="switchTopTab('speed')" class="py-3 px-2 tab-active transition">
+      <button id="tab_speed" onclick="switchTopTab('speed')" class="py-3 px-2 tab-active transition">
         <i class="fa-solid fa-gauge-high mr-1"></i> <span id="label_topTabSpeed">測速勤務</span>
       </button>
-      <button id="topTabTrafficBtn" onclick="switchTopTab('traffic')" class="py-3 px-2 text-slate-500 hover:text-slate-700 transition">
+      <button id="tab_traffic" onclick="switchTopTab('traffic')" class="py-3 px-2 text-slate-500 hover:text-slate-700 transition">
         <i class="fa-solid fa-road mr-1"></i> <span id="label_topTabTraffic">道路交通工程</span>
       </button>
-      <button id="topTabAdminBtn" onclick="switchTopTab('admin')" class="py-3 px-2 text-slate-500 hover:text-slate-700 transition">
+      <button id="tab_admin" onclick="switchTopTab('admin')" class="py-3 px-2 text-slate-500 hover:text-slate-700 transition">
         <i class="fa-solid fa-gears mr-1"></i> <span id="label_topTabAdmin">系統總後台設定</span>
       </button>
     </div>
   </nav>
 
-  <!-- 測速勤務 次級功能導航 SubNav -->
+  <!-- SubNav -->
   <div id="speedSubNav" class="bg-slate-800 text-slate-300">
     <div class="max-w-7xl mx-auto px-4 flex space-x-2 overflow-x-auto py-2 text-sm">
       <button id="snav_home_btn" onclick="switchSubTab('home')" class="px-3 py-1.5 rounded subnav-active transition">
@@ -61,22 +62,16 @@
       <button id="snav_case_btn" onclick="switchSubTab('case')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
         <i class="fa-solid fa-folder-open mr-1"></i> <span id="label_snav_case">測速案件管制表</span>
       </button>
-      <button id="snav_41_btn" onclick="switchSubTab('41')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
-        <i class="fa-solid fa-location-dot mr-1"></i> <span id="label_snav_41">4.1 地點與儀器核定</span>
-      </button>
       <button id="snav_42_btn" onclick="switchSubTab('42')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
         <i class="fa-solid fa-boxes-packing mr-1"></i> <span id="label_snav_42">4.2 測速儀保管與履歷</span>
-      </button>
-      <button id="snav_43_btn" onclick="switchSubTab('43')" class="px-3 py-1.5 rounded hover:bg-slate-700 transition">
-        <i class="fa-solid fa-file-pdf mr-1"></i> <span id="label_snav_43">4.3 檢定證書(PDF)</span>
       </button>
     </div>
   </div>
 
-  <!-- 主要內容顯示區 Container -->
+  <!-- Main Area -->
   <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
 
-    <!-- 1. 測速勤務一覽表 Section -->
+    <!-- 1. 勤務總表 Section -->
     <section id="section_home" class="space-y-4">
       <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
         <div class="flex justify-between items-center mb-4">
@@ -91,22 +86,91 @@
               <tr>
                 <th class="border p-2.5">日期</th>
                 <th class="border p-2.5">單位</th>
-                <th class="border p-2.5">時間</th>
+                <th class="border p-2.5">時段</th>
                 <th class="border p-2.5">地點</th>
-                <th class="border p-2.5">儀器</th>
+                <th class="border p-2.5">儀器代碼</th>
                 <th class="border p-2.5">執勤人員</th>
                 <th class="border p-2.5">狀態</th>
               </tr>
             </thead>
-            <tbody id="dutyTableBody">
-              <!-- JavaScript 動態帶入資料 -->
-            </tbody>
+            <tbody id="dutyTableBody"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- 2. 4.2 測速儀保管與履歷 Section -->
+    <!-- 2. 各所勤務填報與警示 Section -->
+    <section id="section_station" class="space-y-4 hidden">
+      <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+        <h2 id="label_card_stationDuty" class="text-lg font-bold text-slate-800 border-l-4 border-blue-600 pl-3 mb-4">
+          各所勤務選填管理
+        </h2>
+
+        <!-- 警示提示訊息條 -->
+        <div id="alertBox" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded">
+          <div class="flex items-center">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl mr-3"></i>
+            <p id="alertText" class="text-sm text-red-700 font-semibold"></p>
+          </div>
+        </div>
+
+        <form id="dutyForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">執勤日期 <span class="text-red-500">*</span></label>
+            <input type="date" id="input_date" value="2026-08-15" class="w-full border p-2 rounded text-sm border-slate-300">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">單位 <span class="text-red-500">*</span></label>
+            <select id="input_station" onchange="updateStationOptions()" class="w-full border p-2 rounded text-sm border-slate-300">
+              <option value="仁德分駐所">仁德分駐所</option>
+              <option value="文賢派出所">文賢派出所</option>
+              <option value="歸仁派出所">歸仁派出所</option>
+              <option value="關廟分駐所">關廟分駐所</option>
+              <option value="分局交通組">分局交通組</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">執勤時段 <span class="text-red-500">*</span></label>
+            <select id="input_timeSlot" class="w-full border p-2 rounded text-sm border-slate-300">
+              <option value="08:00-12:00">08:00-12:00</option>
+              <option value="12:00-16:00">12:00-16:00</option>
+              <option value="16:00-20:00">16:00-20:00</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">執勤地點 <span class="text-red-500">* (漏填警示)</span></label>
+            <select id="input_location" class="w-full border p-2 rounded text-sm border-slate-300">
+              <!-- 動態生成地點 -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">執勤人員 <span class="text-red-500">* (漏填警示)</span></label>
+            <select id="input_officer" class="w-full border p-2 rounded text-sm border-slate-300">
+              <!-- 動態生成人員 -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">使用裝備 <span class="text-red-500">* (漏填警示)</span></label>
+            <select id="input_equip" class="w-full border p-2 rounded text-sm border-slate-300">
+              <option value="">-- 請選擇裝備 --</option>
+              <option value="LASER-1">LASER-1 (TC007871)</option>
+              <option value="LASER-2">LASER-2 (TC010767)</option>
+              <option value="LASER-3">LASER-3 (TC007876)</option>
+              <option value="LASER-4">LASER-4 (TC013416)</option>
+              <option value="LASER-5">LASER-5 (TC011978)</option>
+              <option value="LASER-6">LASER-6 (TC013417)</option>
+            </select>
+          </div>
+        </form>
+        <div class="mt-5 flex justify-end">
+          <button type="button" onclick="submitDutyForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-semibold transition">
+            <i class="fa-solid fa-floppy-disk mr-1"></i> 儲存並檢查漏填
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 保管人履歷 Section -->
     <section id="section_42" class="space-y-4 hidden">
       <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
         <h2 id="label_snav_42_title" class="text-lg font-bold text-slate-800 border-l-4 border-blue-600 pl-3 mb-4">
@@ -117,27 +181,25 @@
             <thead class="bg-slate-100 text-slate-700 font-semibold">
               <tr>
                 <th class="border p-2.5">設備代碼</th>
-                <th class="border p-2.5">設備名稱/序號</th>
+                <th class="border p-2.5">序號/名稱</th>
                 <th class="border p-2.5">當前保管人</th>
                 <th class="border p-2.5">職稱</th>
                 <th class="border p-2.5">保管單位</th>
                 <th class="border p-2.5">保管期限</th>
               </tr>
             </thead>
-            <tbody id="keeperTableBody">
-              <!-- JavaScript 動態帶入保管人資料 -->
-            </tbody>
+            <tbody id="keeperTableBody"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- 3. 通用備用頁面 Section (其他分頁預設樣板) -->
+    <!-- 4. 通用替代 Section -->
     <section id="section_generic" class="hidden">
       <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200 text-center py-12">
         <i class="fa-solid fa-circle-info text-4xl text-blue-500 mb-3"></i>
         <h3 id="genericTitle" class="text-xl font-bold text-slate-700">頁面載入成功</h3>
-        <p class="text-slate-500 text-sm mt-2">相關資料與組態已成功同步載入至最新狀態。</p>
+        <p class="text-slate-500 text-sm mt-2">相關資料與警示功能已準備就緒。</p>
       </div>
     </section>
 
@@ -147,181 +209,234 @@
     臺南市政府警察局歸仁分局 版權所有 &copy; 2026 Traffic Management System
   </footer>
 
-  <!-- 系統核心資料與控制邏輯 Script -->
   <script>
-    // 預設最新系統 JSON 資料 (包含全域名稱、勤務、裝備保管人等)
-    const DEFAULT_SYSTEM_DATA = {
-      "adminUsername": "admin",
-      "caseRecords": {
-        "LASER-1": [
-          { "date": "2026-08-01", "isEntry": "是", "officer": "方士翔" },
-          null, null,
-          { "date": "2026-08-04", "isEntry": "是", "officer": "陳慶徽" },
-          null,
-          { "date": "2026-08-06", "isEntry": "是", "officer": "王英鑫" }
-        ]
-      },
+    // 最新內建系統備份 JSON
+    const BACKUP_JSON = {
       "customTitles": {
         "brandCombined": "臺南市政府警察局歸仁分局交通勤務管理系統",
-        "card_caseEquip": "測速裝備選擇與登錄",
-        "card_caseList": "案件登記列表",
         "card_homeTable": "當月全分局測速勤務總表彙整",
         "card_stationDuty": "各所勤務選填管理",
-        "snav_41": "4.1 地點與儀器核定",
         "snav_42": "4.2 測速儀保管與履歷",
-        "snav_43": "4.3 檢定證書(PDF)",
-        "snav_44": "4.4 人員嘉獎統計",
-        "snav_45": "4.5 時段地點統計",
-        "snav_case": "測速案件管制表",
         "snav_home": "測速勤務一覽表",
         "snav_station": "各所勤務填報",
-        "topTabAdmin": "系統總後台設定",
+        "snav_case": "測速案件管制表",
         "topTabSpeed": "測速勤務",
-        "topTabTraffic": "道路交通工程"
+        "topTabTraffic": "道路交通工程",
+        "topTabAdmin": "系統總後台設定"
       },
       "dutyRecords": [
-        { "id": 1, "date": "2026-08-01", "station": "仁德分駐所", "time": "08:00-10:00", "location": "市道182線10K", "equipment": "LASER-3", "officer": "王英鑫", "status": "正常執行" },
-        { "id": 2, "date": "2026-08-02", "station": "文賢派出所", "time": "14:00-16:00", "location": "台1線340K", "equipment": "LASER-4", "officer": "張雯倩", "status": "正常執行" },
-        { "id": 3, "date": "2026-08-03", "station": "歸仁派出所", "time": "10:00-12:00", "location": "台39線12K", "equipment": "LASER-5", "officer": "楊丁樺", "status": "正常執行" },
-        { "id": 4, "date": "2026-08-04", "station": "關廟分駐所", "time": "16:00-18:00", "location": "市道182線18K", "equipment": "LASER-6", "officer": "陳韋霖", "status": "正常執行" }
+        { "id": 1, "date": "2026-08-01", "station": "太廟派出所", "timeSlot": "08:00-12:00", "location": "仁德區中正路一段", "assignedEquip": "LASER-1", "officer": "吳宣凱", "deleteStatus": "APPROVED" },
+        { "id": 2, "date": "2026-08-01", "station": "仁德分駐所", "timeSlot": "14:00-18:00", "location": "仁德區中山路", "assignedEquip": "LASER-3", "officer": "方士翔", "deleteStatus": "APPROVED" },
+        { "id": 7, "date": "2026-08-12", "station": "太廟派出所", "timeSlot": "08:00-12:00", "location": "仁德區中正路三段", "assignedEquip": "LASER-3", "officer": "吳宣凱", "deleteStatus": "NORMAL" },
+        { "id": 10, "date": "2026-08-12", "station": "德南派出所", "timeSlot": "12:00-16:00", "location": "仁德區中正路一段", "assignedEquip": "LASER-2", "officer": "梁育誠", "deleteStatus": "NORMAL" },
+        { "id": 11, "date": "2026-08-15", "station": "歸南派出所", "timeSlot": "08:00-12:00", "location": "歸仁區台39線", "assignedEquip": "LASER-2", "officer": "李芷昀", "deleteStatus": "NORMAL" }
       ],
       "equipKeepers": {
-        "LASER-1": { "name": "馮奎禎", "title": "巡佐", "unit": "分局交通組", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC007871" },
-        "LASER-2": { "name": "馮奎禎", "title": "巡佐", "unit": "分局交通組", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC010767" },
-        "LASER-3": { "name": "王英鑫", "title": "警員", "unit": "仁德分駐所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC007876" },
-        "LASER-4": { "name": "張雯倩", "title": "警員", "unit": "文賢派出所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC013416" },
-        "LASER-5": { "name": "楊丁樺", "title": "警員", "unit": "歸仁派出所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC011978" },
-        "LASER-6": { "name": "陳韋霖", "title": "警員", "unit": "關廟分駐所", "period": "2026-01-01 ～ 2026-12-31", "sn": "TC013417" },
-        "RADAR-1": { "name": "馮奎禎", "title": "巡佐", "unit": "分局交通組", "period": "2026-01-01 ～ 2026-12-31", "sn": "22M009" },
-        "RADAR-2": { "name": "張雯倩", "title": "警員", "unit": "文賢派出所", "period": "2026-01-01 ～ 2026-12-31", "sn": "24M066" }
+        "LASER-1": { "name": "馮奎禎", "title": "巡佐", "station": "分局交通組", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "LASER-2": { "name": "馮奎禎", "title": "巡佐", "station": "分局交通組", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "LASER-3": { "name": "王英鑫", "title": "警員", "station": "仁德分駐所", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "LASER-4": { "name": "張雯倩", "title": "警員", "station": "文賢派出所", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "LASER-5": { "name": "楊丁樺", "title": "警員", "station": "歸仁派出所", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "LASER-6": { "name": "陳韋霖", "title": "警員", "station": "關廟分駐所", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "RADAR-1": { "name": "馮奎禎", "title": "巡佐", "station": "分局交通組", "startDate": "2026-01-01", "endDate": "2026-12-31" },
+        "RADAR-2": { "name": "張雯倩", "title": "警員", "station": "文賢派出所", "startDate": "2026-01-01", "endDate": "2026-12-31" }
+      },
+      "equipments": {
+        "LASER-1": { "name": "TC007871" }, "LASER-2": { "name": "TC010767" },
+        "LASER-3": { "name": "TC007876" }, "LASER-4": { "name": "TC013416" },
+        "LASER-5": { "name": "TC011978" }, "LASER-6": { "name": "TC013417" },
+        "RADAR-1": { "name": "22M009" },    "RADAR-2": { "name": "24M066" }
+      },
+      "locations": {
+        "仁德分駐所": ["-- 請選擇地點 --", "仁德區高速一街一段", "仁德區中山路", "仁德區中正路二段"],
+        "文賢派出所": ["-- 請選擇地點 --", "仁德區台86線", "仁德區二仁路", "仁德區大同路三段"],
+        "歸仁派出所": ["-- 請選擇地點 --", "歸仁區中山路", "歸仁區中正南路", "歸仁區歸仁十三路"],
+        "關廟分駐所": ["-- 請選擇地點 --", "關廟區中正路", "關廟區南雄路", "關廟區五甲路"],
+        "分局交通組": ["-- 請選擇地點 --", "轄區重大交通路段", "市道182線", "台39線"]
+      },
+      "officers": {
+        "仁德分駐所": ["-- 請選擇員警 --", "方士翔", "李昱宏", "王英鑫"],
+        "文賢派出所": ["-- 請選擇員警 --", "吳季涓", "陳柏霖", "張雯倩"],
+        "歸仁派出所": ["-- 請選擇員警 --", "楊丁樺", "吳和錡", "沈政翰"],
+        "關廟分駐所": ["-- 請選擇員警 --", "黃聖閔", "陳韋霖", "徐慈"],
+        "分局交通組": ["-- 請選擇員警 --", "馮奎禎"]
       }
     };
 
-    // 初始化 App 資料
-    let appData = {};
+    let sysData = {};
 
-    function initSystem() {
-      // 讀取 LocalStorage 或載入預設
-      const saved = localStorage.getItem('speed_system_data');
-      if (saved) {
-        try {
-          appData = JSON.parse(saved);
-        } catch (e) {
-          appData = DEFAULT_SYSTEM_DATA;
-        }
-      } else {
-        appData = DEFAULT_SYSTEM_DATA;
-        localStorage.setItem('speed_system_data', JSON.stringify(appData));
-      }
+    function init() {
+      const stored = localStorage.getItem('speed_system_data');
+      sysData = stored ? JSON.parse(stored) : BACKUP_JSON;
+      localStorage.setItem('speed_system_data', JSON.stringify(sysData));
 
-      applyCustomTitles();
       renderDutyTable();
       renderKeeperTable();
+      updateStationOptions();
     }
 
-    // 更新標題文字
-    function applyCustomTitles() {
-      if (!appData.customTitles) return;
-      const t = appData.customTitles;
-      if (t.brandCombined) document.getElementById('sysTitle').innerText = t.brandCombined;
-      if (t.topTabSpeed) document.getElementById('label_topTabSpeed').innerText = t.topTabSpeed;
-      if (t.topTabTraffic) document.getElementById('label_topTabTraffic').innerText = t.topTabTraffic;
-      if (t.topTabAdmin) document.getElementById('label_topTabAdmin').innerText = t.topTabAdmin;
-      if (t.snav_home) document.getElementById('label_snav_home').innerText = t.snav_home;
-      if (t.snav_station) document.getElementById('label_snav_station').innerText = t.snav_station;
-      if (t.snav_case) document.getElementById('label_snav_case').innerText = t.snav_case;
-      if (t.snav_41) document.getElementById('label_snav_41').innerText = t.snav_41;
-      if (t.snav_42) document.getElementById('label_snav_42').innerText = t.snav_42;
-      if (t.snav_43) document.getElementById('label_snav_43').innerText = t.snav_43;
-      if (t.card_homeTable) document.getElementById('label_card_homeTable').innerText = t.card_homeTable;
-    }
-
-    // 渲染勤務紀錄表
+    // 渲染勤務表
     function renderDutyTable() {
       const tbody = document.getElementById('dutyTableBody');
       tbody.innerHTML = '';
-      if (!appData.dutyRecords) return;
-
-      appData.dutyRecords.forEach(r => {
+      sysData.dutyRecords.forEach(r => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 border-b";
+        const isDel = r.deleteStatus === 'APPROVED';
         tr.innerHTML = `
           <td class="p-2.5 font-medium">${r.date}</td>
           <td class="p-2.5">${r.station}</td>
-          <td class="p-2.5">${r.time}</td>
-          <td class="p-2.5">${r.location}</td>
-          <td class="p-2.5"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border">${r.equipment}</span></td>
-          <td class="p-2.5">${r.officer}</td>
-          <td class="p-2.5"><span class="text-green-600 font-semibold text-xs bg-green-50 px-2 py-1 rounded border border-green-200">${r.status}</span></td>
+          <td class="p-2.5">${r.timeSlot || ''}</td>
+          <td class="p-2.5">${r.location || '<span class="text-slate-400">未填寫</span>'}</td>
+          <td class="p-2.5"><span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border">${r.assignedEquip || '無'}</span></td>
+          <td class="p-2.5">${r.officer || '<span class="text-slate-400">未指定</span>'}</td>
+          <td class="p-2.5">${isDel ? '<span class="text-red-600 bg-red-50 text-xs px-2 py-0.5 rounded border border-red-200">已核准刪除</span>' : '<span class="text-green-600 bg-green-50 text-xs px-2 py-0.5 rounded border border-green-200">正常</span>'}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 渲染 4.2 裝備保管人表
+    // 渲染保管人表
     function renderKeeperTable() {
       const tbody = document.getElementById('keeperTableBody');
       tbody.innerHTML = '';
-      if (!appData.equipKeepers) return;
-
-      Object.keys(appData.equipKeepers).forEach(code => {
-        const k = appData.equipKeepers[code];
+      Object.keys(sysData.equipKeepers).forEach(code => {
+        const k = sysData.equipKeepers[code];
+        const eq = sysData.equipments[code];
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 border-b";
         tr.innerHTML = `
           <td class="p-2.5 font-bold text-blue-700">${code}</td>
-          <td class="p-2.5">${k.sn}</td>
+          <td class="p-2.5">${eq ? eq.name : ''}</td>
           <td class="p-2.5 font-medium">${k.name}</td>
           <td class="p-2.5">${k.title}</td>
-          <td class="p-2.5">${k.unit}</td>
-          <td class="p-2.5 text-xs text-slate-500">${k.period}</td>
+          <td class="p-2.5">${k.station}</td>
+          <td class="p-2.5 text-xs text-slate-500">${k.startDate} ～ ${k.endDate}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 切換 SubNav 頁面
-    function switchSubTab(tabKey) {
-      document.querySelectorAll('#speedSubNav button').forEach(btn => {
-        btn.classList.remove('subnav-active');
-        btn.classList.add('hover:bg-slate-700');
-      });
-      document.getElementById(`snav_${tabKey}_btn`).classList.add('subnav-active');
+    // 動態下拉選項
+    function updateStationOptions() {
+      const station = document.getElementById('input_station').value;
+      const locSelect = document.getElementById('input_location');
+      const offSelect = document.getElementById('input_officer');
 
-      // 隱藏所有區塊
+      locSelect.innerHTML = '';
+      offSelect.innerHTML = '';
+
+      const locs = sysData.locations[station] || ["-- 請選擇地點 --"];
+      locs.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l.includes('請選擇') ? '' : l;
+        opt.innerText = l;
+        locSelect.appendChild(opt);
+      });
+
+      const offs = sysData.officers[station] || ["-- 請選擇員警 --"];
+      offs.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.includes('請選擇') ? '' : o;
+        opt.innerText = o;
+        offSelect.appendChild(opt);
+      });
+    }
+
+    // 核心：檢查未填欄位與紅框警示
+    function submitDutyForm() {
+      const alertBox = document.getElementById('alertBox');
+      const alertText = document.getElementById('alertText');
+      const fields = [
+        { id: 'input_location', name: '執勤地點' },
+        { id: 'input_officer', name: '執勤人員' },
+        { id: 'input_equip', name: '使用裝備' }
+      ];
+
+      let missing = [];
+
+      // 清除舊紅框與警示
+      alertBox.classList.add('hidden');
+      fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        el.classList.remove('field-error');
+      });
+
+      // 檢查欄位
+      fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (!el.value || el.value.trim() === '') {
+          missing.push(f.name);
+          el.classList.add('field-error'); // 加上紅框
+        }
+      });
+
+      // 如果有漏填，觸發警示
+      if (missing.length > 0) {
+        alertText.innerText = `填報失敗！請補齊以下必填欄位：【 ${missing.join(' 、 ')} 】`;
+        alertBox.classList.remove('hidden');
+        return;
+      }
+
+      // 通過檢查，寫入資料
+      const newRecord = {
+        id: Date.now(),
+        date: document.getElementById('input_date').value,
+        station: document.getElementById('input_station').value,
+        timeSlot: document.getElementById('input_timeSlot').value,
+        location: document.getElementById('input_location').value,
+        officer: document.getElementById('input_officer').value,
+        assignedEquip: document.getElementById('input_equip').value,
+        deleteStatus: "NORMAL"
+      };
+
+      sysData.dutyRecords.unshift(newRecord);
+      localStorage.setItem('speed_system_data', JSON.stringify(sysData));
+      renderDutyTable();
+      alert('新增成功！已更新至當月勤務總表。');
+      switchSubTab('home');
+    }
+
+    // 次級導航切換
+    function switchSubTab(key) {
+      document.querySelectorAll('#speedSubNav button').forEach(b => {
+        b.classList.remove('subnav-active');
+        b.classList.add('hover:bg-slate-700');
+      });
+      document.getElementById(`snav_${key}_btn`).classList.add('subnav-active');
+
       document.getElementById('section_home').classList.add('hidden');
+      document.getElementById('section_station').classList.add('hidden');
       document.getElementById('section_42').classList.add('hidden');
       document.getElementById('section_generic').classList.add('hidden');
 
-      if (tabKey === 'home') {
-        document.getElementById('section_home').classList.remove('hidden');
-      } else if (tabKey === '42') {
-        document.getElementById('section_42').classList.remove('hidden');
-      } else {
+      if (key === 'home') document.getElementById('section_home').classList.remove('hidden');
+      else if (key === 'station') document.getElementById('section_station').classList.remove('hidden');
+      else if (key === '42') document.getElementById('section_42').classList.remove('hidden');
+      else {
         document.getElementById('section_generic').classList.remove('hidden');
-        document.getElementById('genericTitle').innerText = `已切換至【${document.getElementById(`label_snav_${tabKey}`)?.innerText || tabKey}】`;
+        document.getElementById('genericTitle').innerText = `已切換至【${key}】分頁`;
       }
     }
 
-    function switchTopTab(tabKey) {
-      document.getElementById('genericTitle').innerText = `已切換至【${tabKey.toUpperCase()}】主分頁`;
+    function switchTopTab(key) {
       document.getElementById('section_home').classList.add('hidden');
+      document.getElementById('section_station').classList.add('hidden');
       document.getElementById('section_42').classList.add('hidden');
       document.getElementById('section_generic').classList.remove('hidden');
+      document.getElementById('genericTitle').innerText = `已切換至【${key.toUpperCase()}】頁面`;
     }
 
-    // 強制重置最新預設資料
-    function resetToDefaultData() {
-      if (confirm('確定要將系統資料重置為您剛剛上傳的最新 JSON 備份檔嗎？')) {
-        localStorage.setItem('speed_system_data', JSON.stringify(DEFAULT_SYSTEM_DATA));
-        appData = DEFAULT_SYSTEM_DATA;
-        initSystem();
-        alert('資料已順利重置恢復！');
+    function resetData() {
+      if (confirm('確定要強制重置為最新備份資料嗎？')) {
+        localStorage.setItem('speed_system_data', JSON.stringify(BACKUP_JSON));
+        sysData = BACKUP_JSON;
+        init();
+        alert('資料已重置！');
       }
     }
 
-    // 啟動系統
-    window.onload = initSystem;
+    window.onload = init;
   </script>
 </body>
 </html>
