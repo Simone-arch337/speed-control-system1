@@ -1358,7 +1358,8 @@
             { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", assignedEquip: "LASER-3", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" }
         ],
         caseRecords: {},
-        lastReadDutyTime: 0
+        lastReadDutyTime: 0,
+        lastReadAudit41Time: 0
     };
 
     window.systemData = window.defaultSystemData;
@@ -1370,10 +1371,20 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
+        
+        // 🔒 使用 sessionStorage 保持重新整理不登出
+        const savedUser = sessionStorage.getItem('guiren_current_user');
+        if (savedUser) {
+            try {
+                currentUser = JSON.parse(savedUser);
+            } catch (e) {
+                currentUser = null;
+            }
+        }
         checkLoginState();
     });
 
-    /* 🔴 全局動態紅點提醒更新邏輯 (含測速勤務新增提醒與層級連動) */
+    /* 🔴 全局動態紅點提醒更新邏輯 (含分局審核4.1提醒連動) */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
@@ -1381,10 +1392,15 @@
 
         // 1. 各所勤務刪除待審核數量
         const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
+        
+        // 分局審核 4.1：新增勤務提醒
+        const lastRead41Time = window.systemData.lastReadAudit41Time || 0;
+        const hasUnreviewedDuty = (window.systemData.dutyRecords || []).some(r => (r.createdAt || 0) > lastRead41Time);
+
         const dot41 = document.getElementById('dot41Badge');
         const hqParentDot = document.getElementById('hqParentDot');
         
-        if (pendingDeleteCount > 0 && canAuditHq41) {
+        if ((pendingDeleteCount > 0 || hasUnreviewedDuty) && canAuditHq41) {
             if (dot41) dot41.classList.remove('d-none');
             if (hqParentDot) hqParentDot.classList.remove('d-none');
         } else {
@@ -1523,6 +1539,7 @@
             document.getElementById('wrapper').style.display = 'none';
             loginModalInstance.show();
         } else {
+            sessionStorage.setItem('guiren_current_user', JSON.stringify(currentUser));
             document.getElementById('wrapper').style.display = 'flex';
             loginModalInstance.hide();
             collapseAllSidebarSubnavs();
@@ -1566,6 +1583,7 @@
 
     function logoutSystem() {
         currentUser = null;
+        sessionStorage.removeItem('guiren_current_user');
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
         checkLoginState();
@@ -1736,7 +1754,12 @@
             renderStationDutyTable();
         }
         else if (pageId === 'case') renderCaseTable();
-        else if (pageId === 'hq-41') { renderHqDeleteAuditTable(); renderHqMasterDutyTable(); }
+        else if (pageId === 'hq-41') { 
+            window.systemData.lastReadAudit41Time = Date.now();
+            saveSystemData();
+            renderHqDeleteAuditTable(); 
+            renderHqMasterDutyTable(); 
+        }
         else if (pageId === 'hq-42') { renderKeeperBaseTable(); renderKeeperLogTable(); }
         else if (pageId === 'hq-43') renderCertTable();
         else if (pageId === 'hq-44') renderAwardTable();
@@ -2199,6 +2222,7 @@
         });
     }
 
+    /* 斷號卡片顯示名稱與當前保管狀態 */
     function checkCaseCodeGaps() {
         const gapAlertCard = document.getElementById("homeGapAlertCard");
         const gapAlertList = document.getElementById("homeGapAlertList");
@@ -2241,11 +2265,14 @@
                     const endNumStr = `${eqKey}-${basePfx}${String(baseNum + range.end - 1).padStart(7, '0')}`;
                     const rangeText = range.start === range.end ? startNumStr : `${startNumStr} ～ ${endNumStr}`;
 
+                    const currentStatus = equip.currentStatus || "分局(保管)";
+                    const displayEquipTitle = `${equip.name} (${currentStatus})`;
+
                     const item = document.createElement("div");
                     item.className = "list-group-item d-flex justify-content-between align-items-center py-2";
                     item.innerHTML = `
                         <div>
-                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${equip.name} (${eqKey})</span>
+                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${displayEquipTitle}</span>
                             <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
                             <span class="font-monospace fw-bold text-dark">${rangeText}</span>
                         </div>
@@ -2581,6 +2608,7 @@
 
     function saveHqMasterDutyData() {
         if (getPagePermission('hq-41') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        window.systemData.lastReadAudit41Time = Date.now();
         saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存！");
     }
 
