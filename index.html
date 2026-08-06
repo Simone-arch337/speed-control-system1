@@ -1191,6 +1191,10 @@
     let currentCopyTargetRoleKey = null;
     let currentTemplateTargetRoleKey = null;
 
+    /* ⏱️ 2 小時無操作自動登出機制變數 */
+    const INACTIVITY_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 小時 (毫秒)
+    let inactivityTimer = null;
+
     const DEFAULT_STATIONS = ["分局交通組", "太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
 
     const DEFAULT_TITLES = {
@@ -1366,19 +1370,48 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
+        
+        // 🔄 讀取重新整理前儲存的登入狀態 (Session/Local Storage)
+        const savedUserJson = sessionStorage.getItem('guiRen_currentUser') || localStorage.getItem('guiRen_currentUser');
+        if (savedUserJson) {
+            try {
+                currentUser = JSON.parse(savedUserJson);
+            } catch (e) {
+                currentUser = null;
+            }
+        }
+
         checkLoginState();
+
+        // 綁定全域使用者操作事件，充值 2 小時無操作倒數
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
+            window.addEventListener(evtName, resetInactivityTimer, true);
+        });
     });
+
+    /* ⏱️ 重置無操作 2 小時倒數計時 */
+    function resetInactivityTimer() {
+        if (!currentUser) return;
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+            alert("⏰ 您已超過 2 小時未進行任何操作，系統已為您自動登出以維護安全！");
+            logoutSystem();
+        }, INACTIVITY_TIMEOUT_MS);
+    }
 
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
         const canAuditAccount = getPagePermission('hq-46-1') === 'EDIT';
 
+        // 🚨 檢查是否有待審核的刪除申請，或有各所新新增但分局未核定地點與儀器的勤務
         const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
+        const unapprovedDutyCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED' && (!r.location || !r.assignedEquip)).length;
+
         const dot41 = document.getElementById('dot41Badge');
         const hqParentDot = document.getElementById('hqParentDot');
         
-        if (pendingDeleteCount > 0 && canAuditHq41) {
+        if ((pendingDeleteCount > 0 || unapprovedDutyCount > 0) && canAuditHq41) {
             if (dot41) dot41.classList.remove('d-none');
             if (hqParentDot) hqParentDot.classList.remove('d-none');
         } else {
@@ -1501,6 +1534,7 @@
         if (!currentUser) {
             document.getElementById('wrapper').style.display = 'none';
             loginModalInstance.show();
+            if (inactivityTimer) clearTimeout(inactivityTimer);
         } else {
             document.getElementById('wrapper').style.display = 'flex';
             loginModalInstance.hide();
@@ -1508,6 +1542,7 @@
             applyRolePermissions();
             switchMainModule('speed');
             window.refreshAllUI();
+            resetInactivityTimer();
         }
     }
 
@@ -1528,6 +1563,7 @@
 
         if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
             currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '最高管理者', name: 'Super Admin' };
+            sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
             checkLoginState();
             return;
         }
@@ -1535,6 +1571,7 @@
         const users = window.systemData.users || {};
         if (users[u] && users[u].password === p && users[u].status === 'approved') {
             currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
+            sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
             checkLoginState();
         } else {
             document.getElementById('loginUsername').classList.add('is-invalid');
@@ -1545,6 +1582,8 @@
 
     function logoutSystem() {
         currentUser = null;
+        sessionStorage.removeItem('guiRen_currentUser');
+        localStorage.removeItem('guiRen_currentUser');
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
         checkLoginState();
@@ -2060,6 +2099,7 @@
         });
     }
 
+    /* 🎯 填充測速裝備下拉選單 (對齊分局格式: 名稱 (當前狀態)) */
     function populateEquipDropdown() {
         const select = document.getElementById("equipSelect");
         const certSelect = document.getElementById("certEquipSelect");
@@ -2317,6 +2357,7 @@
             deleteStatus: "NORMAL", 
             deleteReason: "" 
         });
+        saveSystemData();
         renderStationDutyTable();
     }
 
@@ -2351,7 +2392,10 @@
     function updateDutyRecLocal(id, field, value) {
         if (getPagePermission('station') !== 'EDIT') return;
         const rec = window.systemData.dutyRecords.find(r => r.id === id);
-        if (rec) rec[field] = value;
+        if (rec) {
+            rec[field] = value;
+            saveSystemData();
+        }
     }
 
     function saveStationDutyData() {
@@ -2565,7 +2609,7 @@
         saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存！");
     }
 
-    /* 🔄 根據保管單位連動過濾保管人員下拉選單 (核心連動邏輯) */
+    /* 🔄 根據保管單位連動過濾保管人員下拉選單 */
     function updateKeeperNameDropdownByStation(equipKey) {
         const stationEl = document.getElementById(`keeper_st_${equipKey}`);
         const nameEl = document.getElementById(`keeper_name_${equipKey}`);
