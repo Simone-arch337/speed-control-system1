@@ -212,7 +212,6 @@
         .card-header-sub { background-color: #4a5568; color: #ffffff; font-weight: bold; font-size: 0.9rem; }
         .table-header { background-color: var(--secondary-dark); color: #ffffff; text-align: center; }
         .alert-missing { background-color: #fff3cd !important; color: #856404; font-weight: bold; }
-        .lock-badge { background-color: #6c757d; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
 
         .perm-table th, .perm-table td { padding: 6px 10px; vertical-align: middle; }
 
@@ -268,10 +267,7 @@
                                 <span id="hqParentDot" class="d-none"><span class="dot-badge-red"></span></span>
                                 <i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">分局權限專區</span>
                             </span>
-                            <div>
-                                <span class="lock-badge me-1" id="hqLockBadge"><i class="fa-solid fa-lock me-1"></i>驗證</span>
-                                <i class="fa-solid fa-chevron-down small text-white" id="hqChevron"></i>
-                            </div>
+                            <i class="fa-solid fa-chevron-down small text-white" id="hqChevron"></i>
                         </a>
 
                         <ul class="sidebar-subnav-2" id="hqSubnav">
@@ -1248,7 +1244,7 @@
             name: "勤務執行人員",
             detailedPermissions: {
                 "home": "READ", "station": "EDIT", "case": "EDIT",
-                "hq-41": "HIDDEN", "hq-42": "HIDDEN", "hq-43": "HIDDEN", "hq-44": "HIDDEN", "hq-45": "HIDDEN",
+                "hq-41": "HIDDEN", "hq-42": "HIDDEN", "hq-43": "HIDDEN", "hq-44": "READ", "hq-45": "HIDDEN",
                 "hq-46-2": "HIDDEN", "hq-46-3": "HIDDEN", "hq-46-4": "HIDDEN", "hq-46-5": "HIDDEN", "hq-46-6": "HIDDEN", "hq-46-1": "HIDDEN"
             }
         },
@@ -1256,7 +1252,7 @@
             name: "儀器保管人",
             detailedPermissions: {
                 "home": "READ", "station": "EDIT", "case": "EDIT",
-                "hq-41": "HIDDEN", "hq-42": "EDIT", "hq-43": "EDIT", "hq-44": "HIDDEN", "hq-45": "HIDDEN",
+                "hq-41": "HIDDEN", "hq-42": "EDIT", "hq-43": "EDIT", "hq-44": "READ", "hq-45": "HIDDEN",
                 "hq-46-2": "HIDDEN", "hq-46-3": "HIDDEN", "hq-46-4": "HIDDEN", "hq-46-5": "READ", "hq-46-6": "HIDDEN", "hq-46-1": "HIDDEN"
             }
         },
@@ -1372,7 +1368,6 @@
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
         
-        // 🔒 使用 sessionStorage 保持重新整理不登出
         const savedUser = sessionStorage.getItem('guiren_current_user');
         if (savedUser) {
             try {
@@ -1384,16 +1379,14 @@
         checkLoginState();
     });
 
-    /* 🔴 全局動態紅點提醒更新邏輯 (含分局審核4.1提醒連動) */
+    /* 🔴 全局動態紅點提醒更新邏輯 */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
         const canAuditAccount = getPagePermission('hq-46-1') === 'EDIT';
 
-        // 1. 各所勤務刪除待審核數量
         const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
         
-        // 分局審核 4.1：新增勤務提醒
         const lastRead41Time = window.systemData.lastReadAudit41Time || 0;
         const hasUnreviewedDuty = (window.systemData.dutyRecords || []).some(r => (r.createdAt || 0) > lastRead41Time);
 
@@ -1408,7 +1401,6 @@
             if (hqParentDot) hqParentDot.classList.add('d-none');
         }
 
-        // 2. 帳號申請待審核數量
         const pendingAccountCount = (window.systemData.accountRequests || []).filter(r => r.status === 'pending').length;
         const dotAccount = document.getElementById('dotAccountBadge');
         const adminParentDot = document.getElementById('adminParentDot');
@@ -1421,7 +1413,6 @@
             if (adminParentDot) adminParentDot.classList.add('d-none');
         }
 
-        // 3. 測速勤務人員新增勤務提醒 (各所選填與主模組紅點)
         const lastReadTime = window.systemData.lastReadDutyTime || 0;
         const hasNewDuty = (window.systemData.dutyRecords || []).some(r => (r.createdAt || 0) > lastReadTime);
         const dotStation = document.getElementById('dotStationBadge');
@@ -2108,7 +2099,6 @@
         });
     }
 
-    /* 測速裝備選擇下拉選單 (呈現與指定測速儀器一樣：名稱與當前狀態) */
     function populateEquipDropdown() {
         const select = document.getElementById("equipSelect");
         const certSelect = document.getElementById("certEquipSelect");
@@ -2222,7 +2212,6 @@
         });
     }
 
-    /* 斷號卡片顯示名稱與當前保管狀態 */
     function checkCaseCodeGaps() {
         const gapAlertCard = document.getElementById("homeGapAlertCard");
         const gapAlertList = document.getElementById("homeGapAlertList");
@@ -2342,7 +2331,6 @@
         });
     }
 
-    /* 新增勤務時附帶時間戳記，觸發紅點提示 */
     function addNewStationDutyRow() {
         if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
         const stSelect = document.getElementById("stationSelect");
@@ -2366,7 +2354,6 @@
         renderStationDutyTable();
     }
 
-    /* 開啟申請刪除對話框 */
     function openDeleteApplyModal(recId) {
         if (getPagePermission('station') !== 'EDIT') return;
         const reason = prompt("請輸入申請刪除此班次的原因 (送交分局審核)：", "勤務異動/班次調整");
@@ -2383,7 +2370,6 @@
         }
     }
 
-    /* 撤回刪除申請 */
     function revokeDeleteApply(recId) {
         if (getPagePermission('station') !== 'EDIT') return;
         const rec = window.systemData.dutyRecords.find(r => r.id === recId);
@@ -3046,7 +3032,6 @@
         timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#4a5568', '#718096', '#a0aec0', '#cbd5e0', '#319795', '#2b6cb0', '#4c51bf', '#6b46c1'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
-    /* 分局管理者直接新增人員帳號權限（直接核准開通免再申請） */
     function adminDirectAddUser() {
         if (getPagePermission('hq-46-1') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
         const name = document.getElementById('adminAddName').value.trim();
