@@ -146,7 +146,6 @@
             color: #ffffff !important;
         }
 
-        /* 🔴 醒目紅點提醒樣式 */
         .dot-badge-red {
             display: inline-block;
             width: 9px;
@@ -368,9 +367,9 @@
                             <span><i class="fa-solid fa-table-list me-2"></i><span id="cardTitleHomeTable">當月全分局測速勤務總表彙整</span></span>
                             <div class="d-flex align-items-center gap-2">
                                 <select class="form-select form-select-sm w-auto" id="homeMonthSelect" onchange="renderHomeDutyTable()">
-                                    <option value="2026-08">2026 年 8 月</option>
-                                    <option value="2026-07">2026 年 7 月</option>
-                                    <option value="2026-09">2026 年 9 月</option>
+                                    <option value="2026-08">民國 115 年 8 月</option>
+                                    <option value="2026-07">民國 115 年 7 月</option>
+                                    <option value="2026-09">民國 115 年 9 月</option>
                                 </select>
                                 <button class="btn btn-sm btn-light text-dark" onclick="exportHomeDutyToExcel()"><i class="fa-solid fa-file-excel text-success me-1"></i>匯出 Excel</button>
                             </div>
@@ -379,7 +378,7 @@
                             <table class="table table-bordered table-hover align-middle mb-0" id="homeDutyTable" style="min-width: 950px;">
                                 <thead class="table-header sticky-top">
                                     <tr>
-                                        <th style="width: 100px;">執勤日期</th>
+                                        <th style="width: 110px;">執勤日期(民國)</th>
                                         <th style="width: 110px;">單位</th>
                                         <th style="width: 120px;">勤務時段</th>
                                         <th style="width: 100px;">人員</th>
@@ -416,7 +415,7 @@
                             <table class="table table-bordered align-middle mb-0" id="stationDutyTable" style="min-width: 900px;">
                                 <thead class="table-header sticky-top">
                                     <tr>
-                                        <th style="width: 120px;">執勤日期</th>
+                                        <th style="width: 150px;">執勤日期 (可輸入/點選)</th>
                                         <th style="width: 130px;">勤務時段</th>
                                         <th style="width: 120px;">執勤人員</th>
                                         <th>勤務地點 (分局核定)</th>
@@ -470,7 +469,7 @@
                                     <tr>
                                         <th style="width: 55px;">序號</th>
                                         <th style="width: 170px;">案件編號</th>
-                                        <th style="width: 220px;">執勤日期</th>
+                                        <th style="width: 220px;">執勤日期 (可輸入/點選)</th>
                                         <th style="width: 220px;">執勤人員</th>
                                         <th style="width: 110px;">是否入案</th>
                                         <th>備註 / 未入案原因 (選「否」強制必填，可勾選同上)</th>
@@ -498,7 +497,7 @@
                         <div class="card-body p-0 table-responsive">
                             <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 650px;">
                                 <thead class="table-dark text-center small">
-                                    <tr><th>單位</th><th>日期</th><th>時段</th><th>人員</th><th>地點</th><th>刪除原因</th><th style="width: 150px;">審核操作</th></tr>
+                                    <tr><th>單位</th><th>日期(民國)</th><th>時段</th><th>人員</th><th>地點</th><th>刪除原因</th><th style="width: 150px;">審核操作</th></tr>
                                 </thead>
                                 <tbody id="hqDeleteAuditTbody"></tbody>
                             </table>
@@ -514,7 +513,7 @@
                             <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 950px;">
                                 <thead class="table-header sticky-top small">
                                     <tr>
-                                        <th style="width: 100px;">執勤日期</th>
+                                        <th style="width: 120px;">執勤日期(民國)</th>
                                         <th style="width: 110px;">單位</th>
                                         <th style="width: 120px;">時段</th>
                                         <th style="width: 100px;">人員</th>
@@ -543,10 +542,10 @@
                                         <th style="width: 110px;">儀器代碼</th>
                                         <th style="width: 180px;">儀器名稱</th>
                                         <th style="width: 140px;">保管單位</th>
-                                        <th style="width: 130px;">保管人</th>
+                                        <th style="width: 140px;">保管人(連動過濾)</th>
                                         <th style="width: 90px;">職稱</th>
                                         <th style="width: 160px;">當前裝備狀態</th>
-                                        <th style="width: 240px;">當前保管/狀態起訖時間區間</th>
+                                        <th style="width: 280px;">當前保管/狀態起訖時間區間</th>
                                     </tr>
                                 </thead>
                                 <tbody id="keeperBaseTbody"></tbody>
@@ -571,7 +570,7 @@
                                         <th style="width: 130px;">保管單位</th>
                                         <th style="width: 120px;">保管人員</th>
                                         <th style="width: 140px;">狀態備註</th>
-                                        <th style="width: 250px;">起訖時間區間</th>
+                                        <th style="width: 280px;">起訖時間區間</th>
                                         <th>歷程說明與事由</th>
                                         <th style="width: 80px;">操作</th>
                                     </tr>
@@ -618,7 +617,7 @@
                                             <th style="width: 120px;">裝備代碼</th>
                                             <th style="width: 180px;">儀器名稱</th>
                                             <th style="width: 160px;">檢定合格字號</th>
-                                            <th style="width: 140px;">證書有效期限</th>
+                                            <th style="width: 140px;">證書有效期限(民國)</th>
                                             <th>證書檔案名稱</th>
                                             <th style="width: 160px;">操作</th>
                                         </tr>
@@ -1119,11 +1118,11 @@
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6">
-                        <label class="form-label fw-bold small">起始時間 (保管/送檢起)：</label>
+                        <label class="form-label fw-bold small">起始時間：</label>
                         <input type="date" class="form-control form-control-sm" id="modalLogStartDate">
                     </div>
                     <div class="col-6">
-                        <label class="form-label fw-bold small">結束時間 (迄)：</label>
+                        <label class="form-label fw-bold small">結束時間：</label>
                         <input type="date" class="form-control form-control-sm" id="modalLogEndDate">
                     </div>
                 </div>
@@ -1354,18 +1353,27 @@
     let timeSlotChartInstance = null;
     let loginModalInstance = null;
 
+    /* 🇹🇼 將西元日期字串 (YYYY-MM-DD) 轉換為民國年 (YYY/MM/DD) */
+    function toROCDate(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            const rocYear = parseInt(parts[0], 10) - 1911;
+            return `${rocYear}/${parts[1]}/${parts[2]}`;
+        }
+        return dateStr;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
         checkLoginState();
     });
 
-    /* 🔴 全局動態紅點提醒更新邏輯 */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
         const canAuditAccount = getPagePermission('hq-46-1') === 'EDIT';
 
-        // 1. 各所勤務刪除待審核數量
         const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
         const dot41 = document.getElementById('dot41Badge');
         const hqParentDot = document.getElementById('hqParentDot');
@@ -1378,7 +1386,6 @@
             if (hqParentDot) hqParentDot.classList.add('d-none');
         }
 
-        // 2. 帳號申請待審核數量
         const pendingAccountCount = (window.systemData.accountRequests || []).filter(r => r.status === 'pending').length;
         const dotAccount = document.getElementById('dotAccountBadge');
         const adminParentDot = document.getElementById('adminParentDot');
@@ -2053,7 +2060,6 @@
         });
     }
 
-    /* 🎯 填充與連動裝備下拉選單 */
     function populateEquipDropdown() {
         const select = document.getElementById("equipSelect");
         const certSelect = document.getElementById("certEquipSelect");
@@ -2125,7 +2131,6 @@
         }
     }
 
-    /* 🚨 檢查測速案件管制表缺漏（斷號）之核心演算法 */
     function checkCaseCodeGaps() {
         const gapAlertCard = document.getElementById("homeGapAlertCard");
         const gapAlertList = document.getElementById("homeGapAlertList");
@@ -2195,7 +2200,7 @@
     }
 
     function renderHomeDutyTable() {
-        checkCaseCodeGaps(); // 每次渲染首頁時自動觸發缺漏跳號檢測
+        checkCaseCodeGaps();
 
         const tbody = document.getElementById("homeDutyTbody");
         tbody.innerHTML = "";
@@ -2224,7 +2229,7 @@
             if (isMissingCase) tr.classList.add("alert-missing");
 
             tr.innerHTML = `
-                <td class="text-center font-monospace">${rec.date || ''}</td>
+                <td class="text-center font-monospace fw-bold">${toROCDate(rec.date)}</td>
                 <td class="text-center fw-bold">${rec.station || ''}</td>
                 <td class="text-center">${rec.timeSlot || ''}</td>
                 <td class="text-center">${rec.officer || ''}</td>
@@ -2479,7 +2484,7 @@
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="text-center fw-bold small">${rec.station}</td>
-                <td class="text-center font-monospace small">${rec.date}</td>
+                <td class="text-center font-monospace fw-bold small">${toROCDate(rec.date)}</td>
                 <td class="text-center small">${rec.timeSlot}</td>
                 <td class="text-center small">${rec.officer}</td>
                 <td class="small">${rec.location || '未核定'}</td>
@@ -2530,7 +2535,7 @@
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td class="text-center font-monospace small">${rec.date || ''}</td>
+                <td class="text-center font-monospace fw-bold small">${toROCDate(rec.date)}</td>
                 <td class="text-center fw-bold small">${rec.station || ''}</td>
                 <td class="text-center small">${rec.timeSlot || ''}</td>
                 <td class="text-center small">${rec.officer || ''}</td>
@@ -2548,7 +2553,7 @@
         if (!rec) return;
 
         if (equipKey && isEquipmentBusyOnSlot(equipKey, rec.date, rec.timeSlot, rec.id)) {
-            alert(`⚠️ 防呆攔截：測速儀器 【${equipKey}】 在 ${rec.date} 時段 ${rec.timeSlot} 已指派給其他勤務人員使用，無法重複指派！`);
+            alert(`⚠️ 防呆攔截：測速儀器 【${equipKey}】 在 ${toROCDate(rec.date)} 時段 ${rec.timeSlot} 已指派給其他勤務人員使用，無法重複指派！`);
             selectEl.value = rec.assignedEquip || "";
             return;
         }
@@ -2560,14 +2565,14 @@
         saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存！");
     }
 
-    /* 🔄 根據保管單位連動過濾保管人員下拉選單 */
+    /* 🔄 根據保管單位連動過濾保管人員下拉選單 (核心連動邏輯) */
     function updateKeeperNameDropdownByStation(equipKey) {
         const stationEl = document.getElementById(`keeper_st_${equipKey}`);
         const nameEl = document.getElementById(`keeper_name_${equipKey}`);
         if (!stationEl || !nameEl) return;
 
         const selectedStation = stationEl.value;
-        const currentSelectedName = nameEl.value;
+        const currentSelectedName = nameEl.value || (window.systemData.equipKeepers[equipKey] ? window.systemData.equipKeepers[equipKey].name : '');
         nameEl.innerHTML = "";
 
         let officerOpts = `<option value="">--選擇保管人--</option>`;
@@ -2586,6 +2591,9 @@
         }
 
         nameEl.innerHTML = officerOpts;
+        if (currentSelectedName) {
+            nameEl.value = currentSelectedName;
+        }
     }
 
     function renderKeeperBaseTable() {
@@ -2613,8 +2621,8 @@
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold small">${k}</td>
                 <td class="fw-bold small">${eq.name}</td>
-                <td><select class="form-select form-select-sm" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'} onchange="updateKeeperNameDropdownByStation('${k}')">${stationOpts}</select></td>
-                <td><select class="form-select form-select-sm" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}></select></td>
+                <td><select class="form-select form-select-sm fw-bold border-secondary" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'} onchange="updateKeeperNameDropdownByStation('${k}')">${stationOpts}</select></td>
+                <td><select class="form-select form-select-sm fw-bold border-secondary" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}></select></td>
                 <td>
                     <select class="form-select form-select-sm" id="keeper_title_${k}" ${canEdit ? '' : 'disabled'}>
                         <option value="警員" ${keeper.title === '警員' ? 'selected' : ''}>警員</option>
@@ -2832,7 +2840,7 @@
                 <td class="text-center font-monospace fw-bold small">${item.equipKey}</td>
                 <td class="fw-bold small">${eq.name}</td>
                 <td class="text-center small font-monospace">${item.certNo || '未填寫'}</td>
-                <td class="text-center font-monospace fw-bold text-dark small">${item.expDate || '未填寫'}</td>
+                <td class="text-center font-monospace fw-bold text-dark small">${toROCDate(item.expDate)}</td>
                 <td class="small text-truncate" style="max-width: 200px;"><i class="fa-solid fa-file-pdf me-1 text-danger"></i>${item.fileName || '證書檔案.pdf'}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-dark me-1 py-0 px-2" onclick="viewCertPdfByRecordId('${item.id}')"><i class="fa-solid fa-eye me-1"></i>檢視</button>
@@ -2946,7 +2954,7 @@
         const pType = document.getElementById("statsPeriodType").value;
         const container = document.getElementById("statsDateSelectorContainer");
         if (pType === "YEAR") {
-            container.innerHTML = `<label class="form-label fw-bold mb-1 small">選擇年份：</label><select class="form-select form-select-sm" id="statsYearVal"><option value="2026">2026 年</option></select>`;
+            container.innerHTML = `<label class="form-label fw-bold mb-1 small">選擇年份：</label><select class="form-select form-select-sm" id="statsYearVal"><option value="2026">民國 115 年 (2026)</option></select>`;
         } else if (pType === "MONTH") {
             container.innerHTML = `<label class="form-label fw-bold mb-1 small">選擇月份：</label><input type="month" class="form-control form-control-sm" id="statsMonthVal" value="2026-08">`;
         } else if (pType === "WEEK") {
@@ -3074,7 +3082,7 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="text-center font-monospace small">${r.date}</td>
+                    <td class="text-center font-monospace fw-bold small">${toROCDate(r.date)}</td>
                     <td class="text-center fw-bold small">${r.name}</td>
                     <td class="text-center small">${r.station}</td>
                     <td class="text-center small">${roleName}</td>
