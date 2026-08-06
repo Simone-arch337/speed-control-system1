@@ -31,8 +31,8 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
-            // 使用原始正確資料庫版本號
-            window.dbRef = db.ref('guiRenSystemV14DB');
+            // 優先讀取最新節點，若無資料自動相容救援舊版節點
+            window.dbRef = db.ref('guiRenSystemV15DB');
 
             window.saveSystemDataToCloud = function(data) {
                 if (window.dbRef) {
@@ -45,14 +45,30 @@
             };
 
             window.dbRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    window.systemData = data;
+                let data = snapshot.val();
+                if (!data) {
+                    // 自動救援：嘗試從 V14 或舊版讀取
+                    db.ref('guiRenSystemV14DB').once('value', (snap14) => {
+                        let d14 = snap14.val();
+                        if (d14) {
+                            window.systemData = d14;
+                            window.saveSystemDataToCloud(d14);
+                        } else {
+                            db.ref('guiRenSystemDB').once('value', (snapOld) => {
+                                let dOld = snapOld.val();
+                                window.systemData = dOld ? dOld : window.defaultSystemData;
+                                if (dOld) window.saveSystemDataToCloud(dOld);
+                                if (window.refreshAllUI) window.refreshAllUI();
+                            });
+                            return;
+                        }
+                        if (window.refreshAllUI) window.refreshAllUI();
+                    });
                 } else {
-                    window.systemData = window.defaultSystemData;
-                    window.saveSystemDataToCloud(window.defaultSystemData);
+                    window.systemData = data;
+                    if (window.refreshAllUI) window.refreshAllUI();
                 }
-                if (window.refreshAllUI) window.refreshAllUI();
+                
                 const statusEl = document.getElementById("cloudStatusBadge");
                 if (statusEl) {
                     statusEl.innerHTML = '<i class="fa-solid fa-cloud-check me-1 text-success"></i>雲端連線中';
@@ -159,7 +175,7 @@
             100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
-        /* 🖼️ 右側區域背景淡化水彩插畫 (圖片調淡 15%) */
+        /* 🖼️ 主區域背景淡化水彩插畫 (透明度 15%) */
         #content {
             width: 100%;
             padding: 18px;
@@ -176,15 +192,46 @@
             background-repeat: no-repeat;
             background-position: center bottom;
             background-size: contain;
-            opacity: 0.15; /* 淡化 15% */
+            opacity: 0.15;
             pointer-events: none;
             z-index: -1;
+        }
+
+        .brick-construction-box {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            border: 1px dashed var(--primary-navy);
+        }
+        .brick-worker-icon {
+            font-size: 3.5rem;
+            color: var(--primary-navy);
+            display: inline-block;
+            animation: worker-bounce 1.2s infinite ease-in-out;
+        }
+        .brick-stack { display: flex; justify-content: center; gap: 6px; margin-top: 15px; }
+        .brick-unit { width: 22px; height: 12px; background-color: var(--primary-navy); border-radius: 2px; opacity: 0.3; animation: brick-build 1.8s infinite ease-in-out; }
+        .brick-unit:nth-child(1) { animation-delay: 0s; }
+        .brick-unit:nth-child(2) { animation-delay: 0.3s; }
+        .brick-unit:nth-child(3) { animation-delay: 0.6s; }
+        .brick-unit:nth-child(4) { animation-delay: 0.9s; }
+
+        @keyframes worker-bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(-6deg); }
+        }
+        @keyframes brick-build {
+            0%, 100% { opacity: 0.2; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
 
         .card-header-clean { background-color: var(--secondary-dark); color: #ffffff; font-weight: bold; font-size: 0.95rem; }
         .card-header-sub { background-color: #4a5568; color: #ffffff; font-weight: bold; font-size: 0.9rem; }
         .table-header { background-color: var(--secondary-dark); color: #ffffff; text-align: center; }
         .lock-badge { background-color: #6c757d; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75em; }
+
+        .perm-table th, .perm-table td { padding: 6px 10px; vertical-align: middle; }
 
         @media (max-width: 991.98px) {
             #sidebar { margin-left: calc(-1 * var(--sidebar-width)); position: fixed; height: 100%; }
@@ -243,7 +290,51 @@
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2 text-white"></i><span id="snav-text-43" class="text-white">4.3 檢定證書(PDF)</span></a></li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-44" onclick="selectPage('hq-44')"><i class="fa-solid fa-award me-2 text-white"></i><span id="snav-text-44" class="text-white">4.4 人員嘉獎統計</span></a></li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-45" onclick="selectPage('hq-45')"><i class="fa-solid fa-chart-pie me-2 text-white"></i><span id="snav-text-45" class="text-white">4.5 時段地點統計</span></a></li>
+                            
+                            <li>
+                                <a class="sidebar-nav-item text-white fw-bold d-flex justify-content-between align-items-center" id="snav-hq-46-toggle" onclick="toggleHq46Group(event)">
+                                    <span><i class="fa-solid fa-gears me-2 text-white"></i><span id="snav-text-46" class="text-white">4.6 後台系統設定</span></span>
+                                    <i class="fa-solid fa-chevron-down small text-white" id="hq46Chevron"></i>
+                                </a>
+                                <ul class="sidebar-subnav-2" id="hq46Subnav">
+                                    <li><a class="sidebar-nav-item text-white" id="snav-hq-46-2" onclick="selectPage('hq-46-2')"><i class="fa-solid fa-clock me-2 text-white"></i><span id="snav-text-46-2" class="text-white">4.6.2 管理選填時段</span></a></li>
+                                    <li><a class="sidebar-nav-item text-white" id="snav-hq-46-3" onclick="selectPage('hq-46-3')"><i class="fa-solid fa-map-location-dot me-2 text-white"></i><span id="snav-text-46-3" class="text-white">4.6.3 管理勤務路段</span></a></li>
+                                    <li><a class="sidebar-nav-item text-white" id="snav-hq-46-4" onclick="selectPage('hq-46-4')"><i class="fa-solid fa-users-gear me-2 text-white"></i><span id="snav-text-46-4" class="text-white">4.6.4 管理勤務人員</span></a></li>
+                                    <li><a class="sidebar-nav-item text-white" id="snav-hq-46-5" onclick="selectPage('hq-46-5')"><i class="fa-solid fa-video me-2 text-white"></i><span id="snav-text-46-5" class="text-white">4.6.5 測速儀器設定</span></a></li>
+                                    <li><a class="sidebar-nav-item text-white" id="snav-hq-46-6" onclick="selectPage('hq-46-6')"><i class="fa-solid fa-sitemap me-2 text-white"></i><span id="snav-text-46-6" class="text-white">4.6.6 管理系統單位名稱</span></a></li>
+                                </ul>
+                            </li>
                         </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 大頁 2: 道路交通工程管理 -->
+            <div class="main-module-group mb-1">
+                <a class="sidebar-nav-item sidebar-main-module text-white" id="snav-main-traffic" onclick="switchMainModule('traffic')">
+                    <i class="fa-solid fa-road me-2 text-white"></i><span id="topTabTrafficTitle" class="text-white">道路交通工程管理</span>
+                </a>
+            </div>
+
+            <!-- 大頁 3: 系統總後台設定 -->
+            <div class="main-module-group mb-1" id="mainAdminModuleGroup">
+                <a class="sidebar-nav-item sidebar-main-module text-white d-flex justify-content-between align-items-center" id="snav-main-admin" onclick="toggleAdminGroup()">
+                    <span>
+                        <span id="adminParentDot" class="d-none"><span class="dot-badge-red"></span></span>
+                        <i class="fa-solid fa-sliders me-2 text-white"></i><span id="topTabAdminTitle" class="text-white">系統總後台設定</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down small text-white" id="adminGroupChevron"></i>
+                </a>
+
+                <ul class="sidebar-subnav" id="adminSubnav">
+                    <li>
+                        <a class="sidebar-nav-item text-white" id="snav-hq-46-1" onclick="selectPage('hq-46-1')">
+                            <span id="dotAccountBadge" class="d-none"><span class="dot-badge-red"></span></span>
+                            <i class="fa-solid fa-user-gear me-2 text-white"></i><span id="snav-text-46-1" class="text-white">管理與帳號審核</span>
+                        </a>
+                    </li>
+                    <li id="superAdminNavItem">
+                        <a class="sidebar-nav-item text-white fw-bold" id="snav-hq-46-7" onclick="selectPage('hq-46-7')"><i class="fa-solid fa-crown me-2 text-white"></i><span id="snav-text-46-7" class="text-white">系統頁面與標題名稱自訂 (最高權限)</span></a>
                     </li>
                 </ul>
             </div>
@@ -453,13 +544,108 @@
                     </div>
                 </div>
 
+                <!-- 4.2 測速儀保管人與狀態履歷管理 -->
+                <div class="tab-pane fade" id="hq-42-content">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header card-header-clean d-flex justify-content-between align-items-center py-2">
+                            <span class="fw-bold small"><i class="fa-solid fa-id-card me-2"></i>測速儀器設備當前保管人與狀態指定</span>
+                            <button class="btn btn-sm btn-light text-dark fw-bold" onclick="saveKeeperData()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存保管設定</button>
+                        </div>
+                        <div class="card-body p-0 table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1000px;">
+                                <thead class="table-dark text-center small">
+                                    <tr>
+                                        <th style="width: 110px;">儀器代碼</th>
+                                        <th style="width: 280px;">儀器名稱 (名稱與當前狀態)</th>
+                                        <th style="width: 140px;">保管單位</th>
+                                        <th style="width: 140px;">保管人</th>
+                                        <th style="width: 90px;">職稱</th>
+                                        <th style="width: 160px;">當前裝備狀態</th>
+                                        <th style="width: 280px;">當前保管/狀態起訖時間區間</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keeperBaseTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4.3 檢定證書 (PDF) -->
+                <div class="tab-pane fade" id="hq-43-content">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header card-header-clean fw-bold d-flex justify-content-between align-items-center py-2">
+                            <span class="small"><i class="fa-solid fa-file-pdf me-2"></i>測速儀器國家檢定合格證書</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2 mb-3 bg-light p-3 rounded border align-items-end">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-bold small">1. 選擇儀器 (名稱與當前狀態)：</label>
+                                    <select class="form-select form-select-sm" id="certEquipSelect"></select>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-bold small">2. 檢定合格字號：</label>
+                                    <input type="text" class="form-control form-control-sm" id="certNoInput" placeholder="例如: J1120001">
+                                </div>
+                                <div class="col-12 col-md-2">
+                                    <label class="form-label fw-bold small">3. 有效期限：</label>
+                                    <input type="date" class="form-control form-control-sm" id="certExpInput">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-bold small">4. 上傳 PDF 檔案：</label>
+                                    <input type="file" class="form-control form-control-sm" id="certFileInput" accept="application/pdf">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 大頁 2：道路交通工程管理模組 -->
+        <div id="trafficModuleContainer" style="display: none;">
+            <div class="brick-construction-box shadow-sm">
+                <div class="brick-worker-icon mb-2">
+                    <i class="fa-solid fa-person-digging"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">道路交通工程管理</h5>
+                <p class="text-secondary fw-bold small mb-2">🧱 系統功能建構中，工程人員施工中…</p>
+                <div class="brick-stack mb-4">
+                    <div class="brick-unit"></div><div class="brick-unit"></div><div class="brick-unit"></div><div class="brick-unit"></div>
+                </div>
+                <p class="text-muted small mb-4">此功能模組業已為您完成預留擴充架構，未來隨時可依工程需求上線執行！</p>
+                <button class="btn btn-dark px-4 btn-sm fw-bold" onclick="switchMainModule('speed')"><i class="fa-solid fa-arrow-left me-2"></i>返回測速執勤管理</button>
+            </div>
+        </div>
+
+        <!-- 大頁 3：系統總後台設定模組 -->
+        <div id="adminModuleContainer" style="display: none;">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="hq-46-1-content">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header card-header-clean d-flex justify-content-between align-items-center fw-bold py-2">
+                            <span><i class="fa-solid fa-id-card-clip me-2"></i>身分權限類型與細項權限對照清單 (極簡勾選表)</span>
+                            <button class="btn btn-sm btn-light text-dark fw-bold" onclick="saveRolePermissionsConfig()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存權限設定</button>
+                        </div>
+                        <div class="card-body bg-white p-3">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle mb-0 perm-table" style="min-width: 750px;">
+                                    <thead class="table-dark text-center small">
+                                        <tr><th>系統頁面 / 功能模組名稱</th><th style="width: 120px;">讀取</th><th style="width: 120px;">編輯</th><th style="width: 120px;">隱藏</th></tr>
+                                    </thead>
+                                    <tbody id="roleMatrixTbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
     </div>
 </div>
 
-<!-- 登入 Modal -->
+<!-- 🔑 完整登入與權限申請 Modal -->
 <div class="modal fade" id="loginModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered px-3">
         <div class="modal-content shadow-lg">
@@ -467,15 +653,56 @@
                 <h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-shield-halved me-2"></i><span id="modalLoginTitle">交通勤務管理系統 - 登入</span></h6>
             </div>
             <div class="modal-body p-3">
-                <div class="mb-2">
-                    <label class="form-label fw-bold small mb-1">帳號：</label>
-                    <input type="text" class="form-control" id="loginUsername" autocomplete="off">
+                <ul class="nav nav-tabs nav-fill mb-3" id="loginTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold small" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-tab-pane" type="button"><i class="fa-solid fa-right-to-bracket me-1"></i>系統登入</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold small" id="apply-tab" data-bs-toggle="tab" data-bs-target="#apply-tab-pane" type="button"><i class="fa-solid fa-user-plus me-1"></i>人員權限申請</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="loginTabContent">
+                    <div class="tab-pane fade show active" id="login-tab-pane">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">帳號：</label>
+                            <input type="text" class="form-control" id="loginUsername" autocomplete="off">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small mb-1">密碼：</label>
+                            <input type="password" class="form-control" id="loginPassword" autocomplete="off">
+                        </div>
+                        <button type="button" class="btn btn-dark w-100 fw-bold py-2" onclick="performLogin()"><i class="fa-solid fa-key me-1"></i>確認登入</button>
+                    </div>
+                    <div class="tab-pane fade" id="apply-tab-pane">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">真實姓名：</label>
+                            <input type="text" class="form-control form-control-sm" id="applyName">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">所屬單位：</label>
+                            <select class="form-select form-select-sm" id="applyStation"></select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">申請身分權限：</label>
+                            <select class="form-select form-select-sm" id="applyRole">
+                                <option value="duty_officer">勤務執行人員</option>
+                                <option value="equipment_custodian">儀器保管人</option>
+                                <option value="station_supervisor">派出所主管</option>
+                                <option value="hq_business">分局業務承辦人</option>
+                                <option value="hq_supervisor">分局主管</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">設定帳號：</label>
+                            <input type="text" class="form-control form-control-sm" id="applyUsername">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small mb-1">設定密碼：</label>
+                            <input type="password" class="form-control form-control-sm" id="applyPassword">
+                        </div>
+                        <button type="button" class="btn btn-dark w-100 fw-bold py-2" onclick="submitAccountApplication()"><i class="fa-solid fa-paper-plane me-1"></i>送出權限申請</button>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold small mb-1">密碼：</label>
-                    <input type="password" class="form-control" id="loginPassword" autocomplete="off">
-                </div>
-                <button type="button" class="btn btn-dark w-100 fw-bold py-2" onclick="performLogin()"><i class="fa-solid fa-key me-1"></i>確認登入</button>
             </div>
         </div>
     </div>
@@ -505,9 +732,19 @@
         "RADAR-2": { name: "文賢所雷達測速儀", baseCode: "SPD-1150001", currentStatus: "文賢所(保管)" }
     };
 
+    const DEFAULT_ROLES = {
+        "duty_officer": { name: "勤務執行人員", detailedPermissions: { "home": "READ", "station": "EDIT", "case": "EDIT", "hq-41": "HIDDEN" } },
+        "equipment_custodian": { name: "儀器保管人", detailedPermissions: { "home": "READ", "station": "EDIT", "case": "EDIT", "hq-41": "HIDDEN", "hq-42": "EDIT", "hq-43": "EDIT" } },
+        "station_supervisor": { name: "派出所主管", detailedPermissions: { "home": "READ", "station": "EDIT", "case": "EDIT", "hq-41": "READ" } },
+        "hq_business": { name: "分局業務承辦人", detailedPermissions: { "home": "EDIT", "station": "EDIT", "case": "EDIT", "hq-41": "EDIT", "hq-42": "EDIT", "hq-43": "EDIT" } },
+        "hq_supervisor": { name: "分局主管", detailedPermissions: { "home": "EDIT", "station": "EDIT", "case": "EDIT", "hq-41": "EDIT", "hq-42": "EDIT", "hq-43": "EDIT" } }
+    };
+
     window.defaultSystemData = {
         equipments: DEFAULT_EQUIPMENTS,
         stations: DEFAULT_STATIONS,
+        roleDefinitions: DEFAULT_ROLES,
+        users: { "admin": { password: "Kg@2394175", role: "hq_supervisor", station: "歸仁分局", name: "分局主管", status: "approved" } },
         dutyRecords: [
             { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", assignedEquip: "LASER-1", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" }
         ],
@@ -534,7 +771,7 @@
 
         checkLoginState();
 
-        // 監聽動作重置 2 小時計時器
+        // 精確監聽點擊與滑鼠移動重置 2 小時計時器
         ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
             window.addEventListener(evtName, resetInactivityTimer, true);
         });
@@ -570,9 +807,35 @@
             currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '最高管理者', name: 'Super Admin' };
             sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
             checkLoginState();
-        } else {
-            alert("帳號或密碼錯誤！");
+            return;
         }
+
+        const users = window.systemData.users || {};
+        if (users[u] && users[u].password === p && users[u].status === 'approved') {
+            currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
+            sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
+            checkLoginState();
+        } else {
+            alert("帳號或密碼錯誤，或帳號尚未審核通過！");
+        }
+    }
+
+    function submitAccountApplication() {
+        const name = document.getElementById('applyName').value.trim();
+        const station = document.getElementById('applyStation').value;
+        const role = document.getElementById('applyRole').value;
+        const u = document.getElementById('applyUsername').value.trim();
+        const p = document.getElementById('applyPassword').value.trim();
+
+        if (!name || !u || !p) { alert("⚠️ 請完整填寫姓名、帳號與密碼！"); return; }
+
+        if (!window.systemData.accountRequests) window.systemData.accountRequests = [];
+        window.systemData.accountRequests.push({
+            id: 'req_' + Date.now(), name, station, role, username: u, password: p, date: new Date().toISOString().split('T')[0], status: 'pending'
+        });
+        saveSystemData();
+        alert("✅ 權限申請已送出，請等待分局管理者審核通過後即可登入！");
+        document.getElementById('login-tab').click();
     }
 
     function logoutSystem() {
@@ -603,7 +866,7 @@
         checkCaseNumberGaps();
     }
 
-    /* 🔍 檢查案件管制表缺漏斷號 */
+    /* 🔍 案件管制表斷號（缺漏）動態檢測 */
     function checkCaseNumberGaps() {
         const alertCard = document.getElementById("homeGapAlertCard");
         const alertList = document.getElementById("homeGapAlertList");
@@ -642,7 +905,7 @@
         else alertCard.classList.add("d-none");
     }
 
-    /* 🎯 統一格式：儀器名稱 (當前狀態) */
+    /* 🎯 全站格式統一：儀器名稱 (當前狀態) */
     function getFormattedEquipName(equipKey) {
         if (!equipKey) return '<span class="text-muted">未指定</span>';
         const eq = window.systemData.equipments ? window.systemData.equipments[equipKey] : null;
@@ -666,9 +929,17 @@
         }
 
         const stSelect = document.getElementById("stationSelect");
+        const applySt = document.getElementById("applyStation");
+        const stations = window.systemData.stations || DEFAULT_STATIONS;
+
         if (stSelect && stSelect.options.length === 0) {
-            (window.systemData.stations || DEFAULT_STATIONS).forEach(st => {
+            stations.forEach(st => {
                 const opt = document.createElement("option"); opt.value = st; opt.innerText = st; stSelect.appendChild(opt);
+            });
+        }
+        if (applySt && applySt.options.length === 0) {
+            stations.forEach(st => {
+                const opt = document.createElement("option"); opt.value = st; opt.innerText = st; applySt.appendChild(opt);
             });
         }
     }
@@ -683,7 +954,7 @@
         }
     }
 
-    /* 📢 各單位人員點選新增勤務跳提醒 */
+    /* 📢 各單位新增勤務跳提醒 */
     function addNewStationDutyRow() {
         const stSelect = document.getElementById("stationSelect");
         const st = stSelect ? stSelect.value : (currentUser ? currentUser.station : "歸仁分局");
@@ -866,13 +1137,31 @@
         renderCaseTable();
         renderHqMasterDutyTable();
         updateAuditNotificationBadges();
+        
+        if (currentUser) {
+            const badge = document.getElementById('topUserRoleBadge');
+            const currentUserBadge = document.getElementById('currentUserBadge');
+            if (badge) badge.innerText = `${currentUser.station} - ${currentUser.name}`;
+            if (currentUserBadge) currentUserBadge.innerText = `身分：${currentUser.name} (${currentUser.station})`;
+        }
     };
 
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
     function toggleSpeedGroup() { document.getElementById("speedSubnav").classList.toggle("show"); }
     function toggleHqGroup(e) { if (e) e.stopPropagation(); document.getElementById("hqSubnav").classList.toggle("show"); }
-    
+    function toggleHq46Group(e) { if (e) e.stopPropagation(); document.getElementById("hq46Subnav").classList.toggle("show"); }
+    function toggleAdminGroup() { document.getElementById("adminSubnav").classList.toggle("show"); switchMainModule('admin'); }
+
+    function switchMainModule(m) {
+        document.getElementById("speedModuleContainer").style.display = (m === 'speed') ? 'block' : 'none';
+        document.getElementById("trafficModuleContainer").style.display = (m === 'traffic') ? 'block' : 'none';
+        document.getElementById("adminModuleContainer").style.display = (m === 'admin') ? 'block' : 'none';
+    }
+
     function selectPage(p) {
+        if (p === 'hq-46-1') switchMainModule('admin');
+        else switchMainModule('speed');
+
         document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("show", "active"));
         const target = document.getElementById(`${p}-content`);
         if (target) target.classList.add("show", "active");
