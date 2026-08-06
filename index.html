@@ -159,7 +159,7 @@
             animation: pulse-dot 1.5s infinite;
         }
         @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(2ff, 59, 48, 0.7); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
             70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
@@ -245,13 +245,21 @@
             <!-- 大頁 1: 測速執勤管理 -->
             <div class="main-module-group mb-1">
                 <a class="sidebar-nav-item sidebar-main-module text-white d-flex justify-content-between align-items-center" id="snav-main-speed" onclick="toggleSpeedGroup()">
-                    <span><i class="fa-solid fa-gauge-high me-2 text-white"></i><span id="topTabSpeedTitle" class="text-white">固定/非固定式測速執勤管理</span></span>
+                    <span>
+                        <span id="speedParentDot" class="d-none"><span class="dot-badge-red"></span></span>
+                        <i class="fa-solid fa-gauge-high me-2 text-white"></i><span id="topTabSpeedTitle" class="text-white">固定/非固定式測速執勤管理</span>
+                    </span>
                     <i class="fa-solid fa-chevron-down small text-white" id="speedGroupChevron"></i>
                 </a>
 
                 <ul class="sidebar-subnav" id="speedSubnav">
                     <li><a class="sidebar-nav-item text-white" id="snav-home" onclick="selectPage('home')"><i class="fa-solid fa-house me-2 text-white"></i><span id="snav-text-home" class="text-white">首頁 (當月總表)</span></a></li>
-                    <li><a class="sidebar-nav-item text-white" id="snav-station" onclick="selectPage('station')"><i class="fa-solid fa-building me-2 text-white"></i><span id="snav-text-station" class="text-white">各所選填勤務</span></a></li>
+                    <li>
+                        <a class="sidebar-nav-item text-white" id="snav-station" onclick="selectPage('station')">
+                            <span id="dotStationBadge" class="d-none"><span class="dot-badge-red"></span></span>
+                            <i class="fa-solid fa-building me-2 text-white"></i><span id="snav-text-station" class="text-white">各所選填勤務</span>
+                        </a>
+                    </li>
                     <li><a class="sidebar-nav-item text-white" id="snav-case" onclick="selectPage('case')"><i class="fa-solid fa-gun me-2 text-white"></i><span id="snav-text-case" class="text-white">測速案件管制表</span></a></li>
 
                     <li id="hqMenuContainer">
@@ -445,7 +453,7 @@
                             <div class="row g-2 align-items-center">
                                 <div class="col-12 col-md-5">
                                     <label class="form-label fw-bold mb-1 small">測速裝備選擇：</label>
-                                    <select class="form-select border-secondary" id="equipSelect" onchange="switchEquipment()"></select>
+                                    <select class="form-select border-secondary fw-bold text-dark" id="equipSelect" onchange="switchEquipment()"></select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label class="form-label fw-bold mb-1 small">首筆編號基底：</label>
@@ -1349,7 +1357,8 @@
             { id: 1, date: "2026-08-01", station: "太廟派出所", timeSlot: "08:00-12:00", officer: "吳宣凱", location: "仁德區中正路一段", assignedEquip: "LASER-1", isImgUploaded: "是", note: "正常執行", deleteStatus: "NORMAL", deleteReason: "" },
             { id: 2, date: "2026-08-01", station: "仁德分駐所", timeSlot: "14:00-18:00", officer: "方士翔", location: "仁德區中山路", assignedEquip: "LASER-3", isImgUploaded: "否", note: "天候不良未執行", deleteStatus: "NORMAL", deleteReason: "" }
         ],
-        caseRecords: {}
+        caseRecords: {},
+        lastReadDutyTime: 0
     };
 
     window.systemData = window.defaultSystemData;
@@ -1364,7 +1373,7 @@
         checkLoginState();
     });
 
-    /* 🔴 全局動態紅點提醒更新邏輯 (含層級連動) */
+    /* 🔴 全局動態紅點提醒更新邏輯 (含測速勤務新增提醒與層級連動) */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
@@ -1394,6 +1403,20 @@
         } else {
             if (dotAccount) dotAccount.classList.add('d-none');
             if (adminParentDot) adminParentDot.classList.add('d-none');
+        }
+
+        // 3. 測速勤務人員新增勤務提醒 (各所選填與主模組紅點)
+        const lastReadTime = window.systemData.lastReadDutyTime || 0;
+        const hasNewDuty = (window.systemData.dutyRecords || []).some(r => (r.createdAt || 0) > lastReadTime);
+        const dotStation = document.getElementById('dotStationBadge');
+        const speedParentDot = document.getElementById('speedParentDot');
+
+        if (hasNewDuty) {
+            if (dotStation) dotStation.classList.remove('d-none');
+            if (speedParentDot) speedParentDot.classList.remove('d-none');
+        } else {
+            if (dotStation) dotStation.classList.add('d-none');
+            if (speedParentDot) speedParentDot.classList.add('d-none');
         }
     }
 
@@ -1707,7 +1730,11 @@
         if (window.innerWidth < 992) document.getElementById("sidebar").classList.remove("active");
 
         if (pageId === 'home') renderHomeDutyTable();
-        else if (pageId === 'station') renderStationDutyTable();
+        else if (pageId === 'station') {
+            window.systemData.lastReadDutyTime = Date.now();
+            saveSystemData();
+            renderStationDutyTable();
+        }
         else if (pageId === 'case') renderCaseTable();
         else if (pageId === 'hq-41') { renderHqDeleteAuditTable(); renderHqMasterDutyTable(); }
         else if (pageId === 'hq-42') { renderKeeperBaseTable(); renderKeeperLogTable(); }
@@ -2058,6 +2085,7 @@
         });
     }
 
+    /* 測速裝備選擇下拉選單 (呈現與指定測速儀器一樣：名稱與當前狀態) */
     function populateEquipDropdown() {
         const select = document.getElementById("equipSelect");
         const certSelect = document.getElementById("certEquipSelect");
@@ -2068,7 +2096,11 @@
             select.innerHTML = "";
             Object.keys(window.systemData.equipments || {}).forEach(k => {
                 const eq = window.systemData.equipments[k];
-                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${eq.name} (${k})`; select.appendChild(opt);
+                const currentStatus = eq ? (eq.currentStatus || "分局(保管)") : "未指定";
+                const opt = document.createElement("option"); 
+                opt.value = k; 
+                opt.innerText = `${eq.name} (${currentStatus})`; 
+                select.appendChild(opt);
             });
             if (currentVal && window.systemData.equipments[currentVal]) select.value = currentVal;
         }
@@ -2283,6 +2315,7 @@
         });
     }
 
+    /* 新增勤務時附帶時間戳記，觸發紅點提示 */
     function addNewStationDutyRow() {
         if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
         const stSelect = document.getElementById("stationSelect");
@@ -2300,7 +2333,8 @@
             isImgUploaded: "", 
             note: "", 
             deleteStatus: "NORMAL", 
-            deleteReason: "" 
+            deleteReason: "",
+            createdAt: Date.now()
         });
         renderStationDutyTable();
     }
@@ -2338,11 +2372,15 @@
     function updateDutyRecLocal(id, field, value) {
         if (getPagePermission('station') !== 'EDIT') return;
         const rec = window.systemData.dutyRecords.find(r => r.id === id);
-        if (rec) rec[field] = value;
+        if (rec) {
+            rec[field] = value;
+            rec.createdAt = Date.now();
+        }
     }
 
     function saveStationDutyData() {
         if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限，無法儲存變更！'); return; }
+        window.systemData.lastReadDutyTime = Date.now();
         saveSystemData(); alert("✅ 各所選填變更已同步儲存！");
     }
 
@@ -2980,6 +3018,7 @@
         timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#4a5568', '#718096', '#a0aec0', '#cbd5e0', '#319795', '#2b6cb0', '#4c51bf', '#6b46c1'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
+    /* 分局管理者直接新增人員帳號權限（直接核准開通免再申請） */
     function adminDirectAddUser() {
         if (getPagePermission('hq-46-1') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
         const name = document.getElementById('adminAddName').value.trim();
@@ -3003,6 +3042,8 @@
             name, station, role, password, status: 'approved'
         };
 
+        if (window.systemData.rejectedRequests) delete window.systemData.rejectedRequests[username];
+
         saveSystemData();
         renderAccountRequestsUI();
 
@@ -3010,7 +3051,7 @@
         document.getElementById('adminAddUsername').value = '';
         document.getElementById('adminAddPassword').value = '';
 
-        alert(`✅ 已成功由管理者新增同仁 【${name}】 (${username}) 之權限！`);
+        alert(`✅ 已成功建立同仁 【${name}】 (${username}) 之帳號與權限！該人員無需再進行申請，即日起可直接登入使用系統。`);
     }
 
     function renderAccountRequestsUI() {
@@ -3442,5 +3483,3 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
