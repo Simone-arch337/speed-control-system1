@@ -31,11 +31,12 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
-            // 優先讀取最新節點，若無資料自動相容救援舊版節點
-            window.dbRef = db.ref('guiRenSystemV15DB');
+            // 預設鎖定主要的歷史資料庫節點 guiRenSystemV14DB
+            window.dbRef = db.ref('guiRenSystemV14DB');
 
+            // 安全寫入函式：必須有實體資料才允許同步至雲端
             window.saveSystemDataToCloud = function(data) {
-                if (window.dbRef) {
+                if (window.dbRef && data && data.dutyRecords) {
                     window.dbRef.set(data).then(() => {
                         console.log("雲端資料同步成功");
                     }).catch((error) => {
@@ -44,29 +45,28 @@
                 }
             };
 
+            // 安全監聽：絕對不主動以預設空白資料覆蓋雲端
             window.dbRef.on('value', (snapshot) => {
                 let data = snapshot.val();
-                if (!data) {
-                    // 自動救援：嘗試從 V14 或舊版讀取
-                    db.ref('guiRenSystemV14DB').once('value', (snap14) => {
-                        let d14 = snap14.val();
-                        if (d14) {
-                            window.systemData = d14;
-                            window.saveSystemDataToCloud(d14);
-                        } else {
-                            db.ref('guiRenSystemDB').once('value', (snapOld) => {
-                                let dOld = snapOld.val();
-                                window.systemData = dOld ? dOld : window.defaultSystemData;
-                                if (dOld) window.saveSystemDataToCloud(dOld);
-                                if (window.refreshAllUI) window.refreshAllUI();
-                            });
-                            return;
-                        }
-                        if (window.refreshAllUI) window.refreshAllUI();
-                    });
-                } else {
+                
+                if (data) {
                     window.systemData = data;
                     if (window.refreshAllUI) window.refreshAllUI();
+                } else {
+                    // 若 V14DB 無資料，依序安全嘗試救援讀取舊節點 guiRenSystemDB 或 V15DB
+                    db.ref('guiRenSystemDB').once('value', (snapOld) => {
+                        let dOld = snapOld.val();
+                        if (dOld) {
+                            window.systemData = dOld;
+                            if (window.refreshAllUI) window.refreshAllUI();
+                        } else {
+                            db.ref('guiRenSystemV15DB').once('value', (snap15) => {
+                                let d15 = snap15.val();
+                                window.systemData = d15 ? d15 : window.defaultSystemData;
+                                if (window.refreshAllUI) window.refreshAllUI();
+                            });
+                        }
+                    });
                 }
                 
                 const statusEl = document.getElementById("cloudStatusBadge");
@@ -175,7 +175,7 @@
             100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
-        /* 🖼️ 主區域背景淡化水彩插畫 (透明度 15%) */
+        /* 🖼️ 右側區域背景淡化水彩插畫 (圖片淡化 15%) */
         #content {
             width: 100%;
             padding: 18px;
@@ -771,7 +771,7 @@
 
         checkLoginState();
 
-        // 精確監聽點擊與滑鼠移動重置 2 小時計時器
+        // 監聽動作，重置 2 小時計時器
         ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
             window.addEventListener(evtName, resetInactivityTimer, true);
         });
@@ -810,7 +810,7 @@
             return;
         }
 
-        const users = window.systemData.users || {};
+        const users = (window.systemData && window.systemData.users) ? window.systemData.users : {};
         if (users[u] && users[u].password === p && users[u].status === 'approved') {
             currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
             sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
@@ -866,7 +866,7 @@
         checkCaseNumberGaps();
     }
 
-    /* 🔍 案件管制表斷號（缺漏）動態檢測 */
+    /* 🔍 檢查案件管制表缺漏斷號 */
     function checkCaseNumberGaps() {
         const alertCard = document.getElementById("homeGapAlertCard");
         const alertList = document.getElementById("homeGapAlertList");
