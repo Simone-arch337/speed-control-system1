@@ -30,7 +30,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
-            window.dbRef = db.ref('guiRenSystemV15DB');
+            window.dbRef = db.ref('guiRenSystemV14DB');
 
             window.saveSystemDataToCloud = function(data) {
                 if (window.dbRef) {
@@ -38,6 +38,7 @@
                         console.log("雲端資料同步成功");
                     }).catch((error) => {
                         console.error("雲端資料同步失敗：", error);
+                        alert("⚠️ 雲端資料同步失敗，請檢查網路連線！");
                     });
                 }
             };
@@ -57,6 +58,10 @@
                 }
             }, (error) => {
                 console.error("Firebase 連線失敗：", error);
+                const statusEl = document.getElementById("cloudStatusBadge");
+                if (statusEl) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i>連線受限';
+                }
             });
         } catch (e) {
             console.error("Firebase 初始化失敗：", e);
@@ -143,18 +148,18 @@
 
         .dot-badge-red {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 9px;
+            height: 9px;
             background-color: #ff3b30;
             border-radius: 50%;
             margin-right: 6px;
-            box-shadow: 0 0 8px rgba(255, 59, 48, 0.9);
-            animation: pulse-dot 1.2s infinite;
+            box-shadow: 0 0 6px rgba(255, 59, 48, 0.8);
+            animation: pulse-dot 1.5s infinite;
         }
         @keyframes pulse-dot {
-            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.8); }
-            70% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
-            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+            70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255, 59, 48, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
         .brick-construction-box {
@@ -241,7 +246,7 @@
                     <i class="fa-solid fa-chevron-down small text-white" id="speedGroupChevron"></i>
                 </a>
 
-                <ul class="sidebar-subnav show" id="speedSubnav">
+                <ul class="sidebar-subnav" id="speedSubnav">
                     <li><a class="sidebar-nav-item text-white" id="snav-home" onclick="selectPage('home')"><i class="fa-solid fa-house me-2 text-white"></i><span id="snav-text-home" class="text-white">首頁 (當月總表)</span></a></li>
                     <li><a class="sidebar-nav-item text-white" id="snav-station" onclick="selectPage('station')"><i class="fa-solid fa-building me-2 text-white"></i><span id="snav-text-station" class="text-white">各所選填勤務</span></a></li>
                     <li><a class="sidebar-nav-item text-white" id="snav-case" onclick="selectPage('case')"><i class="fa-solid fa-gun me-2 text-white"></i><span id="snav-text-case" class="text-white">測速案件管制表</span></a></li>
@@ -345,6 +350,7 @@
                 
                 <!-- 1. 首頁 (當月總表) -->
                 <div class="tab-pane fade show active" id="home-content">
+                    <!-- 🚨 跳號/斷號警示卡片 -->
                     <div class="card border-danger shadow-sm mb-3 d-none" id="homeGapAlertCard">
                         <div class="card-header bg-danger text-white fw-bold d-flex align-items-center py-2">
                             <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
@@ -413,7 +419,7 @@
                                         <th style="width: 130px;">勤務時段</th>
                                         <th style="width: 120px;">執勤人員</th>
                                         <th>勤務地點 (分局核定)</th>
-                                        <th style="width: 250px;">指定測速儀器 (分局核定)</th>
+                                        <th style="width: 220px;">指定測速儀器 (分局核定)</th>
                                         <th style="width: 110px;">影像上傳</th>
                                         <th style="width: 140px;">備註說明</th>
                                         <th style="width: 120px;">刪除審核</th>
@@ -435,7 +441,7 @@
                         </div>
                         <div class="card-body py-3">
                             <div class="row g-2 align-items-center">
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-5">
                                     <label class="form-label fw-bold mb-1 small">測速裝備選擇 (名稱與當前狀態)：</label>
                                     <select class="form-select border-secondary fw-bold text-dark" id="equipSelect" onchange="switchEquipment()"></select>
                                 </div>
@@ -443,7 +449,7 @@
                                     <label class="form-label fw-bold mb-1 small">首筆編號基底：</label>
                                     <input type="text" class="form-control bg-light fw-bold text-dark" id="baseCodeInputDisplay" readonly value="SPD-1150001">
                                 </div>
-                                <div class="col-12 col-md-3">
+                                <div class="col-12 col-md-4">
                                     <div class="alert alert-secondary mb-0 py-2 small">
                                         <i class="fa-solid fa-circle-info me-1"></i><span id="equipNotice">現正登記裝備</span>
                                     </div>
@@ -831,6 +837,7 @@
                 
                 <!-- 4.6.1 管理與帳號審核專區 -->
                 <div class="tab-pane fade show active" id="hq-46-1-content">
+                    
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-header card-header-clean d-flex justify-content-between align-items-center fw-bold py-2">
                             <span><i class="fa-solid fa-id-card-clip me-2"></i>身分權限類型與細項權限對照清單 (極簡勾選表)</span>
@@ -1025,7 +1032,7 @@
 </div>
 
 <!-- 登入與權限申請 Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1">
+<div class="modal fade" id="loginModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered px-3">
         <div class="modal-content shadow-lg">
             <div class="modal-header card-header-clean py-2 px-3">
@@ -1183,10 +1190,6 @@
     let currentMainModule = 'speed';
     let currentCopyTargetRoleKey = null;
     let currentTemplateTargetRoleKey = null;
-
-    /* ⏱️ 2 小時無操作自動登出機制變數 */
-    const INACTIVITY_TIMEOUT_MS = 2 * 60 * 60 * 1000;
-    let inactivityTimer = null;
 
     const DEFAULT_STATIONS = ["分局交通組", "太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
 
@@ -1350,6 +1353,7 @@
     let timeSlotChartInstance = null;
     let loginModalInstance = null;
 
+    /* 🇹🇼 將西元日期字串 (YYYY-MM-DD) 轉換為民國年 (YYY/MM/DD) */
     function toROCDate(dateStr) {
         if (!dateStr) return '';
         const parts = dateStr.split('-');
@@ -1361,107 +1365,20 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'), { backdrop: 'static', keyboard: false });
-        
-        // 🔄 防刷洗核心：載入時先自 Session Storage/Local Storage 復原使用者狀態
-        const savedUser = sessionStorage.getItem('guiRen_currentUser') || localStorage.getItem('guiRen_currentUser');
-        if (savedUser) {
-            try {
-                currentUser = JSON.parse(savedUser);
-            } catch (e) {
-                currentUser = null;
-            }
-        }
-
+        loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
         checkLoginState();
-
-        // 綁定動態事件重置 2 小時無操作計時器
-        ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evtName => {
-            window.addEventListener(evtName, resetInactivityTimer, true);
-        });
     });
 
-    function resetInactivityTimer() {
-        if (!currentUser) return;
-        if (inactivityTimer) clearTimeout(inactivityTimer);
-        inactivityTimer = setTimeout(() => {
-            alert("⏰ 系統提醒：您已連續 2 小時未有任何操作動作，系統已自動執行安全登出！");
-            logoutSystem();
-        }, INACTIVITY_TIMEOUT_MS);
-    }
-
-    function checkLoginState() {
-        if (!currentUser) {
-            document.getElementById('wrapper').style.display = 'none';
-            loginModalInstance.show();
-            if (inactivityTimer) clearTimeout(inactivityTimer);
-        } else {
-            document.getElementById('wrapper').style.display = 'flex';
-            loginModalInstance.hide();
-            applyRolePermissions();
-            switchMainModule('speed');
-            window.refreshAllUI();
-            resetInactivityTimer();
-        }
-    }
-
-    function performLogin() {
-        const u = document.getElementById('loginUsername').value.trim();
-        const p = document.getElementById('loginPassword').value.trim();
-        const errEl = document.getElementById('loginErrorMsg');
-
-        if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
-            const rsn = window.systemData.rejectedRequests[u];
-            alert(`⚠️ 您的權限申請已被退回！\n退回原因：【${rsn}】\n請重新進行權限申請。`);
-            delete window.systemData.rejectedRequests[u];
-            saveSystemData();
-            document.getElementById('apply-tab').click();
-            document.getElementById('applyUsername').value = u;
-            return;
-        }
-
-        if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
-            currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '最高管理者', name: 'Super Admin' };
-            sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
-            checkLoginState();
-            return;
-        }
-
-        const users = window.systemData.users || {};
-        if (users[u] && users[u].password === p && users[u].status === 'approved') {
-            currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
-            sessionStorage.setItem('guiRen_currentUser', JSON.stringify(currentUser));
-            checkLoginState();
-        } else {
-            document.getElementById('loginUsername').classList.add('is-invalid');
-            document.getElementById('loginPassword').classList.add('is-invalid');
-            errEl.style.display = 'block';
-        }
-    }
-
-    function logoutSystem() {
-        currentUser = null;
-        sessionStorage.removeItem('guiRen_currentUser');
-        localStorage.removeItem('guiRen_currentUser');
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-        checkLoginState();
-    }
-
-    /* 🚨 警示提醒機制：分局對應欄位閃爍紅點 */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
-        const canAuditHq41 = getPagePermission('hq-41') === 'EDIT' || currentUser.role === 'super_admin';
-        const canAuditAccount = getPagePermission('hq-46-1') === 'EDIT' || currentUser.role === 'super_admin';
+        const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
+        const canAuditAccount = getPagePermission('hq-46-1') === 'EDIT';
 
-        // 檢查 1: 各所申請刪除 OR 各所新建立班次但分局尚未核定地點或儀器
         const pendingDeleteCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus === 'PENDING').length;
-        const unapprovedDutyCount = (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED' && (!r.location || !r.assignedEquip)).length;
-
         const dot41 = document.getElementById('dot41Badge');
         const hqParentDot = document.getElementById('hqParentDot');
         
-        if ((pendingDeleteCount > 0 || unapprovedDutyCount > 0) && canAuditHq41) {
+        if (pendingDeleteCount > 0 && canAuditHq41) {
             if (dot41) dot41.classList.remove('d-none');
             if (hqParentDot) hqParentDot.classList.remove('d-none');
         } else {
@@ -1469,7 +1386,6 @@
             if (hqParentDot) hqParentDot.classList.add('d-none');
         }
 
-        // 檢查 2: 帳號審核
         const pendingAccountCount = (window.systemData.accountRequests || []).filter(r => r.status === 'pending').length;
         const dotAccount = document.getElementById('dotAccountBadge');
         const adminParentDot = document.getElementById('adminParentDot');
@@ -1481,83 +1397,6 @@
             if (dotAccount) dotAccount.classList.add('d-none');
             if (adminParentDot) adminParentDot.classList.add('d-none');
         }
-    }
-
-    /* 🎯 對齊測速案件管制表中「測速裝備選擇」的顯示格式: 儀器名稱 (當前狀態) */
-    function populateEquipDropdown() {
-        const select = document.getElementById("equipSelect");
-        const certSelect = document.getElementById("certEquipSelect");
-        const logSelect = document.getElementById("modalLogEquipSelect");
-
-        if (select) {
-            const currentVal = select.value;
-            select.innerHTML = "";
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const eq = window.systemData.equipments[k];
-                const currentStatus = eq ? (eq.currentStatus || "分局(保管)") : "未指定";
-                const opt = document.createElement("option"); 
-                opt.value = k; 
-                opt.innerText = `${eq.name} (${currentStatus})`; 
-                select.appendChild(opt);
-            });
-            if (currentVal && window.systemData.equipments[currentVal]) {
-                select.value = currentVal;
-            }
-        }
-        if (certSelect) {
-            certSelect.innerHTML = "";
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const eq = window.systemData.equipments[k];
-                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${eq.name} (${k})`; certSelect.appendChild(opt);
-            });
-        }
-        if (logSelect) {
-            logSelect.innerHTML = "";
-            Object.keys(window.systemData.equipments || {}).forEach(k => {
-                const eq = window.systemData.equipments[k];
-                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${eq.name} (${k})`; logSelect.appendChild(opt);
-            });
-        }
-    }
-
-    function switchEquipment() {
-        const equipKey = document.getElementById("equipSelect").value;
-        const equip = window.systemData.equipments[equipKey];
-        if (equip) {
-            const currentStatus = equip.currentStatus || "分局(保管)";
-            document.getElementById("equipNotice").innerText = `現正登記：${equip.name} (${currentStatus})`;
-            document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
-            renderCaseTable();
-        }
-    }
-
-    function addNewStationDutyRow() {
-        if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
-        const stSelect = document.getElementById("stationSelect");
-        const st = stSelect ? stSelect.value : currentUser.station;
-        if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
-        
-        window.systemData.dutyRecords.push({ 
-            id: Date.now(), 
-            date: new Date().toISOString().split('T')[0], 
-            station: st, 
-            timeSlot: "", 
-            officer: "", 
-            location: "", 
-            assignedEquip: "", 
-            isImgUploaded: "", 
-            note: "", 
-            deleteStatus: "NORMAL", 
-            deleteReason: "" 
-        });
-        saveSystemData();
-        renderStationDutyTable();
-    }
-
-    function saveStationDutyData() {
-        if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限，無法儲存變更！'); return; }
-        saveSystemData(); 
-        alert("✅ 各所選填變更已儲存，若尚未經分局核定，分局端已同步觸發警示紅點！");
     }
 
     function getRoleMap() {
@@ -1596,13 +1435,22 @@
     }
 
     function toggleSpeedGroup() {
-        document.getElementById("speedSubnav").classList.toggle("show");
+        const speedSubnav = document.getElementById("speedSubnav");
+        speedSubnav.classList.toggle("show");
         switchMainModule('speed');
     }
 
     function toggleAdminGroup() {
-        document.getElementById("adminSubnav").classList.toggle("show");
+        const adminSubnav = document.getElementById("adminSubnav");
+        adminSubnav.classList.toggle("show");
         switchMainModule('admin');
+    }
+
+    function collapseAllSidebarSubnavs() {
+        document.getElementById("speedSubnav").classList.remove("show");
+        document.getElementById("hqSubnav").classList.remove("show");
+        document.getElementById("hq46Subnav").classList.remove("show");
+        document.getElementById("adminSubnav").classList.remove("show");
     }
 
     function switchMainModule(moduleKey) {
@@ -1632,6 +1480,8 @@
         } else if (moduleKey === 'traffic') {
             trafficBtn.classList.add("active");
             trafficContainer.style.display = "block";
+            document.querySelectorAll(".sidebar-nav-item").forEach(el => el.classList.remove("active"));
+            trafficBtn.classList.add("active");
             document.getElementById("pageTitle").innerText = titles.topTabTraffic || DEFAULT_TITLES.topTabTraffic;
         } else if (moduleKey === 'admin') {
             adminBtn.classList.add("active");
@@ -1647,6 +1497,59 @@
         return window.systemData.stations;
     }
 
+    function checkLoginState() {
+        if (!currentUser) {
+            document.getElementById('wrapper').style.display = 'none';
+            loginModalInstance.show();
+        } else {
+            document.getElementById('wrapper').style.display = 'flex';
+            loginModalInstance.hide();
+            collapseAllSidebarSubnavs();
+            applyRolePermissions();
+            switchMainModule('speed');
+            window.refreshAllUI();
+        }
+    }
+
+    function performLogin() {
+        const u = document.getElementById('loginUsername').value.trim();
+        const p = document.getElementById('loginPassword').value.trim();
+        const errEl = document.getElementById('loginErrorMsg');
+
+        if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
+            const rsn = window.systemData.rejectedRequests[u];
+            alert(`⚠️ 您的權限申請已被退回！\n退回原因：【${rsn}】\n請重新進行權限申請。`);
+            delete window.systemData.rejectedRequests[u];
+            saveSystemData();
+            document.getElementById('apply-tab').click();
+            document.getElementById('applyUsername').value = u;
+            return;
+        }
+
+        if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
+            currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '最高管理者', name: 'Super Admin' };
+            checkLoginState();
+            return;
+        }
+
+        const users = window.systemData.users || {};
+        if (users[u] && users[u].password === p && users[u].status === 'approved') {
+            currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
+            checkLoginState();
+        } else {
+            document.getElementById('loginUsername').classList.add('is-invalid');
+            document.getElementById('loginPassword').classList.add('is-invalid');
+            errEl.style.display = 'block';
+        }
+    }
+
+    function logoutSystem() {
+        currentUser = null;
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        checkLoginState();
+    }
+
     function submitAccountApplication() {
         const name = document.getElementById('applyName').value.trim();
         const station = document.getElementById('applyStation').value;
@@ -1655,6 +1558,15 @@
         const p = document.getElementById('applyPassword').value.trim();
 
         if (!name || !u || !p) { alert("⚠️ 請完整填寫姓名、帳號與密碼！"); return; }
+
+        if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
+            const rsn = window.systemData.rejectedRequests[u];
+            alert(`⚠️ 注意：您上次以帳號【${u}】提出之申請已被退回！\n退回原因：【${rsn}】`);
+            delete window.systemData.rejectedRequests[u];
+            saveSystemData();
+        }
+
+        if (window.systemData.users && window.systemData.users[u]) { alert("⚠️ 該帳號名稱已存在，請更換帳號！"); return; }
 
         if (!window.systemData.accountRequests) window.systemData.accountRequests = [];
         window.systemData.accountRequests.push({
@@ -1678,6 +1590,10 @@
 
         if (userRoleObj.detailedPermissions && userRoleObj.detailedPermissions[pageId]) {
             return userRoleObj.detailedPermissions[pageId];
+        }
+
+        if (userRoleObj.permissions && userRoleObj.permissions.includes(pageId)) {
+            return "EDIT";
         }
 
         return "HIDDEN";
@@ -1731,23 +1647,66 @@
     }
 
     function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
-    function toggleHqGroup(e) { if (e) e.stopPropagation(); document.getElementById("hqSubnav").classList.toggle("show"); }
-    function toggleHq46Group(e) { if (e) e.stopPropagation(); document.getElementById("hq46Subnav").classList.toggle("show"); }
+
+    function toggleHqGroup(e) {
+        if (e) e.stopPropagation();
+        document.getElementById("hqSubnav").classList.toggle("show");
+    }
+
+    function toggleHq46Group(e) {
+        if (e) e.stopPropagation();
+        document.getElementById("hq46Subnav").classList.toggle("show");
+    }
 
     function selectPage(pageId) {
-        if (pageId === 'hq-46-1' || pageId === 'hq-46-7') switchMainModule('admin');
-        else switchMainModule('speed');
+        if (pageId === 'hq-46-1' || pageId === 'hq-46-7') {
+            switchMainModule('admin');
+        } else {
+            switchMainModule('speed');
+        }
 
         const currentPerm = getPagePermission(pageId);
-        if (currentPerm === "HIDDEN") { alert("⚠️ 您無權訪問此頁面功能！"); return; }
+        if (currentPerm === "HIDDEN") {
+            alert("⚠️ 您無權訪問此頁面功能！");
+            return;
+        }
 
         document.querySelectorAll(".sidebar-nav-item").forEach(el => el.classList.remove("active"));
+        
+        if (pageId === 'hq-46-1' || pageId === 'hq-46-7') {
+            document.getElementById("snav-main-admin").classList.add("active");
+        } else {
+            document.getElementById("snav-main-speed").classList.add("active");
+        }
+        
         const targetSnav = document.getElementById(`snav-${pageId}`);
         if (targetSnav) targetSnav.classList.add("active");
 
         document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("show", "active"));
         const targetContent = document.getElementById(`${pageId}-content`);
         if (targetContent) targetContent.classList.add("show", "active");
+
+        const titles = window.systemData.customTitles || DEFAULT_TITLES;
+        const titleMap = {
+            'home': titles.snav_home,
+            'station': titles.snav_station,
+            'case': titles.snav_case,
+            'hq-41': `分局權限 > ${titles.snav_41}`,
+            'hq-42': `分局權限 > ${titles.snav_42}`,
+            'hq-43': `分局權限 > ${titles.snav_43}`,
+            'hq-44': `分局權限 > ${titles.snav_44}`,
+            'hq-45': `分局權限 > ${titles.snav_45}`,
+            'hq-46-2': '後台系統設定 > 4.6.2 管理選填時段',
+            'hq-46-3': '後台系統設定 > 4.6.3 管理勤務路段',
+            'hq-46-4': '後台系統設定 > 4.6.4 管理勤務人員',
+            'hq-46-5': '後台系統設定 > 4.6.5 測速儀器設定',
+            'hq-46-6': '後台系統設定 > 4.6.6 管理系統單位名稱',
+            'hq-46-1': '系統總後台設定 > 管理與帳號審核',
+            'hq-46-7': '系統總後台設定 > 系統頁面與標題名稱自訂 (最高權限)'
+        };
+        document.getElementById("pageTitle").innerText = titleMap[pageId] || titles.brandCombined;
+
+        if (window.innerWidth < 992) document.getElementById("sidebar").classList.remove("active");
 
         if (pageId === 'home') renderHomeDutyTable();
         else if (pageId === 'station') renderStationDutyTable();
@@ -1799,6 +1758,281 @@
         }
     };
 
+    function initCustomTitlesInputs() {
+        const titles = window.systemData.customTitles || DEFAULT_TITLES;
+        document.getElementById('titleInput_brandCombined').value = titles.brandCombined || DEFAULT_TITLES.brandCombined;
+        document.getElementById('titleInput_topTabSpeed').value = titles.topTabSpeed || DEFAULT_TITLES.topTabSpeed;
+        document.getElementById('titleInput_topTabTraffic').value = titles.topTabTraffic || DEFAULT_TITLES.topTabTraffic;
+        document.getElementById('titleInput_topTabAdmin').value = titles.topTabAdmin || DEFAULT_TITLES.topTabAdmin;
+
+        document.getElementById('titleInput_snav_home').value = titles.snav_home || "";
+        document.getElementById('titleInput_snav_station').value = titles.snav_station || "";
+        document.getElementById('titleInput_snav_case').value = titles.snav_case || "";
+        document.getElementById('titleInput_snav_41').value = titles.snav_41 || "";
+        document.getElementById('titleInput_snav_42').value = titles.snav_42 || "";
+        document.getElementById('titleInput_snav_43').value = titles.snav_43 || "";
+        document.getElementById('titleInput_snav_44').value = titles.snav_44 || "";
+        document.getElementById('titleInput_snav_45').value = titles.snav_45 || "";
+
+        document.getElementById('titleInput_card_homeTable').value = titles.card_homeTable || "";
+        document.getElementById('titleInput_card_stationDuty').value = titles.card_stationDuty || "";
+        document.getElementById('titleInput_card_caseEquip').value = titles.card_caseEquip || "";
+        document.getElementById('titleInput_card_caseList').value = titles.card_caseList || "";
+    }
+
+    function saveCustomTitles() {
+        const newTitles = {
+            brandCombined: document.getElementById('titleInput_brandCombined').value.trim() || DEFAULT_TITLES.brandCombined,
+            topTabSpeed: document.getElementById('titleInput_topTabSpeed').value.trim() || DEFAULT_TITLES.topTabSpeed,
+            topTabTraffic: document.getElementById('titleInput_topTabTraffic').value.trim() || DEFAULT_TITLES.topTabTraffic,
+            topTabAdmin: document.getElementById('titleInput_topTabAdmin').value.trim() || DEFAULT_TITLES.topTabAdmin,
+
+            snav_home: document.getElementById('titleInput_snav_home').value.trim() || DEFAULT_TITLES.snav_home,
+            snav_station: document.getElementById('titleInput_snav_station').value.trim() || DEFAULT_TITLES.snav_station,
+            snav_case: document.getElementById('titleInput_snav_case').value.trim() || DEFAULT_TITLES.snav_case,
+            snav_41: document.getElementById('titleInput_snav_41').value.trim() || DEFAULT_TITLES.snav_41,
+            snav_42: document.getElementById('titleInput_snav_42').value.trim() || DEFAULT_TITLES.snav_42,
+            snav_43: document.getElementById('titleInput_snav_43').value.trim() || DEFAULT_TITLES.snav_43,
+            snav_44: document.getElementById('titleInput_snav_44').value.trim() || DEFAULT_TITLES.snav_44,
+            snav_45: document.getElementById('titleInput_snav_45').value.trim() || DEFAULT_TITLES.snav_45,
+
+            card_homeTable: document.getElementById('titleInput_card_homeTable').value.trim() || DEFAULT_TITLES.card_homeTable,
+            card_stationDuty: document.getElementById('titleInput_card_stationDuty').value.trim() || DEFAULT_TITLES.card_stationDuty,
+            card_caseEquip: document.getElementById('titleInput_card_caseEquip').value.trim() || DEFAULT_TITLES.card_caseEquip,
+            card_caseList: document.getElementById('titleInput_card_caseList').value.trim() || DEFAULT_TITLES.card_caseList
+        };
+
+        window.systemData.customTitles = newTitles;
+        saveSystemData();
+        applySystemTitles();
+        alert("✅ 全系統頁面與各大頁/卡片標題變更已成功儲存！");
+    }
+
+    function resetTitlesToDefault() {
+        if (confirm("確定要將全系統標題恢復為預設設定值？")) {
+            window.systemData.customTitles = { ...DEFAULT_TITLES };
+            saveSystemData();
+            applySystemTitles();
+            initCustomTitlesInputs();
+            alert("✅ 已成功恢復為預設系統標題！");
+        }
+    }
+
+    function populateRoleMatrixSelect() {
+        const select = document.getElementById("roleSelectForMatrix");
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = "";
+
+        if (!window.systemData.roleDefinitions) window.systemData.roleDefinitions = DEFAULT_ROLES;
+        const roles = window.systemData.roleDefinitions;
+
+        Object.keys(roles).forEach(rKey => {
+            const opt = document.createElement("option");
+            opt.value = rKey;
+            opt.innerText = `${roles[rKey].name} (${rKey})`;
+            select.appendChild(opt);
+        });
+
+        if (currentVal && roles[currentVal]) select.value = currentVal;
+    }
+
+    function renderRoleMatrixUI() {
+        const tbody = document.getElementById("roleMatrixTbody");
+        const roleSelect = document.getElementById("roleSelectForMatrix");
+        if (!tbody || !roleSelect) return;
+
+        const roleKey = roleSelect.value;
+        tbody.innerHTML = "";
+
+        if (!roleKey) return;
+        const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
+        const roleObj = roles[roleKey];
+        if (!roleObj) return;
+
+        if (!roleObj.detailedPermissions) roleObj.detailedPermissions = {};
+
+        ALL_AVAILABLE_PAGES.forEach(pg => {
+            let currMode = roleObj.detailedPermissions[pg.id];
+            if (!currMode) {
+                currMode = (roleObj.permissions && roleObj.permissions.includes(pg.id)) ? "EDIT" : "HIDDEN";
+                roleObj.detailedPermissions[pg.id] = currMode;
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="fw-bold small text-dark">${pg.name}</td>
+                <td class="text-center">
+                    <input class="form-check-input" type="radio" name="matrix_perm_${pg.id}" id="m_read_${pg.id}" value="READ" ${currMode === 'READ' ? 'checked' : ''} onchange="updateRoleMatrixPerm('${roleKey}', '${pg.id}', 'READ')">
+                </td>
+                <td class="text-center">
+                    <input class="form-check-input" type="radio" name="matrix_perm_${pg.id}" id="m_edit_${pg.id}" value="EDIT" ${currMode === 'EDIT' ? 'checked' : ''} onchange="updateRoleMatrixPerm('${roleKey}', '${pg.id}', 'EDIT')">
+                </td>
+                <td class="text-center">
+                    <input class="form-check-input" type="radio" name="matrix_perm_${pg.id}" id="m_hidden_${pg.id}" value="HIDDEN" ${currMode === 'HIDDEN' ? 'checked' : ''} onchange="updateRoleMatrixPerm('${roleKey}', '${pg.id}', 'HIDDEN')">
+                </td>
+                <td class="text-muted small">${pg.desc || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        populateRoleSelects();
+    }
+
+    function updateRoleMatrixPerm(roleKey, pageId, mode) {
+        if (window.systemData.roleDefinitions && window.systemData.roleDefinitions[roleKey]) {
+            if (!window.systemData.roleDefinitions[roleKey].detailedPermissions) {
+                window.systemData.roleDefinitions[roleKey].detailedPermissions = {};
+            }
+            window.systemData.roleDefinitions[roleKey].detailedPermissions[pageId] = mode;
+        }
+    }
+
+    function openCopyRolePermModalCurrent() {
+        const targetRoleKey = document.getElementById("roleSelectForMatrix").value;
+        if (targetRoleKey) openCopyRolePermModal(targetRoleKey);
+    }
+
+    function openApplyTemplateModalCurrent() {
+        const targetRoleKey = document.getElementById("roleSelectForMatrix").value;
+        if (targetRoleKey) openApplyTemplateModal(targetRoleKey);
+    }
+
+    function deleteCurrentRoleType() {
+        const targetRoleKey = document.getElementById("roleSelectForMatrix").value;
+        if (targetRoleKey) deleteRoleType(targetRoleKey);
+    }
+
+    function openCopyRolePermModal(targetRoleKey) {
+        if (getPagePermission('hq-46-1') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        currentCopyTargetRoleKey = targetRoleKey;
+        const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
+        const targetObj = roles[targetRoleKey];
+        if (!targetObj) return;
+
+        document.getElementById("copyTargetRoleNameDisplay").innerText = `${targetObj.name} (${targetRoleKey})`;
+
+        const srcSelect = document.getElementById("copySourceRoleSelect");
+        srcSelect.innerHTML = "";
+
+        Object.keys(roles).forEach(rKey => {
+            if (rKey !== targetRoleKey) {
+                const opt = document.createElement("option");
+                opt.value = rKey;
+                opt.innerText = `${roles[rKey].name} (${rKey})`;
+                srcSelect.appendChild(opt);
+            }
+        });
+
+        new bootstrap.Modal(document.getElementById("copyRolePermModal")).show();
+    }
+
+    function executeCopyRolePermission() {
+        const srcRoleKey = document.getElementById("copySourceRoleSelect").value;
+        if (!srcRoleKey || !currentCopyTargetRoleKey) return;
+
+        const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
+        const srcObj = roles[srcRoleKey];
+        const targetObj = roles[currentCopyTargetRoleKey];
+
+        if (srcObj && targetObj) {
+            targetObj.detailedPermissions = JSON.parse(JSON.stringify(srcObj.detailedPermissions || {}));
+            saveSystemData();
+            bootstrap.Modal.getInstance(document.getElementById("copyRolePermModal")).hide();
+            renderRoleMatrixUI();
+            alert(`✅ 已成功將角色 【${srcObj.name}】 之全項權限複製並覆蓋！`);
+        }
+    }
+
+    function openApplyTemplateModal(targetRoleKey) {
+        if (getPagePermission('hq-46-1') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        currentTemplateTargetRoleKey = targetRoleKey;
+        const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
+        const targetObj = roles[targetRoleKey];
+        if (!targetObj) return;
+
+        document.getElementById("templateTargetRoleNameDisplay").innerText = `${targetObj.name} (${targetRoleKey})`;
+        new bootstrap.Modal(document.getElementById("templateRolePermModal")).show();
+    }
+
+    function executeApplyRoleTemplate() {
+        const templateKey = document.getElementById("roleTemplateSelect").value;
+        if (!templateKey || !currentTemplateTargetRoleKey) return;
+
+        const defaultTemplateObj = DEFAULT_ROLES[templateKey];
+        const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
+        const targetObj = roles[currentTemplateTargetRoleKey];
+
+        if (defaultTemplateObj && targetObj) {
+            targetObj.detailedPermissions = JSON.parse(JSON.stringify(defaultTemplateObj.detailedPermissions || {}));
+            saveSystemData();
+            bootstrap.Modal.getInstance(document.getElementById("templateRolePermModal")).hide();
+            renderRoleMatrixUI();
+            alert(`✅ 已成功套用範本 【${defaultTemplateObj.name}】 之基礎權限！`);
+        }
+    }
+
+    function populateRoleSelects() {
+        const roles = window.systemData.roleDefinitions || DEFAULT_ROLES;
+        ["applyRole", "adminAddRole"].forEach(sId => {
+            const el = document.getElementById(sId);
+            if (!el) return;
+            const currentVal = el.value;
+            el.innerHTML = "";
+            Object.keys(roles).forEach(rk => {
+                const opt = document.createElement("option");
+                opt.value = rk; opt.innerText = roles[rk].name;
+                el.appendChild(opt);
+            });
+            if (currentVal && roles[currentVal]) el.value = currentVal;
+        });
+    }
+
+    function addNewRoleType() {
+        const key = document.getElementById("newRoleKeyInput").value.trim();
+        const name = document.getElementById("newRoleNameInput").value.trim();
+
+        if (!key || !name) { alert("⚠️ 請輸入權限角色代碼與顯示名稱！"); return; }
+        if (!window.systemData.roleDefinitions) window.systemData.roleDefinitions = DEFAULT_ROLES;
+        if (window.systemData.roleDefinitions[key]) { alert(`⚠️ 權限代碼 【${key}】 已存在！`); return; }
+
+        let defaultDetailed = {};
+        ALL_AVAILABLE_PAGES.forEach(pg => {
+            defaultDetailed[pg.id] = (pg.id === "home" || pg.id === "station" || pg.id === "case") ? "EDIT" : "HIDDEN";
+        });
+
+        window.systemData.roleDefinitions[key] = {
+            name: name,
+            detailedPermissions: defaultDetailed
+        };
+
+        saveSystemData();
+        document.getElementById("newRoleKeyInput").value = "";
+        document.getElementById("newRoleNameInput").value = "";
+        populateRoleMatrixSelect();
+        document.getElementById("roleSelectForMatrix").value = key;
+        renderRoleMatrixUI();
+        alert(`✅ 已成功新增權限角色 【${name}】 (${key})！`);
+    }
+
+    function deleteRoleType(roleKey) {
+        if (confirm(`確定要刪除權限類型 【${roleKey}】？`)) {
+            if (window.systemData.roleDefinitions) {
+                delete window.systemData.roleDefinitions[roleKey];
+                saveSystemData();
+                populateRoleMatrixSelect();
+                renderRoleMatrixUI();
+                alert("✅ 已成功刪除該身分權限類型！");
+            }
+        }
+    }
+
+    function saveRolePermissionsConfig() {
+        saveSystemData();
+        applyRolePermissions();
+        alert("✅ 身分權限類型與細項設定已成功儲存！");
+    }
+
     function ensureStatusOptions() {
         if (!window.systemData.equipStatusOptions || window.systemData.equipStatusOptions.length === 0) {
             window.systemData.equipStatusOptions = DEFAULT_KEEPER_STATUS_OPTIONS;
@@ -1826,8 +2060,45 @@
         });
     }
 
+    function populateEquipDropdown() {
+        const select = document.getElementById("equipSelect");
+        const certSelect = document.getElementById("certEquipSelect");
+        const logSelect = document.getElementById("modalLogEquipSelect");
+
+        if (select) {
+            const currentVal = select.value;
+            select.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const eq = window.systemData.equipments[k];
+                const currentStatus = eq ? (eq.currentStatus || "分局(保管)") : "未指定";
+                const opt = document.createElement("option"); 
+                opt.value = k; 
+                opt.innerText = `${eq.name} (${currentStatus})`; 
+                select.appendChild(opt);
+            });
+            if (currentVal && window.systemData.equipments[currentVal]) {
+                select.value = currentVal;
+            }
+        }
+        if (certSelect) {
+            certSelect.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const eq = window.systemData.equipments[k];
+                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${eq.name} (${k})`; certSelect.appendChild(opt);
+            });
+        }
+        if (logSelect) {
+            logSelect.innerHTML = "";
+            Object.keys(window.systemData.equipments || {}).forEach(k => {
+                const eq = window.systemData.equipments[k];
+                const opt = document.createElement("option"); opt.value = k; opt.innerText = `${eq.name} (${k})`; logSelect.appendChild(opt);
+            });
+        }
+    }
+
     function populateStationDropdowns() {
         const stations = getStationList();
+
         ["applyStation", "adminAddStation", "stationSelect", "adminLocStationSelect", "adminOfficerStationSelect", "modalLogStationSelect"].forEach(sId => {
             const el = document.getElementById(sId);
             if (!el) return;
@@ -1836,14 +2107,101 @@
             stations.forEach(st => {
                 const opt = document.createElement("option"); opt.value = st; opt.innerText = st; el.appendChild(opt);
             });
+            
             if (sId === "applyStation" || sId === "adminAddStation" || sId === "modalLogStationSelect") {
                 const optHq = document.createElement("option"); optHq.value = "歸仁分局"; optHq.innerText = "歸仁分局"; el.appendChild(optHq);
             }
             if (currentVal) el.value = currentVal;
         });
+
+        const modalStEl = document.getElementById("modalLogStationSelect");
+        if (modalStEl) {
+            modalStEl.onchange = function() {
+                const st = this.value;
+                const offEl = document.getElementById("modalLogOfficerSelect");
+                if (offEl) {
+                    offEl.innerHTML = "";
+                    const officers = st === "歸仁分局" ? ["分局辦理"] : (window.systemData.officers[st] || []);
+                    officers.forEach(o => {
+                        const opt = document.createElement("option"); opt.value = o; opt.innerText = o; offEl.appendChild(opt);
+                    });
+                }
+            };
+            modalStEl.onchange();
+        }
+    }
+
+    function checkCaseCodeGaps() {
+        const gapAlertCard = document.getElementById("homeGapAlertCard");
+        const gapAlertList = document.getElementById("homeGapAlertList");
+        if (!gapAlertCard || !gapAlertList) return;
+
+        gapAlertList.innerHTML = "";
+        let totalGapsFound = 0;
+
+        Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
+            const equip = window.systemData.equipments[eqKey];
+            const records = (window.systemData.caseRecords || {})[eqKey] || [];
+            const baseCode = equip.baseCode || "SPD-1150001";
+            const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
+            const basePfx = baseCode.replace(/\d+$/, "");
+
+            let filledIndices = [];
+            records.forEach((r, idx) => {
+                if (r && (r.date || r.officer || r.reason)) {
+                    filledIndices.push(idx + 1);
+                }
+            });
+
+            if (filledIndices.length > 0) {
+                let maxFilled = Math.max(...filledIndices);
+                let missingRanges = [];
+                let rangeStart = null;
+
+                for (let i = 1; i <= maxFilled; i++) {
+                    if (!filledIndices.includes(i)) {
+                        if (rangeStart === null) rangeStart = i;
+                    } else {
+                        if (rangeStart !== null) {
+                            missingRanges.push({ start: rangeStart, end: i - 1 });
+                            rangeStart = null;
+                        }
+                    }
+                }
+
+                missingRanges.forEach(range => {
+                    totalGapsFound++;
+                    const startNumStr = `${eqKey}-${basePfx}${String(baseNum + range.start - 1).padStart(7, '0')}`;
+                    const endNumStr = `${eqKey}-${basePfx}${String(baseNum + range.end - 1).padStart(7, '0')}`;
+                    const rangeText = range.start === range.end ? startNumStr : `${startNumStr} ～ ${endNumStr}`;
+
+                    const item = document.createElement("div");
+                    item.className = "list-group-item d-flex flex-wrap justify-content-between align-items-center py-2 gap-2";
+                    item.innerHTML = `
+                        <div>
+                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${equip.name} (${eqKey})</span>
+                            <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
+                            <span class="font-monospace fw-bold text-dark">${rangeText}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger py-1 px-3 fw-bold" onclick="selectPage('case'); document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">
+                            <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>前往補填
+                        </button>
+                    `;
+                    gapAlertList.appendChild(item);
+                });
+            }
+        });
+
+        if (totalGapsFound > 0) {
+            gapAlertCard.classList.remove("d-none");
+        } else {
+            gapAlertCard.classList.add("d-none");
+        }
     }
 
     function renderHomeDutyTable() {
+        checkCaseCodeGaps();
+
         const tbody = document.getElementById("homeDutyTbody");
         tbody.innerHTML = "";
         const monthVal = document.getElementById("homeMonthSelect").value;
@@ -1865,7 +2223,11 @@
             const currentStatus = eqObj ? (eqObj.currentStatus || "分局(保管)") : "未指定";
             const displayEquip = rec.assignedEquip ? `${eqObj ? eqObj.name : rec.assignedEquip} (${currentStatus})` : '<span class="text-muted">未指定</span>';
             
+            const isMissingCase = !isCaseFilled || rec.isImgUploaded === "否";
+
             const tr = document.createElement("tr");
+            if (isMissingCase) tr.classList.add("alert-missing");
+
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold">${toROCDate(rec.date)}</td>
                 <td class="text-center fw-bold">${rec.station || ''}</td>
@@ -1890,18 +2252,36 @@
         let records = (window.systemData.dutyRecords || []).filter(r => r.station === st && r.deleteStatus !== 'APPROVED');
         records = sortDutyRecordsByTime(records);
         const officers = window.systemData.officers[st] || [];
-        const canEdit = getPagePermission('station') === "EDIT";
+
+        const pagePerm = getPagePermission('station');
+        const canEdit = pagePerm === "EDIT";
+
+        const actionBtns = document.getElementById("stationActionBtns");
+        if (!canEdit) {
+            actionBtns.style.display = 'none';
+        } else {
+            actionBtns.style.display = 'flex';
+        }
 
         records.forEach(rec => {
             const tr = document.createElement("tr");
-            let offOpts = `<option value="">--選擇人員--</option>`; 
+            
+            let offOpts = `<option value="">--請選擇人員--</option>`; 
             officers.forEach(o => offOpts += `<option value="${o}" ${rec.officer === o ? 'selected' : ''}>${o}</option>`);
-            let timeOpts = `<option value="">--選擇時段--</option>`; 
+            
+            let timeOpts = `<option value="">--請選擇時段--</option>`; 
             (window.systemData.timeSlots || []).forEach(t => timeOpts += `<option value="${t}" ${rec.timeSlot === t ? 'selected' : ''}>${t}</option>`);
 
             const eqObj = window.systemData.equipments[rec.assignedEquip];
             const currentStatus = eqObj ? (eqObj.currentStatus || "分局(保管)") : "未指定";
             const displayEquipText = rec.assignedEquip ? `${eqObj ? eqObj.name : rec.assignedEquip} (${currentStatus})` : '尚未指定';
+
+            let delBadge = '<span class="badge bg-secondary">正常</span>';
+            let actionBtn = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>申請刪除</button>` : '<span class="text-muted small">唯讀</span>';
+            if (rec.deleteStatus === 'PENDING') {
+                delBadge = '<span class="badge bg-warning text-dark">審核中</span>';
+                actionBtn = canEdit ? `<button class="btn btn-sm btn-outline-secondary" onclick="revokeDeleteApply(${rec.id})"><i class="fa-solid fa-rotate-left me-1"></i>撤回</button>` : '<span class="text-muted small">唯讀</span>';
+            } else if (rec.deleteStatus === 'REJECTED') delBadge = '<span class="badge bg-danger">退回</span>';
 
             tr.innerHTML = `
                 <td><input type="date" class="form-control form-control-sm" value="${rec.date || ''}" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'date', this.value)"></td>
@@ -1911,19 +2291,82 @@
                 <td><input type="text" class="form-control form-control-sm bg-light fw-bold text-dark" value="${displayEquipText}" readonly></td>
                 <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="" ${!rec.isImgUploaded ? 'selected' : ''}>--選擇--</option><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
                 <td><input type="text" class="form-control form-control-sm" ${canEdit ? '' : 'disabled'} value="${rec.note || ''}" placeholder="自訂備註..." onchange="updateDutyRecLocal(${rec.id}, 'note', this.value)"></td>
-                <td class="text-center">${rec.deleteStatus === 'PENDING' ? '<span class="badge bg-warning text-dark">審核中</span>' : '<span class="badge bg-secondary">正常</span>'}</td>
-                <td class="text-center">${canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="openDeleteApplyModal(${rec.id})"><i class="fa-solid fa-trash-can me-1"></i>刪除</button>` : ''}</td>
+                <td class="text-center">${delBadge}</td>
+                <td class="text-center">${actionBtn}</td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function updateDutyRecLocal(id, field, value) {
-        if (getPagePermission('station') !== 'EDIT' && getPagePermission('hq-41') !== 'EDIT') return;
-        const rec = window.systemData.dutyRecords.find(r => r.id === id);
+    function addNewStationDutyRow() {
+        if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const stSelect = document.getElementById("stationSelect");
+        const st = stSelect ? stSelect.value : currentUser.station;
+        if (!window.systemData.dutyRecords) window.systemData.dutyRecords = [];
+        
+        window.systemData.dutyRecords.push({ 
+            id: Date.now(), 
+            date: "", 
+            station: st, 
+            timeSlot: "", 
+            officer: "", 
+            location: "", 
+            assignedEquip: "", 
+            isImgUploaded: "", 
+            note: "", 
+            deleteStatus: "NORMAL", 
+            deleteReason: "" 
+        });
+        renderStationDutyTable();
+    }
+
+    function openDeleteApplyModal(recId) {
+        if (getPagePermission('station') !== 'EDIT') return;
+        const reason = prompt("請輸入申請刪除此班次的原因 (送交分局審核)：", "勤務異動/班次調整");
+        if (reason === null) return;
+        const finalReason = reason.trim() || "未註明原因";
+
+        const rec = window.systemData.dutyRecords.find(r => r.id === recId);
         if (rec) {
-            rec[field] = value;
+            rec.deleteStatus = 'PENDING';
+            rec.deleteReason = finalReason;
             saveSystemData();
+            renderStationDutyTable();
+            alert("✅ 已成功送出勤務刪除申請，等待分局人員審核中！");
+        }
+    }
+
+    function revokeDeleteApply(recId) {
+        if (getPagePermission('station') !== 'EDIT') return;
+        const rec = window.systemData.dutyRecords.find(r => r.id === recId);
+        if (rec) {
+            rec.deleteStatus = 'NORMAL';
+            rec.deleteReason = '';
+            saveSystemData();
+            renderStationDutyTable();
+            alert("✅ 已撤回刪除申請！");
+        }
+    }
+
+    function updateDutyRecLocal(id, field, value) {
+        if (getPagePermission('station') !== 'EDIT') return;
+        const rec = window.systemData.dutyRecords.find(r => r.id === id);
+        if (rec) rec[field] = value;
+    }
+
+    function saveStationDutyData() {
+        if (getPagePermission('station') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限，無法儲存變更！'); return; }
+        saveSystemData(); alert("✅ 各所選填變更已同步儲存！");
+    }
+
+    function switchEquipment() {
+        const equipKey = document.getElementById("equipSelect").value;
+        const equip = window.systemData.equipments[equipKey];
+        if (equip) {
+            const currentStatus = equip.currentStatus || "分局(保管)";
+            document.getElementById("equipNotice").innerText = `現正登記：${equip.name} (${currentStatus})`;
+            document.getElementById("baseCodeInputDisplay").value = equip.baseCode || "SPD-1150001";
+            renderCaseTable();
         }
     }
 
@@ -1937,7 +2380,8 @@
         document.getElementById("equipNotice").innerText = `現正登記：${equip.name} (${currentStatus})`;
 
         const tbody = document.getElementById("caseTbody");
-        tbody.innerHTML = "";
+        const mobileContainer = document.getElementById("caseMobileContainer");
+        tbody.innerHTML = ""; mobileContainer.innerHTML = "";
 
         const baseCode = equip.baseCode || "SPD-1150001";
         const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
@@ -1951,21 +2395,66 @@
 
         for (let i = 0; i < caseRowCount; i++) {
             const row = records[i] || {};
+            const seq = i + 1;
             const caseCode = `${equipKey}-${basePfx}${String(baseNum + i).padStart(7, '0')}`;
             let officerOpts = `<option value="">--選擇人員--</option>`; allOfficers.forEach(off => officerOpts += `<option value="${off}" ${row.officer === off ? 'selected' : ''}>${off}</option>`);
             let reasonOpts = `<option value="">--未入案原因--</option>`; noEntryReasons.forEach(rsn => reasonOpts += `<option value="${rsn}" ${row.reason === rsn ? 'selected' : ''}>${rsn}</option>`);
 
+            const sameDateCheckbox = (i > 0 && canEdit) ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameDate_${i}" onchange="copyAboveCaseField(${i}, 'date')"><label class="form-check-label small text-muted" for="sameDate_${i}">同上</label></div>` : '';
+            const sameOfficerCheckbox = (i > 0 && canEdit) ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameOff_${i}" onchange="copyAboveCaseField(${i}, 'officer')"><label class="form-check-label small text-muted" for="sameOff_${i}">同上</label></div>` : '';
+            const sameReasonCheckbox = (i > 0 && canEdit) ? `<div class="form-check form-check-inline me-1 mb-0"><input class="form-check-input" type="checkbox" id="sameRsn_${i}" onchange="copyAboveCaseField(${i}, 'reason')"><label class="form-check-label small text-muted" for="sameRsn_${i}">同上</label></div>` : '';
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td class="text-center fw-bold">${i + 1}</td>
+                <td class="text-center fw-bold">${seq}</td>
                 <td class="text-center font-monospace small">${caseCode}</td>
-                <td><input type="date" class="form-control form-control-sm" value="${row.date || ''}" ${canEdit ? '' : 'disabled'} oninput="updateCaseRowLocal(${i}, 'date', this.value)"></td>
-                <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></td>
+                <td><div class="d-flex align-items-center">${sameDateCheckbox}<input type="date" class="form-control form-control-sm" id="case_date_${i}" value="${row.date || ''}" ${canEdit ? '' : 'disabled'} oninput="updateCaseRowLocal(${i}, 'date', this.value)"></div></td>
+                <td><div class="d-flex align-items-center">${sameOfficerCheckbox}<select class="form-select form-select-sm" id="case_off_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></div></td>
                 <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
-                <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></td>
-                <td class="text-center">${row.date && row.officer ? '<span class="badge bg-secondary">正常</span>' : '<span class="badge bg-light text-muted border">等待中</span>'}</td>
+                <td><div class="d-flex align-items-center">${sameReasonCheckbox}<select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" id="case_rsn_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div></td>
+                <td class="text-center">${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-secondary">正常</span>') : '<span class="badge bg-light text-muted border">等待中</span>'}</td>
             `;
             tbody.appendChild(tr);
+
+            const cardDiv = document.createElement("div");
+            cardDiv.className = `mobile-card-item ${row.isEntry === '否' && !row.reason ? 'missing' : (row.date && row.officer ? 'success' : '')}`;
+            cardDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-dark">#${seq}</span>
+                    <span class="font-monospace fw-bold text-dark small">${caseCode}</span>
+                    <div>${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-secondary">正常</span>') : '<span class="badge bg-light text-muted border">未填</span>'}</div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-12 col-sm-6">
+                        <div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label small mb-0 fw-bold">日期：</label></div>
+                        <input type="date" class="form-control form-control-sm" id="m_case_date_${i}" value="${row.date || ''}" ${canEdit ? '' : 'disabled'} oninput="updateCaseRowLocal(${i}, 'date', this.value)">
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label small mb-0 fw-bold">人員：</label></div>
+                        <select class="form-select form-select-sm" id="m_case_off_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select>
+                    </div>
+                    <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
+                    <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                </div>
+            `;
+            mobileContainer.appendChild(cardDiv);
+        }
+    }
+
+    function copyAboveCaseField(index, field) {
+        if (index <= 0 || getPagePermission('case') !== 'EDIT') return;
+        const equipKey = document.getElementById("equipSelect").value;
+        const records = window.systemData.caseRecords[equipKey] || [];
+        const prevValue = records[index - 1] ? records[index - 1][field] : '';
+        if (prevValue !== undefined) {
+            updateCaseRowLocal(index, field, prevValue);
+            if (field === 'date') {
+                const el = document.getElementById(`case_date_${index}`); if (el) el.value = prevValue;
+            } else if (field === 'officer') {
+                const el = document.getElementById(`case_off_${index}`); if (el) el.value = prevValue;
+            } else if (field === 'reason') {
+                const el = document.getElementById(`case_rsn_${index}`); if (el) el.value = prevValue;
+            }
         }
     }
 
@@ -1978,9 +2467,10 @@
     }
 
     function saveCaseData() {
-        if (getPagePermission('case') !== 'EDIT') return;
-        saveSystemData(); alert("✅ 案件管制資料已成功儲存！");
+        if (getPagePermission('case') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        saveSystemData(); alert("✅ 案件管制表資料已成功儲存！");
     }
+    function addMoreCaseRows() { caseRowCount += 10; renderCaseTable(); }
 
     function renderHqDeleteAuditTable() {
         const tbody = document.getElementById("hqDeleteAuditTbody");
@@ -1999,7 +2489,7 @@
                 <td class="text-center small">${rec.officer}</td>
                 <td class="small">${rec.location || '未核定'}</td>
                 <td class="text-danger fw-bold small">${rec.deleteReason}</td>
-                <td class="text-center">${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1" onclick="auditDeleteApply(${rec.id}, true)">同意</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditDeleteApply(${rec.id}, false)">退回</button>` : ''}</td>
+                <td class="text-center">${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1" onclick="auditDeleteApply(${rec.id}, true)">同意</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="auditDeleteApply(${rec.id}, false)">退回</button>` : '<span class="text-muted small">唯讀</span>'}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -2009,6 +2499,17 @@
         if (getPagePermission('hq-41') !== 'EDIT') return;
         const rec = window.systemData.dutyRecords.find(r => r.id === recId);
         if (rec) { rec.deleteStatus = isApprove ? 'APPROVED' : 'REJECTED'; saveSystemData(); renderHqDeleteAuditTable(); }
+    }
+
+    function isEquipmentBusyOnSlot(equipKey, date, timeSlot, excludeRecordId) {
+        if (!date || !timeSlot) return false;
+        const records = window.systemData.dutyRecords || [];
+        for (let r of records) {
+            if (r.id !== excludeRecordId && r.deleteStatus !== 'APPROVED' && r.date === date && r.timeSlot === timeSlot && r.assignedEquip === equipKey) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function renderHqMasterDutyTable() {
@@ -2025,7 +2526,11 @@
             Object.keys(window.systemData.equipments || {}).forEach(k => {
                 const eq = window.systemData.equipments[k];
                 const currentStatus = eq ? (eq.currentStatus || "分局(保管)") : "未指定";
-                equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''}>${eq.name} (${currentStatus})</option>`;
+                const isBusy = isEquipmentBusyOnSlot(k, rec.date, rec.timeSlot, rec.id);
+                const busyLabel = isBusy ? " ⚠️ (該時段已指派)" : "";
+                
+                const displayText = `${eq.name} (${currentStatus})${busyLabel}`;
+                equipOpts += `<option value="${k}" ${rec.assignedEquip === k ? 'selected' : ''} ${isBusy && rec.assignedEquip !== k ? 'disabled' : ''}>${displayText}</option>`;
             });
 
             const tr = document.createElement("tr");
@@ -2034,30 +2539,76 @@
                 <td class="text-center fw-bold small">${rec.station || ''}</td>
                 <td class="text-center small">${rec.timeSlot || ''}</td>
                 <td class="text-center small">${rec.officer || ''}</td>
-                <td><select class="form-select form-select-sm border-secondary fw-bold text-dark" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'location', this.value)">${locOpts}</select></td>
-                <td><select class="form-select form-select-sm border-secondary fw-bold text-dark" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'assignedEquip', this.value)">${equipOpts}</select></td>
-                <td class="text-center"><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value)"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
+                <td><select class="form-select form-select-sm border-secondary fw-bold text-dark" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'location', this.value);">${locOpts}</select></td>
+                <td><select class="form-select form-select-sm border-secondary fw-bold" ${canEdit ? '' : 'disabled'} onchange="handleEquipAssignmentChange(${rec.id}, this.value, this)">${equipOpts}</select></td>
+                <td class="text-center"><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateDutyRecLocal(${rec.id}, 'isImgUploaded', this.value);"><option value="否" ${rec.isImgUploaded === '否' ? 'selected' : ''}>否</option><option value="是" ${rec.isImgUploaded === '是' ? 'selected' : ''}>是</option></select></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    function saveHqMasterDutyData() {
+    function handleEquipAssignmentChange(recId, equipKey, selectEl) {
         if (getPagePermission('hq-41') !== 'EDIT') return;
-        saveSystemData(); alert("✅ 地點與指定測速儀核定結果已儲存！");
+        const rec = (window.systemData.dutyRecords || []).find(r => r.id === recId);
+        if (!rec) return;
+
+        if (equipKey && isEquipmentBusyOnSlot(equipKey, rec.date, rec.timeSlot, rec.id)) {
+            alert(`⚠️ 防呆攔截：測速儀器 【${equipKey}】 在 ${toROCDate(rec.date)} 時段 ${rec.timeSlot} 已指派給其他勤務人員使用，無法重複指派！`);
+            selectEl.value = rec.assignedEquip || "";
+            return;
+        }
+        updateDutyRecLocal(recId, 'assignedEquip', equipKey);
+    }
+
+    function saveHqMasterDutyData() {
+        if (getPagePermission('hq-41') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        saveSystemData(); renderHomeDutyTable(); alert("✅ 地點與指定測速儀核定結果已儲存！");
+    }
+
+    /* 🔄 根據保管單位連動過濾保管人員下拉選單 (核心連動邏輯) */
+    function updateKeeperNameDropdownByStation(equipKey) {
+        const stationEl = document.getElementById(`keeper_st_${equipKey}`);
+        const nameEl = document.getElementById(`keeper_name_${equipKey}`);
+        if (!stationEl || !nameEl) return;
+
+        const selectedStation = stationEl.value;
+        const currentSelectedName = nameEl.value || (window.systemData.equipKeepers[equipKey] ? window.systemData.equipKeepers[equipKey].name : '');
+        nameEl.innerHTML = "";
+
+        let officerOpts = `<option value="">--選擇保管人--</option>`;
+        
+        if (selectedStation === "歸仁分局") {
+            officerOpts += `<option value="分局辦理" ${currentSelectedName === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
+        } else if (selectedStation && window.systemData.officers[selectedStation]) {
+            window.systemData.officers[selectedStation].forEach(off => {
+                officerOpts += `<option value="${off}" ${currentSelectedName === off ? 'selected' : ''}>${off}</option>`;
+            });
+        } else {
+            getAllOfficersList().forEach(off => {
+                officerOpts += `<option value="${off}" ${currentSelectedName === off ? 'selected' : ''}>${off}</option>`;
+            });
+            officerOpts += `<option value="分局辦理" ${currentSelectedName === '分局辦理' ? 'selected' : ''}>分局辦理</option>`;
+        }
+
+        nameEl.innerHTML = officerOpts;
+        if (currentSelectedName) {
+            nameEl.value = currentSelectedName;
+        }
     }
 
     function renderKeeperBaseTable() {
         const tbody = document.getElementById("keeperBaseTbody");
         tbody.innerHTML = "";
+        if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
         const stations = getStationList();
+        ensureStatusOptions();
         const canEdit = getPagePermission('hq-42') === 'EDIT';
 
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             const eq = window.systemData.equipments[k];
-            const keeper = (window.systemData.equipKeepers && window.systemData.equipKeepers[k]) || {};
+            const keeper = window.systemData.equipKeepers[k] || {};
 
-            let stationOpts = `<option value="">--選擇單位--</option>`;
+            let stationOpts = `<option value="">--請選擇單位--</option>`;
             stations.forEach(st => stationOpts += `<option value="${st}" ${keeper.station === st ? 'selected' : ''}>${st}</option>`);
             stationOpts += `<option value="歸仁分局" ${keeper.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
 
@@ -2070,10 +2621,19 @@
             tr.innerHTML = `
                 <td class="text-center font-monospace fw-bold small">${k}</td>
                 <td class="fw-bold small">${eq.name}</td>
-                <td><select class="form-select form-select-sm" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'}>${stationOpts}</select></td>
-                <td><input type="text" class="form-control form-control-sm" id="keeper_name_${k}" value="${keeper.name || ''}" ${canEdit ? '' : 'disabled'}></td>
-                <td><input type="text" class="form-control form-control-sm" id="keeper_title_${k}" value="${keeper.title || '警員'}" ${canEdit ? '' : 'disabled'}></td>
-                <td><select class="form-select form-select-sm fw-bold text-dark" id="keeper_status_${k}" ${canEdit ? '' : 'disabled'}>${statusOpts}</select></td>
+                <td><select class="form-select form-select-sm fw-bold border-secondary" id="keeper_st_${k}" ${canEdit ? '' : 'disabled'} onchange="updateKeeperNameDropdownByStation('${k}')">${stationOpts}</select></td>
+                <td><select class="form-select form-select-sm fw-bold border-secondary" id="keeper_name_${k}" ${canEdit ? '' : 'disabled'}></select></td>
+                <td>
+                    <select class="form-select form-select-sm" id="keeper_title_${k}" ${canEdit ? '' : 'disabled'}>
+                        <option value="警員" ${keeper.title === '警員' ? 'selected' : ''}>警員</option>
+                        <option value="巡佐" ${keeper.title === '巡佐' ? 'selected' : ''}>巡佐</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm fw-bold text-dark" id="keeper_status_${k}" ${canEdit ? '' : 'disabled'} onchange="updateEquipCurrentStatus('${k}', this.value)">
+                        ${statusOpts}
+                    </select>
+                </td>
                 <td>
                     <div class="input-group input-group-sm">
                         <input type="date" class="form-control" id="keeper_startDate_${k}" value="${keeper.startDate || ''}" ${canEdit ? '' : 'disabled'}>
@@ -2083,11 +2643,24 @@
                 </td>
             `;
             tbody.appendChild(tr);
+
+            updateKeeperNameDropdownByStation(k);
+            if (keeper.name) {
+                const nameSelect = document.getElementById(`keeper_name_${k}`);
+                if (nameSelect) nameSelect.value = keeper.name;
+            }
         });
     }
 
-    function saveKeeperData() {
+    function updateEquipCurrentStatus(equipKey, newStatus) {
         if (getPagePermission('hq-42') !== 'EDIT') return;
+        if (window.systemData.equipments[equipKey]) {
+            window.systemData.equipments[equipKey].currentStatus = newStatus;
+        }
+    }
+
+    function saveKeeperData() {
+        if (getPagePermission('hq-42') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
         if (!window.systemData.equipKeepers) window.systemData.equipKeepers = {};
         Object.keys(window.systemData.equipments || {}).forEach(k => {
             window.systemData.equipKeepers[k] = {
@@ -2098,28 +2671,824 @@
                 endDate: document.getElementById(`keeper_endDate_${k}`).value
             };
             const statEl = document.getElementById(`keeper_status_${k}`);
-            if (statEl) window.systemData.equipments[k].currentStatus = statEl.value;
+            if (statEl) {
+                window.systemData.equipments[k].currentStatus = statEl.value;
+            }
         });
         saveSystemData();
-        alert("✅ 保管人與裝備狀態設定已儲存！");
+        renderHomeDutyTable();
+        alert("✅ 測速儀保管人與當前裝備狀態設定已成功儲存！");
     }
 
-    function renderKeeperLogTable() {}
-    function renderCertTable() {}
-    function renderAwardTable() {}
-    function updateStatsPeriodOptions() {}
-    function renderStatsTableAndChart() {}
-    function initAdminLists() {}
-    function populateRoleMatrixSelect() {}
-    function renderRoleMatrixUI() {}
-    function renderAccountRequestsUI() {}
-    function renderAdminEquipSettings() {}
-    function renderAdminStationSettings() {}
-    function initCustomTitlesInputs() {}
-    function saveCustomTitles() {}
-    function resetTitlesToDefault() {}
+    function openAddKeeperLogModal() {
+        if (getPagePermission('hq-42') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        populateEquipDropdown();
+        populateStationDropdowns();
+        ensureStatusOptions();
+
+        const logStatEl = document.getElementById('modalLogStatusSelect');
+        if (logStatEl) {
+            logStatEl.innerHTML = "";
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
+                const opt = document.createElement('option');
+                opt.value = stOpt; opt.innerText = stOpt;
+                logStatEl.appendChild(opt);
+            });
+        }
+
+        document.getElementById('modalLogStartDate').value = '';
+        document.getElementById('modalLogEndDate').value = '';
+        document.getElementById('modalLogNote').value = '';
+        new bootstrap.Modal(document.getElementById('keeperLogModal')).show();
+    }
+
+    function saveNewKeeperLogRecord() {
+        if (getPagePermission('hq-42') !== 'EDIT') return;
+        const eqKey = document.getElementById('modalLogEquipSelect').value;
+        const station = document.getElementById('modalLogStationSelect').value;
+        const name = document.getElementById('modalLogOfficerSelect').value;
+        const status = document.getElementById('modalLogStatusSelect').value;
+        const startDate = document.getElementById('modalLogStartDate').value;
+        const endDate = document.getElementById('modalLogEndDate').value;
+        const note = document.getElementById('modalLogNote').value.trim();
+
+        if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
+        if (!window.systemData.equipLogs[eqKey]) window.systemData.equipLogs[eqKey] = [];
+
+        window.systemData.equipLogs[eqKey].push({
+            id: 'log_' + Date.now(),
+            station, name, status, startDate, endDate, note
+        });
+
+        if (window.systemData.equipments[eqKey]) {
+            window.systemData.equipments[eqKey].currentStatus = status;
+        }
+
+        saveSystemData();
+        bootstrap.Modal.getInstance(document.getElementById('keeperLogModal')).hide();
+        renderKeeperBaseTable();
+        renderKeeperLogTable();
+        renderHomeDutyTable();
+        alert("✅ 歷史狀態與保管紀錄已成功新增！");
+    }
+
+    function renderKeeperLogTable() {
+        const tbody = document.getElementById('keeperLogTbody');
+        tbody.innerHTML = "";
+        if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
+
+        let hasLogs = false;
+        const stations = getStationList();
+        ensureStatusOptions();
+        const canEdit = getPagePermission('hq-42') === 'EDIT';
+
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const eq = window.systemData.equipments[k];
+            const logs = window.systemData.equipLogs[k] || [];
+            logs.forEach((lg, idx) => {
+                hasLogs = true;
+                let stationOpts = '';
+                stations.forEach(st => stationOpts += `<option value="${st}" ${lg.station === st ? 'selected' : ''}>${st}</option>`);
+                stationOpts += `<option value="歸仁分局" ${lg.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
+
+                let statusOpts = '';
+                (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
+                    statusOpts += `<option value="${stOpt}" ${lg.status === stOpt ? 'selected' : ''}>${stOpt}</option>`;
+                });
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center font-monospace fw-bold small">${k}</td>
+                    <td class="fw-bold small">${eq.name}</td>
+                    <td><select class="form-select form-select-sm" id="log_st_${k}_${idx}" ${canEdit ? '' : 'disabled'}>${stationOpts}</select></td>
+                    <td><input type="text" class="form-control form-control-sm" id="log_off_${k}_${idx}" value="${lg.name || ''}" ${canEdit ? '' : 'disabled'}></td>
+                    <td><select class="form-select form-select-sm fw-bold text-dark" id="log_status_${k}_${idx}" ${canEdit ? '' : 'disabled'}>${statusOpts}</select></td>
+                    <td>
+                        <div class="input-group input-group-sm">
+                            <input type="date" class="form-control" id="log_start_${k}_${idx}" value="${lg.startDate || ''}" ${canEdit ? '' : 'disabled'}>
+                            <span class="input-group-text">至</span>
+                            <input type="date" class="form-control" id="log_end_${k}_${idx}" value="${lg.endDate || ''}" ${canEdit ? '' : 'disabled'}>
+                        </div>
+                    </td>
+                    <td><input type="text" class="form-control form-control-sm" id="log_note_${k}_${idx}" value="${lg.note || ''}" ${canEdit ? '' : 'disabled'}></td>
+                    <td class="text-center">${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteKeeperLog('${k}', ${idx})"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-muted small">唯讀</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+
+        if (!hasLogs) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3 small">目前尚無歷史狀態與保管歷程紀錄，請由右上角按鈕新增。</td></tr>`;
+        }
+    }
+
+    function saveKeeperLogTableData() {
+        if (getPagePermission('hq-42') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        if (!window.systemData.equipLogs) window.systemData.equipLogs = {};
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const logs = window.systemData.equipLogs[k] || [];
+            logs.forEach((lg, idx) => {
+                const stEl = document.getElementById(`log_st_${k}_${idx}`);
+                const offEl = document.getElementById(`log_off_${k}_${idx}`);
+                const statEl = document.getElementById(`log_status_${k}_${idx}`);
+                const startEl = document.getElementById(`log_start_${k}_${idx}`);
+                const endEl = document.getElementById(`log_end_${k}_${idx}`);
+                const noteEl = document.getElementById(`log_note_${k}_${idx}`);
+
+                if (stEl) lg.station = stEl.value;
+                if (offEl) lg.name = offEl.value.trim();
+                if (statEl) lg.status = statEl.value;
+                if (startEl) lg.startDate = startEl.value;
+                if (endEl) lg.endDate = endEl.value;
+                if (noteEl) lg.note = noteEl.value.trim();
+            });
+        });
+        saveSystemData();
+        renderHomeDutyTable();
+        alert("✅ 歷程與時間資料變更已成功儲存！");
+    }
+
+    function deleteKeeperLog(equipKey, index) {
+        if (getPagePermission('hq-42') !== 'EDIT') return;
+        if (confirm("確定要刪除這筆歷史狀態歷程紀錄？")) {
+            if (window.systemData.equipLogs && window.systemData.equipLogs[equipKey]) {
+                window.systemData.equipLogs[equipKey].splice(index, 1);
+                saveSystemData();
+                renderKeeperLogTable();
+            }
+        }
+    }
+
+    function renderCertTable() {
+        populateEquipDropdown();
+        const tbody = document.getElementById("certTbody");
+        tbody.innerHTML = "";
+        if (!window.systemData.equipCertList) window.systemData.equipCertList = [];
+
+        let list = [...window.systemData.equipCertList].sort((a, b) => (b.expDate || "").localeCompare(a.expDate || ""));
+        const canEdit = getPagePermission('hq-43') === 'EDIT';
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3 small">目前尚未上傳任何檢定證書，請由上方欄位新增。</td></tr>`;
+            return;
+        }
+
+        list.forEach((item) => {
+            const eq = window.systemData.equipments[item.equipKey] || { name: "未知裝備" };
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center font-monospace fw-bold small">${item.equipKey}</td>
+                <td class="fw-bold small">${eq.name}</td>
+                <td class="text-center small font-monospace">${item.certNo || '未填寫'}</td>
+                <td class="text-center font-monospace fw-bold text-dark small">${toROCDate(item.expDate)}</td>
+                <td class="small text-truncate" style="max-width: 200px;"><i class="fa-solid fa-file-pdf me-1 text-danger"></i>${item.fileName || '證書檔案.pdf'}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-dark me-1 py-0 px-2" onclick="viewCertPdfByRecordId('${item.id}')"><i class="fa-solid fa-eye me-1"></i>檢視</button>
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-2 me-1" onclick="downloadCertPdfByRecordId('${item.id}')"><i class="fa-solid fa-download me-1"></i>下載</button>
+                    ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="deleteCertRecord('${item.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addNewCertRecord() {
+        if (getPagePermission('hq-43') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const eqKey = document.getElementById("certEquipSelect").value;
+        const certNo = document.getElementById("certNoInput").value.trim();
+        const expDate = document.getElementById("certExpInput").value;
+        const fileInput = document.getElementById("certFileInput");
+        const file = fileInput.files[0];
+
+        if (!file) { alert("⚠️ 請選擇 PDF 證書檔案！"); return; }
+        if (file.type !== "application/pdf") { alert("⚠️ 請上傳 PDF 格式的檔案！"); return; }
+        if (file.size > 5 * 1024 * 1024) { alert("⚠️ 檔案大小請控制在 5MB 以內！"); return; }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (!window.systemData.equipCertList) window.systemData.equipCertList = [];
+            const newRecord = {
+                id: 'cert_' + Date.now(),
+                equipKey: eqKey,
+                certNo: certNo,
+                expDate: expDate,
+                fileName: file.name,
+                pdfData: e.target.result
+            };
+            window.systemData.equipCertList.push(newRecord);
+            saveSystemData();
+            renderCertTable();
+            document.getElementById("certNoInput").value = "";
+            document.getElementById("certExpInput").value = "";
+            fileInput.value = "";
+            alert(`✅ 【${file.name}】 上傳新增成功！`);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function viewCertPdfByRecordId(recId) {
+        const cert = (window.systemData.equipCertList || []).find(item => item.id === recId);
+        if (cert && cert.pdfData) {
+            const pdfWindow = window.open("");
+            pdfWindow.document.write(`<iframe src="${cert.pdfData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+        }
+    }
+
+    function downloadCertPdfByRecordId(recId) {
+        const cert = (window.systemData.equipCertList || []).find(item => item.id === recId);
+        if (cert && cert.pdfData) {
+            const a = document.createElement("a");
+            a.href = cert.pdfData;
+            a.download = cert.fileName || `檢定證書.pdf`;
+            a.click();
+        }
+    }
+
+    function deleteCertRecord(recId) {
+        if (getPagePermission('hq-43') !== 'EDIT') return;
+        if (confirm("確定要刪除這份檢定證書檔案紀錄？")) {
+            if (window.systemData.equipCertList) {
+                window.systemData.equipCertList = window.systemData.equipCertList.filter(item => item.id !== recId);
+                saveSystemData();
+                renderCertTable();
+            }
+        }
+    }
+
+    function renderAwardTable() {
+        const tbody = document.getElementById("awardTbody");
+        tbody.innerHTML = "";
+        const stations = getStationList();
+
+        stations.forEach(st => {
+            const officerList = window.systemData.officers[st] || [];
+            officerList.forEach(off => {
+                const offDuty = (window.systemData.dutyRecords || []).filter(r => {
+                    if (r.officer !== off || r.deleteStatus === 'APPROVED') return false;
+                    let isCaseFilled = false;
+                    Object.keys(window.systemData.caseRecords || {}).forEach(eqKey => {
+                        (window.systemData.caseRecords[eqKey] || []).forEach(c => { if (c.date === r.date && c.officer === r.officer) isCaseFilled = true; });
+                    });
+                    return !(r.isImgUploaded === "否" || !isCaseFilled || (r.note && (r.note.includes("未執行") || r.note.includes("取消") || r.note.includes("停止"))));
+                });
+
+                let q1Hrs = 0, q2Hrs = 0, q3Hrs = 0, q4Hrs = 0;
+                offDuty.forEach(r => {
+                    if (!r.date) return;
+                    const m = parseInt(r.date.split("-")[1]);
+                    if (m >= 1 && m <= 3) q1Hrs += 4; else if (m >= 4 && m <= 6) q2Hrs += 4; else if (m >= 7 && m <= 9) q3Hrs += 4; else if (m >= 10 && m <= 12) q4Hrs += 4;
+                });
+
+                const calcQ = (hrs, prevCarry) => { const total = hrs + prevCarry; const awards = Math.min(2, Math.floor(total / 20)); return { awards, carry: total - (awards * 20) }; };
+                const resQ1 = calcQ(q1Hrs, 0); const resQ2 = calcQ(q2Hrs, resQ1.carry); const resQ3 = calcQ(q3Hrs, resQ2.carry); const resQ4 = calcQ(q4Hrs, resQ3.carry);
+                const totalHrs = q1Hrs + q2Hrs + q3Hrs + q4Hrs; const totalAwards = resQ1.awards + resQ2.awards + resQ3.awards + resQ4.awards;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td class="text-center small fw-bold">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-end small">${q1Hrs.toFixed(1)}</td><td class="text-center fw-bold text-dark small">${resQ1.awards}</td><td class="text-end small">${q2Hrs.toFixed(1)}</td><td class="text-center fw-bold text-dark small">${resQ2.awards}</td><td class="text-end small">${q3Hrs.toFixed(1)}</td><td class="text-center fw-bold text-dark small">${resQ3.awards}</td><td class="text-end small">${q4Hrs.toFixed(1)}</td><td class="text-center fw-bold text-dark small">${resQ4.awards}</td><td class="text-end fw-bold small">${totalHrs.toFixed(1)}</td><td class="text-center fw-bold text-danger small">${totalAwards} 支</td><td class="text-center small">${totalAwards > 0 ? `嘉獎 ${totalAwards} 支` : '不予敘獎'}</td>`;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    function updateStatsPeriodOptions() {
+        const pType = document.getElementById("statsPeriodType").value;
+        const container = document.getElementById("statsDateSelectorContainer");
+        if (pType === "YEAR") {
+            container.innerHTML = `<label class="form-label fw-bold mb-1 small">選擇年份：</label><select class="form-select form-select-sm" id="statsYearVal"><option value="2026">民國 115 年 (2026)</option></select>`;
+        } else if (pType === "MONTH") {
+            container.innerHTML = `<label class="form-label fw-bold mb-1 small">選擇月份：</label><input type="month" class="form-control form-control-sm" id="statsMonthVal" value="2026-08">`;
+        } else if (pType === "WEEK") {
+            container.innerHTML = `
+                <label class="form-label fw-bold mb-1 small">選擇週時間區間：</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" class="form-control" id="statsWeekStartVal" value="2026-08-01">
+                    <span class="input-group-text">至</span>
+                    <input type="date" class="form-control" id="statsWeekEndVal" value="2026-08-07">
+                </div>`;
+        } else if (pType === "DAY") {
+            container.innerHTML = `<label class="form-label fw-bold mb-1 small">選擇指定單日：</label><input type="date" class="form-control form-control-sm" id="statsDayVal" value="2026-08-01">`;
+        }
+        renderStatsTableAndChart();
+    }
+
+    function filterDutyRecordsByPeriod() {
+        const pType = document.getElementById("statsPeriodType").value;
+        return (window.systemData.dutyRecords || []).filter(r => r.deleteStatus !== 'APPROVED').filter(r => {
+            if (!r.date) return false;
+            if (pType === "YEAR") {
+                const y = document.getElementById("statsYearVal") ? document.getElementById("statsYearVal").value : "2026";
+                return r.date.startsWith(y);
+            } else if (pType === "MONTH") {
+                const m = document.getElementById("statsMonthVal") ? document.getElementById("statsMonthVal").value : "2026-08";
+                return r.date.startsWith(m);
+            } else if (pType === "WEEK") {
+                const start = document.getElementById("statsWeekStartVal") ? document.getElementById("statsWeekStartVal").value : "2026-08-01";
+                const end = document.getElementById("statsWeekEndVal") ? document.getElementById("statsWeekEndVal").value : "2026-08-07";
+                return r.date >= start && r.date <= end;
+            } else if (pType === "DAY") {
+                const d = document.getElementById("statsDayVal") ? document.getElementById("statsDayVal").value : "2026-08-01";
+                return r.date === d;
+            }
+            return true;
+        });
+    }
+
+    function renderStatsTableAndChart() {
+        const filteredDuty = filterDutyRecordsByPeriod();
+        const headerRow = document.getElementById("statsHeaderRow");
+        const tbody = document.getElementById("statsTbody");
+        headerRow.innerHTML = `<th>單位</th><th>測速路段</th>`; (window.systemData.timeSlots || []).forEach(t => headerRow.innerHTML += `<th>${t}</th>`); headerRow.innerHTML += `<th>總次數</th><th>佔比</th>`;
+        tbody.innerHTML = "";
+        let grandTotal = filteredDuty.length;
+        let locCountsMap = {}; let timeCountsMap = {}; (window.systemData.timeSlots || []).forEach(t => timeCountsMap[t] = 0);
+        const stations = getStationList();
+
+        stations.forEach(st => {
+            (window.systemData.locations[st] || []).forEach(loc => {
+                const tr = document.createElement("tr"); tr.innerHTML = `<td class="small">${st}</td><td class="fw-bold small">${loc}</td>`;
+                let locTotal = 0;
+                (window.systemData.timeSlots || []).forEach(t => {
+                    const count = filteredDuty.filter(r => r.location === loc && r.timeSlot === t).length;
+                    locTotal += count; timeCountsMap[t] += count; tr.innerHTML += `<td class="text-end small">${count}</td>`;
+                });
+                locCountsMap[loc] = locTotal;
+                tr.innerHTML += `<td class="text-end fw-bold text-dark small">${locTotal}</td><td class="text-end small">${grandTotal > 0 ? ((locTotal / grandTotal) * 100).toFixed(1) + '%' : '0.0%'}</td>`;
+                tbody.appendChild(tr);
+            });
+        });
+        renderLocationChart(locCountsMap); renderTimeSlotChart(timeCountsMap);
+    }
+
+    function renderLocationChart(locCountsMap) {
+        const ctx = document.getElementById('locationChart').getContext('2d');
+        if (locationChartInstance) locationChartInstance.destroy();
+        locationChartInstance = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(locCountsMap), datasets: [{ label: '次數', data: Object.values(locCountsMap), backgroundColor: '#2c3e50' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+    }
+
+    function renderTimeSlotChart(timeCountsMap) {
+        const ctx = document.getElementById('timeSlotChart').getContext('2d');
+        if (timeSlotChartInstance) timeSlotChartInstance.destroy();
+        timeSlotChartInstance = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(timeCountsMap), datasets: [{ data: Object.values(timeCountsMap), backgroundColor: ['#1f497d', '#2c3e50', '#4a5568', '#718096', '#a0aec0', '#cbd5e0', '#319795', '#2b6cb0', '#4c51bf', '#6b46c1'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+    }
+
+    function adminDirectAddUser() {
+        if (getPagePermission('hq-46-1') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const name = document.getElementById('adminAddName').value.trim();
+        const station = document.getElementById('adminAddStation').value;
+        const role = document.getElementById('adminAddRole').value;
+        const username = document.getElementById('adminAddUsername').value.trim();
+        const password = document.getElementById('adminAddPassword').value.trim();
+
+        if (!name || !username || !password) {
+            alert("⚠️ 請完整填寫姓名、帳號與密碼！");
+            return;
+        }
+
+        if (window.systemData.users && window.systemData.users[username]) {
+            alert(`⚠️ 帳號 【${username}】 已存在，請使用其他帳號！`);
+            return;
+        }
+
+        if (!window.systemData.users) window.systemData.users = {};
+        window.systemData.users[username] = {
+            name, station, role, password, status: 'approved'
+        };
+
+        saveSystemData();
+        renderAccountRequestsUI();
+
+        document.getElementById('adminAddName').value = '';
+        document.getElementById('adminAddUsername').value = '';
+        document.getElementById('adminAddPassword').value = '';
+
+        alert(`✅ 已成功由管理者新增同仁 【${name}】 (${username}) 之權限！`);
+    }
+
+    function renderAccountRequestsUI() {
+        const reqTbody = document.getElementById('accountRequestsTbody');
+        reqTbody.innerHTML = "";
+        const reqs = window.systemData.accountRequests || [];
+        const pendingReqs = reqs.filter(r => r.status === 'pending');
+        const roleMap = getRoleMap();
+        const canEdit = getPagePermission('hq-46-1') === 'EDIT';
+
+        if (pendingReqs.length === 0) {
+            reqTbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3 small">目前無等待審核的帳號申請</td></tr>`;
+        } else {
+            pendingReqs.forEach((r) => {
+                const reqIndex = reqs.findIndex(item => item.id === r.id);
+                let roleName = roleMap[r.role] || r.role;
+                const statusBadge = '<span class="badge bg-warning text-dark">待審核</span>';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center font-monospace fw-bold small">${toROCDate(r.date)}</td>
+                    <td class="text-center fw-bold small">${r.name}</td>
+                    <td class="text-center small">${r.station}</td>
+                    <td class="text-center small">${roleName}</td>
+                    <td class="text-center font-monospace small">${r.username}</td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-center">
+                        ${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1 fw-bold" onclick="approveAccountRequest(${reqIndex})">審核通過</button><button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="rejectAccountRequestWithReason(${reqIndex})">退回</button>` : '<span class="text-muted small">唯讀</span>'}
+                    </td>
+                `;
+                reqTbody.appendChild(tr);
+            });
+        }
+
+        const regTbody = document.getElementById('registeredUsersTbody');
+        regTbody.innerHTML = "";
+        const users = window.systemData.users || {};
+        const stations = getStationList();
+
+        Object.keys(users).forEach(u => {
+            if (u === MASTER_SUPER_USER) return;
+            const usr = users[u];
+
+            let stationOpts = '';
+            stations.forEach(st => stationOpts += `<option value="${st}" ${usr.station === st ? 'selected' : ''}>${st}</option>`);
+            stationOpts += `<option value="歸仁分局" ${usr.station === '歸仁分局' ? 'selected' : ''}>歸仁分局</option>`;
+
+            let roleOpts = '';
+            Object.keys(roleMap).forEach(rKey => {
+                roleOpts += `<option value="${rKey}" ${usr.role === rKey ? 'selected' : ''}>${roleMap[rKey]}</option>`;
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm fw-bold" id="usr_name_${u}" value="${usr.name || ''}" ${canEdit ? '' : 'disabled'}></td>
+                <td><select class="form-select form-select-sm" id="usr_st_${u}" ${canEdit ? '' : 'disabled'}>${stationOpts}</select></td>
+                <td><select class="form-select form-select-sm fw-bold text-dark" id="usr_role_${u}" ${canEdit ? '' : 'disabled'}>${roleOpts}</select></td>
+                <td><input type="text" class="form-control form-control-sm font-monospace" id="usr_uname_${u}" value="${u}" ${canEdit ? '' : 'disabled'}></td>
+                <td><input type="password" class="form-control form-control-sm font-monospace" id="usr_pwd_${u}" value="${usr.password || ''}" ${canEdit ? '' : 'disabled'}></td>
+                <td class="text-center">
+                    ${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1 fw-bold" onclick="saveUserDataChanges('${u}')"><i class="fa-solid fa-floppy-disk me-1"></i>儲存修改</button>${u !== 'admin' ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteRegisteredUser('${u}')">刪除</button>` : ''}` : '<span class="text-muted small">唯讀</span>'}
+                </td>
+            `;
+            regTbody.appendChild(tr);
+        });
+    }
+
+    function approveAccountRequest(index) {
+        if (getPagePermission('hq-46-1') !== 'EDIT') return;
+        const reqs = window.systemData.accountRequests || [];
+        const req = reqs[index];
+        if (req) {
+            req.status = 'approved';
+            if (!window.systemData.users) window.systemData.users = {};
+            window.systemData.users[req.username] = {
+                password: req.password,
+                role: req.role,
+                station: req.station,
+                name: req.name,
+                status: 'approved'
+            };
+            if (window.systemData.rejectedRequests) delete window.systemData.rejectedRequests[req.username];
+            saveSystemData();
+            renderAccountRequestsUI();
+            alert(`✅ 已成功核準 【${req.name}】 (${req.username}) 之權限，該帳號已可登入使用！`);
+        }
+    }
+
+    function rejectAccountRequestWithReason(index) {
+        if (getPagePermission('hq-46-1') !== 'EDIT') return;
+        const reqs = window.systemData.accountRequests || [];
+        const req = reqs[index];
+        if (req) {
+            const reason = prompt(`請輸入退回【${req.name} (${req.username})】權限申請的原因：`, "資料填寫有誤或身分不符");
+            if (reason === null) return;
+            const finalReason = reason.trim() || "未註明原因";
+
+            if (!window.systemData.rejectedRequests) window.systemData.rejectedRequests = {};
+            window.systemData.rejectedRequests[req.username] = finalReason;
+
+            window.systemData.accountRequests.splice(index, 1);
+            saveSystemData();
+            renderAccountRequestsUI();
+            alert(`✅ 已退回 【${req.name}】 的權限申請，並已註記原因！`);
+        }
+    }
+
+    function saveUserDataChanges(oldUsername) {
+        if (getPagePermission('hq-46-1') !== 'EDIT') return;
+        const nameVal = document.getElementById(`usr_name_${oldUsername}`).value.trim();
+        const stVal = document.getElementById(`usr_st_${oldUsername}`).value;
+        const roleVal = document.getElementById(`usr_role_${oldUsername}`).value;
+        const newUnameVal = document.getElementById(`usr_uname_${oldUsername}`).value.trim();
+        const pwdVal = document.getElementById(`usr_pwd_${oldUsername}`).value.trim();
+
+        if (!nameVal || !newUnameVal || !pwdVal) {
+            alert("⚠️ 姓名、帳號與密碼均不能為空白！");
+            return;
+        }
+
+        if (newUnameVal !== oldUsername && window.systemData.users[newUnameVal]) {
+            alert(`⚠️ 帳號 【${newUnameVal}】 已被其他人員使用，請更換新帳號！`);
+            return;
+        }
+
+        delete window.systemData.users[oldUsername];
+        window.systemData.users[newUnameVal] = {
+            name: nameVal,
+            station: stVal,
+            role: roleVal,
+            password: pwdVal,
+            status: 'approved'
+        };
+
+        saveSystemData();
+        renderAccountRequestsUI();
+        alert(`✅ 帳號 【${newUnameVal}】 之人員權限與資料已成功儲存！`);
+    }
+
+    function deleteRegisteredUser(username) {
+        if (getPagePermission('hq-46-1') !== 'EDIT') return;
+        if (confirm(`確定要刪除帳號 【${username}】？刪除後該用戶將無法再登入系統。`)) {
+            if (window.systemData.users && window.systemData.users[username]) {
+                delete window.systemData.users[username];
+                saveSystemData();
+                renderAccountRequestsUI();
+                alert("✅ 帳號已成功刪除！");
+            }
+        }
+    }
+
+    function adminAddEquipStatusOption() {
+        if (getPagePermission('hq-46-5') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const val = document.getElementById("newEquipStatusOptionInput").value.trim();
+        if (!val) { alert("⚠️ 請輸入狀態名稱！"); return; }
+
+        ensureStatusOptions();
+        if (window.systemData.equipStatusOptions.includes(val)) {
+            alert("⚠️ 該狀態選項已存在！");
+            return;
+        }
+
+        window.systemData.equipStatusOptions.push(val);
+        saveSystemData();
+        document.getElementById("newEquipStatusOptionInput").value = "";
+        renderAdminEquipSettings();
+        renderKeeperBaseTable();
+        alert(`✅ 已成功新增狀態選項 【${val}】！`);
+    }
+
+    function adminDeleteEquipStatusOption(optVal) {
+        if (getPagePermission('hq-46-5') !== 'EDIT') return;
+        if (confirm(`確定要刪除裝備狀態選項 【${optVal}】？`)) {
+            ensureStatusOptions();
+            window.systemData.equipStatusOptions = window.systemData.equipStatusOptions.filter(o => o !== optVal);
+            saveSystemData();
+            renderAdminEquipSettings();
+            renderKeeperBaseTable();
+        }
+    }
+
+    function addNewEquipment() {
+        if (getPagePermission('hq-46-5') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const key = document.getElementById("newEquipKey").value.trim().toUpperCase();
+        const name = document.getElementById("newEquipName").value.trim();
+        const baseCode = document.getElementById("newEquipBaseCode").value.trim() || "SPD-1150001";
+        if (!key || !name) { alert("⚠️ 請完整填寫裝備代碼與名稱！"); return; }
+
+        if (!window.systemData.equipments) window.systemData.equipments = {};
+        window.systemData.equipments[key] = { name, baseCode, currentStatus: "分局(保管)" };
+        ensureEquipmentOrdering();
+        saveSystemData();
+
+        document.getElementById("newEquipKey").value = "";
+        document.getElementById("newEquipName").value = "";
+        document.getElementById("newEquipBaseCode").value = "";
+        renderAdminEquipSettings();
+    }
+
+    function deleteEquipment(key) {
+        if (getPagePermission('hq-46-5') !== 'EDIT') return;
+        if (confirm(`確定刪除 【${key}】？`)) {
+            delete window.systemData.equipments[key];
+            if (window.systemData.equipKeepers) delete window.systemData.equipKeepers[key];
+            saveSystemData();
+            renderAdminEquipSettings();
+        }
+    }
+
+    function renderAdminEquipSettings() {
+        ensureEquipmentOrdering();
+        ensureStatusOptions();
+        const canEdit = getPagePermission('hq-46-5') === 'EDIT';
+
+        const badgeGroup = document.getElementById("equipStatusOptionBadgeGroup");
+        if (badgeGroup) {
+            badgeGroup.innerHTML = "";
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(opt => {
+                const badge = document.createElement("span");
+                badge.className = "badge bg-white text-dark border p-2 d-flex align-items-center gap-2";
+                badge.innerHTML = `
+                    <span class="fw-bold">${opt}</span>
+                    ${canEdit ? `<button class="btn btn-sm btn-link text-danger p-0 border-0" onclick="adminDeleteEquipStatusOption('${opt}')"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                `;
+                badgeGroup.appendChild(badge);
+            });
+        }
+
+        const tbody = document.getElementById("adminEquipEditTbody"); tbody.innerHTML = "";
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            const eq = window.systemData.equipments[k];
+            const tr = document.createElement("tr");
+
+            let statusOpts = '';
+            (window.systemData.equipStatusOptions || DEFAULT_KEEPER_STATUS_OPTIONS).forEach(stOpt => {
+                statusOpts += `<option value="${stOpt}" ${eq.currentStatus === stOpt ? 'selected' : ''}>${stOpt}</option>`;
+            });
+
+            tr.innerHTML = `
+                <td class="text-center font-monospace fw-bold small">${k}</td>
+                <td><input type="text" class="form-control form-control-sm fw-bold border-secondary" id="eqName_${k}" value="${eq.name}" ${canEdit ? '' : 'disabled'}></td>
+                <td><input type="text" class="form-control form-control-sm font-monospace text-dark border-secondary" id="eqBaseCode_${k}" value="${eq.baseCode || 'SPD-1150001'}" ${canEdit ? '' : 'disabled'}></td>
+                <td><select class="form-select form-select-sm fw-bold text-dark" id="eqStatus_${k}" ${canEdit ? '' : 'disabled'} onchange="updateAdminEquipStatus('${k}', this.value)">${statusOpts}</select></td>
+                <td class="text-center">${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteEquipment('${k}')"><i class="fa-solid fa-trash"></i></button>` : '<span class="text-muted small">唯讀</span>'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateAdminEquipStatus(key, val) {
+        if (getPagePermission('hq-46-5') !== 'EDIT') return;
+        if (window.systemData.equipments[key]) {
+            window.systemData.equipments[key].currentStatus = val;
+        }
+    }
+
+    function saveAdminEquipSettings() {
+        if (getPagePermission('hq-46-5') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        Object.keys(window.systemData.equipments || {}).forEach(k => {
+            window.systemData.equipments[k].name = document.getElementById(`eqName_${k}`).value.trim();
+            window.systemData.equipments[k].baseCode = document.getElementById(`eqBaseCode_${k}`).value.trim();
+            const statEl = document.getElementById(`eqStatus_${k}`);
+            if (statEl) {
+                window.systemData.equipments[k].currentStatus = statEl.value;
+            }
+        });
+        ensureEquipmentOrdering();
+        saveSystemData();
+        renderHomeDutyTable();
+        alert("✅ 測速儀器設定已成功儲存與重新排序！");
+    }
+
+    function renderAdminStationSettings() {
+        const tbody = document.getElementById("adminStationEditTbody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const stations = getStationList();
+        const canEdit = getPagePermission('hq-46-6') === 'EDIT';
+
+        stations.forEach((st, idx) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="text-center fw-bold text-muted small">${idx + 1}</td>
+                <td><input type="text" class="form-control form-control-sm fw-bold" id="stNameInput_${idx}" value="${st}" ${canEdit ? '' : 'disabled'}></td>
+                <td class="text-center">
+                    ${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1 fw-bold" onclick="adminRenameStation(${idx})"><i class="fa-solid fa-floppy-disk me-1"></i>儲存</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="adminDeleteStation(${idx})">刪除</button>` : '<span class="text-muted small">唯讀</span>'}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function adminAddNewStation() {
+        if (getPagePermission('hq-46-6') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const name = document.getElementById("newStationNameInput").value.trim();
+        if (!name) { alert("⚠️ 請輸入單位名稱！"); return; }
+        const stations = getStationList();
+        if (stations.includes(name)) { alert("⚠️ 該單位名稱已存在！"); return; }
+
+        stations.push(name);
+        if (!window.systemData.officers[name]) window.systemData.officers[name] = [];
+        if (!window.systemData.locations[name]) window.systemData.locations[name] = [];
+
+        saveSystemData();
+        document.getElementById("newStationNameInput").value = "";
+        populateStationDropdowns();
+        renderAdminStationSettings();
+        alert(`✅ 已成功新增單位 【${name}】！`);
+    }
+
+    function adminRenameStation(index) {
+        if (getPagePermission('hq-46-6') !== 'EDIT') return;
+        const stations = getStationList();
+        const oldName = stations[index];
+        const newName = document.getElementById(`stNameInput_${index}`).value.trim();
+
+        if (!newName) { alert("⚠️ 單位名稱不得為空白！"); return; }
+        if (oldName === newName) return;
+
+        if (stations.includes(newName)) { alert(`⚠️ 單位名稱 【${newName}】 已存在！`); return; }
+
+        stations[index] = newName;
+
+        if (window.systemData.officers[oldName]) {
+            window.systemData.officers[newName] = window.systemData.officers[oldName];
+            delete window.systemData.officers[oldName];
+        }
+        if (window.systemData.locations[oldName]) {
+            window.systemData.locations[newName] = window.systemData.locations[oldName];
+            delete window.systemData.locations[oldName];
+        }
+
+        (window.systemData.dutyRecords || []).forEach(r => {
+            if (r.station === oldName) r.station = newName;
+        });
+
+        saveSystemData();
+        populateStationDropdowns();
+        renderAdminStationSettings();
+        alert(`✅ 單位名稱已成功由 【${oldName}】 修改為 【${newName}】！`);
+    }
+
+    function adminDeleteStation(index) {
+        if (getPagePermission('hq-46-6') !== 'EDIT') return;
+        const stations = getStationList();
+        const targetName = stations[index];
+
+        if (confirm(`確定要刪除單位 【${targetName}】？\n注意：刪除後將同步移除該單位對應的人員與路段設定。`)) {
+            stations.splice(index, 1);
+            delete window.systemData.officers[targetName];
+            delete window.systemData.locations[targetName];
+
+            saveSystemData();
+            populateStationDropdowns();
+            renderAdminStationSettings();
+            alert(`✅ 已成功刪除單位 【${targetName}】！`);
+        }
+    }
+
+    function initAdminLists() { renderAdminTimeSlotList(); renderAdminLocList(); renderAdminOfficerList(); }
+
+    function renderAdminTimeSlotList() {
+        const ul = document.getElementById("adminTimeSlotList"); ul.innerHTML = "";
+        const canEdit = getPagePermission('hq-46-2') === 'EDIT';
+        (window.systemData.timeSlots || []).forEach((t, idx) => {
+            ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small"><span class="font-monospace fw-bold">${t}</span> ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminTimeSlot(${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}</li>`;
+        });
+    }
+
+    function adminAddTimeSlot() {
+        if (getPagePermission('hq-46-2') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const slot = document.getElementById("adminNewTimeSlotInput").value.trim();
+        if (slot) {
+            if (!window.systemData.timeSlots) window.systemData.timeSlots = [];
+            if (!window.systemData.timeSlots.includes(slot)) {
+                window.systemData.timeSlots.push(slot); saveSystemData(); document.getElementById("adminNewTimeSlotInput").value = ''; renderAdminTimeSlotList();
+            } else alert("⚠️ 該時段已存在！");
+        }
+    }
+
+    function deleteAdminTimeSlot(idx) {
+        if (getPagePermission('hq-46-2') !== 'EDIT') return;
+        if (confirm("確定要刪除這個時段選項？")) { window.systemData.timeSlots.splice(idx, 1); saveSystemData(); renderAdminTimeSlotList(); }
+    }
+
+    function renderAdminLocList() {
+        const stations = getStationList();
+        const st = document.getElementById("adminLocStationSelect").value || stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
+        const canEdit = getPagePermission('hq-46-3') === 'EDIT';
+        (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">${loc} ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}</li>`);
+    }
+
+    function adminAddLocation() {
+        if (getPagePermission('hq-46-3') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const st = document.getElementById("adminLocStationSelect").value; const loc = document.getElementById("adminNewLocInput").value.trim();
+        if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; renderAdminLocList(); }
+    }
+
+    function deleteAdminLoc(st, idx) {
+        if (getPagePermission('hq-46-3') !== 'EDIT') return;
+        window.systemData.locations[st].splice(idx, 1); saveSystemData(); renderAdminLocList();
+    }
+
+    function renderAdminOfficerList() {
+        const stations = getStationList();
+        const st = document.getElementById("adminOfficerStationSelect").value || stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
+        const canEdit = getPagePermission('hq-46-4') === 'EDIT';
+        (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">${off} ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}</li>`);
+    }
+
+    function adminAddOfficer() {
+        if (getPagePermission('hq-46-4') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
+        const st = document.getElementById("adminOfficerStationSelect").value; const off = document.getElementById("adminNewOfficerInput").value.trim();
+        if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; renderAdminOfficerList(); }
+    }
+
+    function deleteAdminOfficer(st, idx) {
+        if (getPagePermission('hq-46-4') !== 'EDIT') return;
+        window.systemData.officers[st].splice(idx, 1); saveSystemData(); renderAdminOfficerList();
+    }
+
     function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
     function exportCaseTableToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("caseTable")), "測速案件管制表.xlsx"); }
+    function exportAwardToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("awardTable")), "歸仁分局測速人員嘉獎折算統計表.xlsx"); }
+
+    document.getElementById("adminLocStationSelect").onchange = renderAdminLocList;
+    document.getElementById("adminOfficerStationSelect").onchange = renderAdminOfficerList;
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
