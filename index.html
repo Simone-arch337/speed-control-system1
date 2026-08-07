@@ -2099,7 +2099,10 @@
         window.systemData.equipments = newEquips;
     }
 
-    function getAllOfficersList() { return Object.values(window.systemData.officers || {}).flat(); }
+    function getAllOfficersList() { 
+        if (!window.systemData.officers) return [];
+        return Object.values(window.systemData.officers).flat(); 
+    }
 
     function sortDutyRecordsByTime(records) {
         return records.sort((a, b) => {
@@ -2233,7 +2236,7 @@
 
         Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
             const equip = window.systemData.equipments[eqKey];
-            const records = window.systemData.caseRecords[eqKey] || [];
+            const records = (window.systemData.caseRecords || {})[eqKey] || [];
             const baseCode = equip.baseCode || "SPD-1150001";
             const baseNum = parseInt((baseCode.match(/\d+/) || [1150001])[0]);
             const basePfx = baseCode.replace(/\d+$/, "");
@@ -2460,6 +2463,10 @@
         const allOfficers = getAllOfficersList();
         const canEdit = getPagePermission('case') === 'EDIT';
 
+        if (records.length > caseRowCount) {
+            caseRowCount = records.length;
+        }
+
         for (let i = 0; i < caseRowCount; i++) {
             const row = records[i] || {};
             const seq = i + 1;
@@ -2477,7 +2484,7 @@
                 <td class="text-center font-monospace small">${caseCode}</td>
                 <td><div class="d-flex align-items-center">${sameDateCheckbox}<input type="date" class="form-control form-control-sm" id="case_date_${i}" value="${row.date || ''}" ${canEdit ? '' : 'disabled'} oninput="updateCaseRowLocal(${i}, 'date', this.value)"></div></td>
                 <td><div class="d-flex align-items-center">${sameOfficerCheckbox}<select class="form-select form-select-sm" id="case_off_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select></div></td>
-                <td><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
+                <td><select class="form-select form-select-sm" id="case_entry_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></td>
                 <td><div class="d-flex align-items-center">${sameReasonCheckbox}<select class="form-select form-select-sm ${row.isEntry === '否' && !row.reason ? 'border-danger' : ''}" id="case_rsn_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div></td>
                 <td class="text-center">${row.date && row.officer ? (row.isEntry === '否' ? (row.reason ? '<span class="badge bg-warning text-dark">未入案</span>' : '<span class="badge bg-danger">漏填原因</span>') : '<span class="badge bg-secondary">正常</span>') : '<span class="badge bg-light text-muted border">等待中</span>'}</td>
             `;
@@ -2500,8 +2507,8 @@
                         <div class="d-flex justify-content-between align-items-center mb-1"><label class="form-label small mb-0 fw-bold">人員：</label></div>
                         <select class="form-select form-select-sm" id="m_case_off_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'officer', this.value)">${officerOpts}</select>
                     </div>
-                    <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
-                    <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
+                    <div class="col-4"><label class="form-label small mb-1 fw-bold">入案：</label><select class="form-select form-select-sm" id="m_case_entry_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'isEntry', this.value)"><option value="是" ${row.isEntry !== '否' ? 'selected' : ''}>是</option><option value="否" ${row.isEntry === '否' ? 'selected' : ''}>否</option></select></div>
+                    <div class="col-8"><label class="form-label small mb-1 fw-bold">原因：</label><select class="form-select form-select-sm" id="m_case_rsn_${i}" ${canEdit ? '' : 'disabled'} onchange="updateCaseRowLocal(${i}, 'reason', this.value)">${reasonOpts}</select></div>
                 </div>
             `;
             mobileContainer.appendChild(cardDiv);
@@ -2528,6 +2535,7 @@
     function updateCaseRowLocal(index, field, value) {
         if (getPagePermission('case') !== 'EDIT') return;
         const equipKey = document.getElementById("equipSelect").value;
+        if (!window.systemData.caseRecords) window.systemData.caseRecords = {};
         if (!window.systemData.caseRecords[equipKey]) window.systemData.caseRecords[equipKey] = [];
         if (!window.systemData.caseRecords[equipKey][index]) window.systemData.caseRecords[equipKey][index] = { isEntry: "是" };
         window.systemData.caseRecords[equipKey][index][field] = value;
@@ -2535,8 +2543,32 @@
 
     function saveCaseData() {
         if (getPagePermission('case') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
-        saveSystemData(); alert("✅ 案件管制表資料已成功儲存！");
+        const equipKey = document.getElementById("equipSelect").value;
+        if (!equipKey) return;
+
+        if (!window.systemData.caseRecords) window.systemData.caseRecords = {};
+        let updatedRecords = [];
+
+        for (let i = 0; i < caseRowCount; i++) {
+            const dateVal = document.getElementById(`case_date_${i}`) ? document.getElementById(`case_date_${i}`).value : "";
+            const offVal = document.getElementById(`case_off_${i}`) ? document.getElementById(`case_off_${i}`).value : "";
+            const entryVal = document.getElementById(`case_entry_${i}`) ? document.getElementById(`case_entry_${i}`).value : "是";
+            const rsnVal = document.getElementById(`case_rsn_${i}`) ? document.getElementById(`case_rsn_${i}`).value : "";
+
+            updatedRecords.push({
+                date: dateVal,
+                officer: offVal,
+                isEntry: entryVal,
+                reason: rsnVal
+            });
+        }
+
+        window.systemData.caseRecords[equipKey] = updatedRecords;
+        saveSystemData();
+        renderCaseTable();
+        alert("✅ 案件管制表資料已成功儲存至雲端資料庫！");
     }
+
     function addMoreCaseRows() { caseRowCount += 10; renderCaseTable(); }
 
     function renderHqDeleteAuditTable() {
@@ -3297,6 +3329,7 @@
         document.getElementById("newEquipName").value = "";
         document.getElementById("newEquipBaseCode").value = "";
         renderAdminEquipSettings();
+        populateEquipDropdown();
     }
 
     function deleteEquipment(key) {
@@ -3306,6 +3339,7 @@
             if (window.systemData.equipKeepers) delete window.systemData.equipKeepers[key];
             saveSystemData();
             renderAdminEquipSettings();
+            populateEquipDropdown();
         }
     }
 
@@ -3369,6 +3403,7 @@
         ensureEquipmentOrdering();
         saveSystemData();
         renderHomeDutyTable();
+        populateEquipDropdown();
         alert("✅ 測速儀器設定已成功儲存與重新排序！");
     }
 
@@ -3583,6 +3618,7 @@
             saveSystemData();
             document.getElementById("adminNewOfficerInput").value = '';
             renderAdminOfficerList();
+            renderCaseTable();
             alert(`✅ 已新增勤務人員：${off}`);
         }
     }
@@ -3594,6 +3630,7 @@
         window.systemData.officers[st][idx] = val;
         saveSystemData();
         renderAdminOfficerList();
+        renderCaseTable();
         alert("✅ 人員姓名已變更並儲存！");
     }
 
@@ -3603,6 +3640,7 @@
             window.systemData.officers[st].splice(idx, 1);
             saveSystemData();
             renderAdminOfficerList();
+            renderCaseTable();
             alert("✅ 同仁資料已成功刪除！");
         }
     }
