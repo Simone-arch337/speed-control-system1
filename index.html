@@ -1068,10 +1068,17 @@
                             <label class="form-label fw-bold small mb-1">帳號：</label>
                             <input type="text" class="form-control" id="loginUsername" autocomplete="off">
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-2">
                             <label class="form-label fw-bold small mb-1">密碼：</label>
                             <input type="password" class="form-control" id="loginPassword" autocomplete="off">
                             <div class="invalid-feedback" id="loginErrorMsg">帳號或密碼錯誤，或帳號尚未審核通過！</div>
+                        </div>
+                        <!-- 🔑 新增：記住帳號密碼的勾選框 -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="rememberMeCheckbox">
+                            <label class="form-check-label small fw-bold text-secondary" for="rememberMeCheckbox">
+                                記住帳號與密碼
+                            </label>
                         </div>
                         <button type="button" class="btn btn-dark w-100 fw-bold py-2" onclick="performLogin()"><i class="fa-solid fa-key me-1"></i>確認登入</button>
                     </div>
@@ -1374,6 +1381,21 @@
     document.addEventListener("DOMContentLoaded", () => {
         loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
         
+        // 🔑 載入「記住帳號密碼」資料
+        const savedCreds = localStorage.getItem('guiren_saved_credentials');
+        if (savedCreds) {
+            try {
+                const parsed = JSON.parse(savedCreds);
+                if (parsed && parsed.username && parsed.password) {
+                    document.getElementById('loginUsername').value = parsed.username;
+                    document.getElementById('loginPassword').value = parsed.password;
+                    document.getElementById('rememberMeCheckbox').checked = true;
+                }
+            } catch (e) {
+                console.error("讀取記住的帳密失敗", e);
+            }
+        }
+
         const savedUser = sessionStorage.getItem('guiren_current_user');
         if (savedUser) {
             try {
@@ -1549,6 +1571,7 @@
     function performLogin() {
         const u = document.getElementById('loginUsername').value.trim();
         const p = document.getElementById('loginPassword').value.trim();
+        const rememberMe = document.getElementById('rememberMeCheckbox').checked;
         const errEl = document.getElementById('loginErrorMsg');
 
         if (window.systemData.rejectedRequests && window.systemData.rejectedRequests[u]) {
@@ -1561,15 +1584,26 @@
             return;
         }
 
+        let loginSuccess = false;
+
         if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
             currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '最高管理者', name: 'Super Admin' };
-            checkLoginState();
-            return;
+            loginSuccess = true;
+        } else {
+            const users = window.systemData.users || {};
+            if (users[u] && users[u].password === p && users[u].status === 'approved') {
+                currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
+                loginSuccess = true;
+            }
         }
 
-        const users = window.systemData.users || {};
-        if (users[u] && users[u].password === p && users[u].status === 'approved') {
-            currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
+        if (loginSuccess) {
+            // 🔑 處理「記住帳號密碼」邏輯
+            if (rememberMe) {
+                localStorage.setItem('guiren_saved_credentials', JSON.stringify({ username: u, password: p }));
+            } else {
+                localStorage.removeItem('guiren_saved_credentials');
+            }
             checkLoginState();
         } else {
             document.getElementById('loginUsername').classList.add('is-invalid');
@@ -1581,8 +1615,14 @@
     function logoutSystem() {
         currentUser = null;
         sessionStorage.removeItem('guiren_current_user');
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
+        
+        // 若沒有勾選記住密碼，登出時清空輸入框
+        const rememberMe = document.getElementById('rememberMeCheckbox').checked;
+        if (!rememberMe) {
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+        
         checkLoginState();
     }
 
