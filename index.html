@@ -90,7 +90,6 @@
         }
         #sidebar .sidebar-header { padding: 15px; background: rgba(0,0,0,0.2); }
         
-        /* 側邊欄文字一律純白 */
         .sidebar-nav-item {
             display: block;
             padding: 10px 16px;
@@ -147,7 +146,6 @@
             color: #ffffff !important;
         }
 
-        /* 🔴 醒目紅點提醒樣式 */
         .dot-badge-red {
             display: inline-block;
             width: 9px;
@@ -164,7 +162,6 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
-        /* 🧱 單色簡約可愛搬磚施工 CSS 動態 */
         .brick-construction-box {
             text-align: center;
             padding: 40px 20px;
@@ -739,12 +736,12 @@
 
                 <!-- 4.6.4 管理勤務人員 -->
                 <div class="tab-pane fade" id="hq-46-4-content">
-                    <div class="card shadow-sm" style="max-width: 600px;">
+                    <div class="card shadow-sm" style="max-width: 650px;">
                         <div class="card-header card-header-clean small py-2"><i class="fa-solid fa-users-gear me-2"></i>4.6.4 管理勤務人員 (含分局交通組與各單位)</div>
                         <div class="card-body">
                             <div class="mb-2"><label class="form-label small fw-bold">選擇單位：</label><select class="form-select form-select-sm" id="adminOfficerStationSelect" onchange="renderAdminOfficerList()"></select></div>
                             <div class="input-group input-group-sm mb-3"><input type="text" class="form-control" id="adminNewOfficerInput" placeholder="新同仁姓名"><button class="btn btn-dark fw-bold" onclick="adminAddOfficer()"><i class="fa-solid fa-plus me-1"></i>新增人員</button></div>
-                            <ul class="list-group list-group-flush border rounded" id="adminOfficerList" style="max-height: 300px; overflow-y: auto;"></ul>
+                            <ul class="list-group list-group-flush border rounded" id="adminOfficerList" style="max-height: 350px; overflow-y: auto;"></ul>
                         </div>
                     </div>
                 </div>
@@ -828,7 +825,7 @@
             </div>
         </div>
 
-        <!-- 大頁 2：道路交通工程管理模組 (單色可愛搬磚施工 UI) -->
+        <!-- 大頁 2：道路交通工程管理模組 -->
         <div id="trafficModuleContainer" style="display: none;">
             <div class="brick-construction-box shadow-sm">
                 <div class="brick-worker-icon mb-2">
@@ -855,8 +852,6 @@
                 
                 <!-- 4.6.1 管理與帳號審核專區 -->
                 <div class="tab-pane fade show active" id="hq-46-1-content">
-                    
-                    <!-- 身分權限類型與存取頁面/卡片管理 -->
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-header card-header-clean d-flex justify-content-between align-items-center fw-bold py-2">
                             <span><i class="fa-solid fa-id-card-clip me-2"></i>身分權限類型與細項權限對照清單 (極簡勾選表)</span>
@@ -901,7 +896,6 @@
                         </div>
                     </div>
 
-                    <!-- 帳號審核與權限管理卡片 1 -->
                     <div class="card shadow-sm mb-3">
                         <div class="card-header card-header-sub fw-bold small py-2"><i class="fa-solid fa-user-plus me-2"></i>分局管理者直接新增人員帳號權限 (由分局主管/承辦人建立)</div>
                         <div class="card-body bg-light p-3">
@@ -933,7 +927,6 @@
                         </div>
                     </div>
 
-                    <!-- 帳號審核與權限管理卡片 2 -->
                     <div class="card shadow-sm mb-3">
                         <div class="card-header card-header-sub fw-bold small py-2"><i class="fa-solid fa-user-check me-2"></i>權限申請審核清單 (業務承辦人與分局主管專用)</div>
                         <div class="card-body p-0 table-responsive">
@@ -954,7 +947,6 @@
                         </div>
                     </div>
 
-                    <!-- 帳號審核與權限管理卡片 3 -->
                     <div class="card shadow-sm">
                         <div class="card-header card-header-clean fw-bold small py-2"><i class="fa-solid fa-users-gear me-2"></i>已註冊人員帳號與密碼管理 (可停用、修改全項欄位)</div>
                         <div class="card-body p-0 table-responsive">
@@ -987,7 +979,7 @@
                         </div>
                         <div class="card-body bg-light">
                             <div class="alert alert-secondary py-2 px-3 small">
-                                <i class="fa-solid fa-circle-info me-1"></i>此專屬區塊可為全系統之**網頁名稱、各大頁頁籤、左側選單與各卡片抬頭**進行重新命名，連動更新全系統顯示。
+                                <i class="fa-solid fa-circle-info me-1"></i>此專屬區塊可為全系統之網頁名稱、各大頁頁籤、左側選單與各卡片抬頭進行重新命名，連動更新全系統顯示。
                             </div>
 
                             <div class="row g-3">
@@ -1393,7 +1385,6 @@
         checkLoginState();
     });
 
-    /* 🔴 全局動態紅點提醒更新邏輯 */
     function updateAuditNotificationBadges() {
         if (!currentUser) return;
         const canAuditHq41 = getPagePermission('hq-41') === 'EDIT';
@@ -2279,7 +2270,6 @@
                     const currentStatus = equip.currentStatus || "分局(保管)";
                     const displayEquipTitle = `${equip.name} (${currentStatus})`;
 
-                    // 首頁總表發送跳號提示卡片
                     if (gapAlertList) {
                         const item = document.createElement("div");
                         item.className = "list-group-item d-flex justify-content-between align-items-center py-2";
@@ -2294,7 +2284,6 @@
                         gapAlertList.appendChild(item);
                     }
 
-                    // 案件管制表頁面發送跳號提示卡片
                     if (caseGapAlertList) {
                         const item2 = document.createElement("div");
                         item2.className = "list-group-item d-flex justify-content-between align-items-center py-2";
@@ -3476,7 +3465,13 @@
         const ul = document.getElementById("adminTimeSlotList"); ul.innerHTML = "";
         const canEdit = getPagePermission('hq-46-2') === 'EDIT';
         (window.systemData.timeSlots || []).forEach((t, idx) => {
-            ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small"><span class="font-monospace fw-bold">${t}</span> ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminTimeSlot(${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}</li>`;
+            ul.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">
+                    <input type="text" class="form-control form-control-sm font-monospace fw-bold w-50" id="adminTimeSlotInput_${idx}" value="${t}" ${canEdit ? '' : 'disabled'}>
+                    <div>
+                        ${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1" onclick="updateAdminTimeSlot(${idx})"><i class="fa-solid fa-floppy-disk me-1"></i>儲存</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminTimeSlot(${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}
+                    </div>
+                </li>`;
         });
     }
 
@@ -3491,6 +3486,16 @@
         }
     }
 
+    function updateAdminTimeSlot(idx) {
+        if (getPagePermission('hq-46-2') !== 'EDIT') return;
+        const val = document.getElementById(`adminTimeSlotInput_${idx}`).value.trim();
+        if (!val) { alert("⚠️ 時段內容不能為空白！"); return; }
+        window.systemData.timeSlots[idx] = val;
+        saveSystemData();
+        renderAdminTimeSlotList();
+        alert("✅ 時段已變更並儲存！");
+    }
+
     function deleteAdminTimeSlot(idx) {
         if (getPagePermission('hq-46-2') !== 'EDIT') return;
         if (confirm("確定要刪除這個時段選項？")) { window.systemData.timeSlots.splice(idx, 1); saveSystemData(); renderAdminTimeSlotList(); }
@@ -3498,38 +3503,108 @@
 
     function renderAdminLocList() {
         const stations = getStationList();
-        const st = document.getElementById("adminLocStationSelect").value || stations[0]; const ul = document.getElementById("adminLocList"); ul.innerHTML = "";
+        const stSelect = document.getElementById("adminLocStationSelect");
+        if (!stSelect) return;
+        const st = stSelect.value || stations[0];
+        const ul = document.getElementById("adminLocList");
+        ul.innerHTML = "";
         const canEdit = getPagePermission('hq-46-3') === 'EDIT';
-        (window.systemData.locations[st] || []).forEach((loc, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">${loc} ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}</li>`);
+
+        (window.systemData.locations[st] || []).forEach((loc, idx) => {
+            ul.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">
+                    <input type="text" class="form-control form-control-sm fw-bold w-60" id="adminLocInput_${st}_${idx}" value="${loc}" ${canEdit ? '' : 'disabled'}>
+                    <div>
+                        ${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1" onclick="updateAdminLoc('${st}', ${idx})"><i class="fa-solid fa-floppy-disk me-1"></i>儲存</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminLoc('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}
+                    </div>
+                </li>`;
+        });
     }
 
     function adminAddLocation() {
         if (getPagePermission('hq-46-3') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
-        const st = document.getElementById("adminLocStationSelect").value; const loc = document.getElementById("adminNewLocInput").value.trim();
-        if (loc) { if (!window.systemData.locations[st]) window.systemData.locations[st] = []; window.systemData.locations[st].push(loc); saveSystemData(); document.getElementById("adminNewLocInput").value = ''; renderAdminLocList(); }
+        const st = document.getElementById("adminLocStationSelect").value;
+        const loc = document.getElementById("adminNewLocInput").value.trim();
+        if (loc) {
+            if (!window.systemData.locations[st]) window.systemData.locations[st] = [];
+            window.systemData.locations[st].push(loc);
+            saveSystemData();
+            document.getElementById("adminNewLocInput").value = '';
+            renderAdminLocList();
+        }
+    }
+
+    function updateAdminLoc(st, idx) {
+        if (getPagePermission('hq-46-3') !== 'EDIT') return;
+        const val = document.getElementById(`adminLocInput_${st}_${idx}`).value.trim();
+        if (!val) { alert("⚠️ 路段名稱不能為空白！"); return; }
+        window.systemData.locations[st][idx] = val;
+        saveSystemData();
+        renderAdminLocList();
+        alert("✅ 路段名稱已儲存變更！");
     }
 
     function deleteAdminLoc(st, idx) {
         if (getPagePermission('hq-46-3') !== 'EDIT') return;
-        window.systemData.locations[st].splice(idx, 1); saveSystemData(); renderAdminLocList();
+        if (confirm("確定要刪除這條路段？")) {
+            window.systemData.locations[st].splice(idx, 1);
+            saveSystemData();
+            renderAdminLocList();
+        }
     }
 
     function renderAdminOfficerList() {
         const stations = getStationList();
-        const st = document.getElementById("adminOfficerStationSelect").value || stations[0]; const ul = document.getElementById("adminOfficerList"); ul.innerHTML = "";
+        const stSelect = document.getElementById("adminOfficerStationSelect");
+        if (!stSelect) return;
+        const st = stSelect.value || stations[0];
+        const ul = document.getElementById("adminOfficerList");
+        ul.innerHTML = "";
         const canEdit = getPagePermission('hq-46-4') === 'EDIT';
-        (window.systemData.officers[st] || []).forEach((off, idx) => ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">${off} ${canEdit ? `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}</li>`);
+
+        (window.systemData.officers[st] || []).forEach((off, idx) => {
+            ul.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 small">
+                    <input type="text" class="form-control form-control-sm fw-bold w-50" id="adminOfficerInput_${st}_${idx}" value="${off}" ${canEdit ? '' : 'disabled'}>
+                    <div>
+                        ${canEdit ? `<button class="btn btn-sm btn-dark py-0 px-2 me-1" onclick="updateAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-floppy-disk me-1"></i>儲存</button><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteAdminOfficer('${st}', ${idx})"><i class="fa-solid fa-trash me-1"></i>刪除</button>` : '<span class="text-muted small">唯讀</span>'}
+                    </div>
+                </li>`;
+        });
     }
 
     function adminAddOfficer() {
         if (getPagePermission('hq-46-4') !== 'EDIT') { alert('⚠️ 您對此頁面僅有唯讀權限！'); return; }
-        const st = document.getElementById("adminOfficerStationSelect").value; const off = document.getElementById("adminNewOfficerInput").value.trim();
-        if (off) { if (!window.systemData.officers[st]) window.systemData.officers[st] = []; window.systemData.officers[st].push(off); saveSystemData(); document.getElementById("adminNewOfficerInput").value = ''; renderAdminOfficerList(); }
+        const st = document.getElementById("adminOfficerStationSelect").value;
+        const off = document.getElementById("adminNewOfficerInput").value.trim();
+        if (off) {
+            if (!window.systemData.officers[st]) window.systemData.officers[st] = [];
+            window.systemData.officers[st].push(off);
+            saveSystemData();
+            document.getElementById("adminNewOfficerInput").value = '';
+            renderAdminOfficerList();
+            alert(`✅ 已新增勤務人員：${off}`);
+        }
+    }
+
+    function updateAdminOfficer(st, idx) {
+        if (getPagePermission('hq-46-4') !== 'EDIT') return;
+        const val = document.getElementById(`adminOfficerInput_${st}_${idx}`).value.trim();
+        if (!val) { alert("⚠️ 人員姓名不能為空白！"); return; }
+        window.systemData.officers[st][idx] = val;
+        saveSystemData();
+        renderAdminOfficerList();
+        alert("✅ 人員姓名已變更並儲存！");
     }
 
     function deleteAdminOfficer(st, idx) {
         if (getPagePermission('hq-46-4') !== 'EDIT') return;
-        window.systemData.officers[st].splice(idx, 1); saveSystemData(); renderAdminOfficerList();
+        if (confirm("確定要刪除這位同仁？")) {
+            window.systemData.officers[st].splice(idx, 1);
+            saveSystemData();
+            renderAdminOfficerList();
+            alert("✅ 同仁資料已成功刪除！");
+        }
     }
 
     function exportHomeDutyToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("homeDutyTable")), "歸仁分局測速勤務當月總表.xlsx"); }
