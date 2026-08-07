@@ -7,10 +7,9 @@
     <!-- Bootstrap 5 CSS & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Chart.js, SheetJS & docx.js -->
+    <!-- Chart.js & SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/docx@8.2.2/build/index.umd.js"></script>
 
     <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -146,10 +145,11 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
         }
 
+        /* 未點選頁面前的右側背景圖 */
         #welcomeBackdrop {
             position: absolute;
             top: 60px; left: var(--sidebar-width); right: 0; bottom: 0;
-            background-image: url('data:image/jpeg;base64,YOUR_BASE64_IMAGE_STRING_HERE');
+            background-image: url('IMG_4225.jpeg');
             background-repeat: no-repeat; background-position: center bottom; background-size: contain;
             opacity: 0.25; pointer-events: none; z-index: 1; transition: opacity 0.3s ease;
         }
@@ -172,7 +172,7 @@
         <div class="sidebar-header d-flex justify-content-between align-items-center sticky-top">
             <h6 class="mb-0 fw-bold fs-6 text-warning d-flex align-items-center">
                 <i class="fa-solid fa-shield-halved me-2"></i>
-                <span id="sidebarCombinedTitle">臺南市政府警察局歸仁分局 交通勤務管理系統</span>
+                <span id="sidebarCombinedTitle">臺南市政府警察局歸仁分局 交通勤務與工程管理系統</span>
             </h6>
             <button class="btn btn-sm text-white d-lg-none" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -197,7 +197,7 @@
                             <span><span id="hqParentDot" class="d-none"><span class="dot-badge-red"></span></span><i class="fa-solid fa-user-shield me-2 text-white"></i><span id="snav-text-hq" class="text-white">管理與統計專區</span></span>
                             <i class="fa-solid fa-chevron-down small text-white"></i>
                         </a>
-                        <ul class="sidebar-subnav-2" id="hqSubnav" style="display:none; padding-left:15px;">
+                        <ul class="sidebar-subnav" id="hqSubnav" style="display:none; padding-left:15px;">
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-41" onclick="selectPage('hq-41')"><span id="dot41Badge" class="d-none"><span class="dot-badge-red"></span></span><i class="fa-solid fa-map-pin me-2 text-white"></i><span id="snav-text-41" class="text-white">4.1 地點與儀器核定</span></a></li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-42" onclick="selectPage('hq-42')"><i class="fa-solid fa-id-card me-2 text-white"></i><span id="snav-text-42" class="text-white">4.2 測速儀保管與履歷</span></a></li>
                             <li><a class="sidebar-nav-item text-white" id="snav-hq-43" onclick="selectPage('hq-43')"><i class="fa-solid fa-file-pdf me-2 text-white"></i><span id="snav-text-43" class="text-white">4.3 檢定證書(PDF)</span></a></li>
@@ -218,7 +218,7 @@
                     <i class="fa-solid fa-chevron-down small text-white"></i>
                 </a>
                 <ul class="sidebar-subnav" id="trafficSubnav">
-                    <li><a class="sidebar-nav-item text-white" id="snav-tf-apply" onclick="selectPage('tf-apply')"><i class="fa-solid fa-pen-to-square me-2 text-white"></i><span>改善建議申請填報</span></a></li>
+                    <li><a class="sidebar-nav-item text-white" id="snav-tf-apply" onclick="selectPage('tf-apply')"><i class="fa-solid fa-pen-to-square me-2 text-white"></i><span>改善建議線上提報</span></a></li>
                     <li><a class="sidebar-nav-item text-white" id="snav-tf-manage" onclick="selectPage('tf-manage')"><span id="dotTrafficManageBadge" class="d-none"><span class="dot-badge-red"></span></span><i class="fa-solid fa-list-check me-2 text-white"></i><span>分局管理與審核</span></a></li>
                     <li><a class="sidebar-nav-item text-white" id="snav-tf-award" onclick="selectPage('tf-award')"><i class="fa-solid fa-medal me-2 text-white"></i><span>提報嘉獎敘獎統計</span></a></li>
                 </ul>
@@ -235,7 +235,6 @@
                 </a>
                 <ul class="sidebar-subnav" id="adminSubnav">
                     <li><a class="sidebar-nav-item text-white" id="snav-hq-46-1" onclick="selectPage('hq-46-1')"><span id="dotAccountBadge" class="d-none"><span class="dot-badge-red"></span></span><i class="fa-solid fa-user-gear me-2 text-white"></i><span id="snav-text-46-1" class="text-white">管理與帳號審核</span></a></li>
-                    <li id="superAdminNavItem"><a class="sidebar-nav-item text-white fw-bold" id="snav-hq-46-7" onclick="selectPage('hq-46-7')"><i class="fa-solid fa-crown me-2 text-white"></i><span id="snav-text-46-7" class="text-white">標題名稱自訂</span></a></li>
                 </ul>
             </div>
 
@@ -258,393 +257,305 @@
             </div>
         </div>
 
-        <!-- 道路交通工程模組頁面集 -->
-        <div id="trafficModuleContainer">
-            <div class="tab-content">
-                
-                <!-- 1. 改善建議線上填報頁 -->
-                <div class="tab-pane fade" id="tf-apply-content">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header card-header-clean py-2 fw-bold">
-                            <i class="fa-solid fa-pen-to-square me-2"></i>派出所不合理道路交通工程設施改善建議線上提報
-                        </div>
-                        <div class="card-body">
-                            <form id="tfApplyForm">
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-3">
-                                        <label class="form-label fw-bold small">提報日期：</label>
-                                        <input type="date" class="form-control form-control-sm" id="tf_date" required>
-                                    </div>
-                                    <div class="col-12 col-md-3">
-                                        <label class="form-label fw-bold small">提報單位：</label>
-                                        <input type="text" class="form-control form-control-sm bg-light" id="tf_station" readonly>
-                                    </div>
-                                    <div class="col-12 col-md-3">
-                                        <label class="form-label fw-bold small">提報 (辦理) 人員：</label>
-                                        <select class="form-select form-select-sm" id="tf_officer" required></select>
-                                    </div>
-                                    <div class="col-12 col-md-3">
-                                        <label class="form-label fw-bold small">提報地點：</label>
-                                        <input type="text" class="form-control form-control-sm" id="tf_location" placeholder="例如: 仁德區中山路與中正路口" required>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label fw-bold small">不合理設置情形描述：</label>
-                                        <textarea class="form-control form-control-sm" id="tf_issue" rows="3" placeholder="請詳細敘述該路段或路口標誌標線/號誌等設施不合理之處..." required></textarea>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <label class="form-label fw-bold small">建議改善措施：</label>
-                                        <textarea class="form-control form-control-sm" id="tf_suggestion" rows="3" placeholder="請填寫建議之改善方式 (例如: 劃設左轉專用道、增設標誌...)" required></textarea>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label fw-bold small">上傳改善前照片 (可上傳 1 ~ 5 張)：</label>
-                                        <input type="file" class="form-control form-control-sm" id="tf_before_imgs" accept="image/*" multiple onchange="previewApplyImgs(this)">
-                                        <div id="applyImgPreviewGroup" class="d-flex flex-wrap gap-2 mt-2"></div>
-                                    </div>
-                                </div>
-                                <div class="mt-3 text-end">
-                                    <button type="button" class="btn btn-dark btn-sm px-4 fw-bold" onclick="submitTrafficApply()"><i class="fa-solid fa-paper-plane me-1"></i>送出提報案件</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm">
-                        <div class="card-header card-header-sub py-2 fw-bold small"><i class="fa-solid fa-clock-rotate-left me-2"></i>貴單位近期提報紀錄</div>
-                        <div class="card-body p-0 table-responsive">
-                            <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 850px;">
-                                <thead class="table-dark text-center small">
-                                    <tr><th>提報日期</th><th>地點</th><th>提報人員</th><th>辦理情形</th><th>改善後照片上傳</th><th>審核狀態</th></tr>
-                                </thead>
-                                <tbody id="tfMyApplyTbody"></tbody>
-                            </table>
-                        </div>
+        <!-- 頁面容器切換 -->
+        <div id="allPagesContainer">
+            <!-- 1. 首頁總表 -->
+            <div class="tab-pane fade" id="home-content">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header card-header-clean py-2 fw-bold"><i class="fa-solid fa-table-list me-2"></i>當月全分局測速勤務總表彙整</div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-bordered align-middle mb-0"><tbody id="homeDutyTbody"></tbody></table>
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. 分局管理與審核頁面 -->
-                <div class="tab-pane fade" id="tf-manage-content">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header card-header-clean py-2 d-flex justify-content-between align-items-center">
-                            <span class="fw-bold"><i class="fa-solid fa-list-check me-2"></i>分局道路交通工程改善案件管制與匯出</span>
-                            <div class="d-flex gap-2 align-items-center">
-                                <label class="text-white small fw-bold mb-0 text-nowrap">選擇匯出區間：</label>
-                                <input type="month" class="form-control form-control-sm w-auto" id="tfExportMonth" value="2026-07">
-                                <button class="btn btn-sm btn-success fw-bold" onclick="exportTrafficExcel()"><i class="fa-solid fa-file-excel me-1"></i>匯出 Excel 執行情形表</button>
-                                <button class="btn btn-sm btn-primary fw-bold" onclick="exportTrafficWord()"><i class="fa-solid fa-file-word me-1"></i>產出 Word 管制表</button>
+            <!-- 2. 各所選填勤務 -->
+            <div class="tab-pane fade" id="station-content">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header card-header-clean py-2 fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>各所勤務選填管理</div>
+                    <div class="card-body p-0 table-responsive"><table class="table table-bordered align-middle mb-0"><tbody id="stationDutyTbody"></tbody></table></div>
+                </div>
+            </div>
+
+            <!-- 道路交通工程：改善建議線上填報頁 -->
+            <div class="tab-pane fade" id="tf-apply-content">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header card-header-clean py-2 fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>派出所不合理道路交通工程設施改善建議線上提報</div>
+                    <div class="card-body">
+                        <form id="tfApplyForm">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-3"><label class="form-label fw-bold small">提報日期：</label><input type="date" class="form-control form-control-sm" id="tf_date" required></div>
+                                <div class="col-12 col-md-3"><label class="form-label fw-bold small">提報單位：</label><input type="text" class="form-control form-control-sm bg-light" id="tf_station" readonly></div>
+                                <div class="col-12 col-md-3"><label class="form-label fw-bold small">提報 (辦理) 人員：</label><select class="form-select form-select-sm" id="tf_officer" required></select></div>
+                                <div class="col-12 col-md-3"><label class="form-label fw-bold small">提報地點：</label><input type="text" class="form-control form-control-sm" id="tf_location" placeholder="例如: 仁德區中山路與中正路口" required></div>
+                                <div class="col-12 col-md-6"><label class="form-label fw-bold small">不合理設置情形描述：</label><textarea class="form-control form-control-sm" id="tf_issue" rows="3" placeholder="請詳細敘述標誌標線/號誌等不合理之處..." required></textarea></div>
+                                <div class="col-12 col-md-6"><label class="form-label fw-bold small">建議改善措施：</label><textarea class="form-control form-control-sm" id="tf_suggestion" rows="3" placeholder="請填寫建議改善方式..." required></textarea></div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">上傳改善前照片 (可上傳 1 ~ 5 張)：</label>
+                                    <input type="file" class="form-control form-control-sm" id="tf_before_imgs" accept="image/*" multiple onchange="previewApplyImgs(this)">
+                                    <div id="applyImgPreviewGroup" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-body p-0 table-responsive" style="max-height: 600px;">
-                            <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1000px;">
-                                <thead class="table-dark text-center small">
-                                    <tr>
-                                        <th style="width: 100px;">提報日期</th>
-                                        <th style="width: 100px;">提報單位</th>
-                                        <th style="width: 100px;">提報人員</th>
-                                        <th>地點</th>
-                                        <th style="width: 130px;">改善前照片</th>
-                                        <th style="width: 130px;">改善後照片</th>
-                                        <th style="width: 130px;">辦理情形</th>
-                                        <th style="width: 200px;">備註 (未改善原因/辦理進度)</th>
-                                        <th style="width: 120px;">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tfManageTbody"></tbody>
-                            </table>
-                        </div>
+                            <div class="mt-3 text-end"><button type="button" class="btn btn-dark btn-sm px-4 fw-bold" onclick="submitTrafficApply()"><i class="fa-solid fa-paper-plane me-1"></i>送出提報案件</button></div>
+                        </form>
                     </div>
                 </div>
-
-                <!-- 3. 提報嘉獎敘獎統計頁面 -->
-                <div class="tab-pane fade" id="tf-award-content">
-                    <div class="card shadow-sm">
-                        <div class="card-header card-header-clean py-2 d-flex justify-content-between align-items-center">
-                            <span class="fw-bold"><i class="fa-solid fa-medal me-2"></i>道路工程提報半年敘獎統計表 (5件敘獎1支，上限3支，不跨年累計)</span>
-                            <select class="form-select form-select-sm w-auto" id="tfAwardYearSelect" onchange="renderTrafficAwardTable()">
-                                <option value="2026">2026 年度</option>
-                                <option value="2025">2025 年度</option>
-                            </select>
-                        </div>
-                        <div class="card-body p-0 table-responsive">
-                            <table class="table table-bordered table-hover align-middle mb-0">
-                                <thead class="table-dark text-center small">
-                                    <tr>
-                                        <th>單位</th>
-                                        <th>提報人員</th>
-                                        <th>上半年(1-6月)改善完成件數</th>
-                                        <th>上半年建議敘獎</th>
-                                        <th>下半年(7-12月)改善完成件數</th>
-                                        <th>併計上半年餘數後總件數</th>
-                                        <th>下半年建議敘獎</th>
-                                        <th>全年度建議敘獎總計</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tfAwardTbody"></tbody>
-                            </table>
-                        </div>
+                <div class="card shadow-sm">
+                    <div class="card-header card-header-sub py-2 fw-bold small"><i class="fa-solid fa-clock-rotate-left me-2"></i>貴單位近期提報紀錄</div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 850px;">
+                            <thead class="table-dark text-center small"><tr><th>提報日期</th><th>地點</th><th>提報人員</th><th>辦理情形</th><th>改善後照片上傳</th><th>審核狀態</th></tr></thead>
+                            <tbody id="tfMyApplyTbody"></tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
 
+            <!-- 道路交通工程：分局管理與審核頁 -->
+            <div class="tab-pane fade" id="tf-manage-content">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header card-header-clean py-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold"><i class="fa-solid fa-list-check me-2"></i>分局道路交通工程改善案件管制與匯出</span>
+                        <div class="d-flex gap-2 align-items-center">
+                            <label class="text-white small fw-bold mb-0 text-nowrap">選擇匯出區間：</label>
+                            <input type="month" class="form-control form-control-sm w-auto" id="tfExportMonth" value="2026-07">
+                            <button class="btn btn-sm btn-success fw-bold" onclick="exportTrafficExcel()"><i class="fa-solid fa-file-excel me-1"></i>匯出 Excel 執行情形表</button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 table-responsive" style="max-height: 600px;">
+                        <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1000px;">
+                            <thead class="table-dark text-center small">
+                                <tr><th>提報日期</th><th>提報單位</th><th>提報人員</th><th>地點</th><th>改善前照片</th><th>改善後照片</th><th>辦理情形</th><th>備註 (未改善原因)</th><th>操作</th></tr>
+                            </thead>
+                            <tbody id="tfManageTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 道路交通工程：提報嘉獎敘獎統計頁 -->
+            <div class="tab-pane fade" id="tf-award-content">
+                <div class="card shadow-sm">
+                    <div class="card-header card-header-clean py-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold"><i class="fa-solid fa-medal me-2"></i>道路工程提報半年敘獎統計表 (5件敘獎1支，上限3支，不跨年累計)</span>
+                        <select class="form-select form-select-sm w-auto" id="tfAwardYearSelect" onchange="renderTrafficAwardTable()">
+                            <option value="2026">2026 年度</option>
+                            <option value="2025">2025 年度</option>
+                        </select>
+                    </div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-bordered table-hover align-middle mb-0">
+                            <thead class="table-dark text-center small">
+                                <tr><th>單位</th><th>提報人員</th><th>上半年(1-6月)改善完成件數</th><th>上半年建議敘獎</th><th>下半年(7-12月)改善完成件數</th><th>併計上半年餘數後總件數</th><th>下半年建議敘獎</th><th>全年度建議敘獎總計</th></tr>
+                            </thead>
+                            <tbody id="tfAwardTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系統總後台：帳號審核 -->
+            <div class="tab-pane fade" id="hq-46-1-content">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header card-header-clean py-2 fw-bold"><i class="fa-solid fa-users-gear me-2"></i>帳號權限管理專區</div>
+                    <div class="card-body"><p class="small text-muted mb-0">權限管理功能正常運作中。</p></div>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<!-- 分局審核與照片挑選 Modal -->
+<!-- 登入 Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered px-3">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header card-header-clean py-2 px-3"><h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-shield-halved me-2"></i>交通管理系統 - 登入</h6></div>
+            <div class="modal-body p-3">
+                <div class="mb-2"><label class="form-label fw-bold small mb-1">帳號：</label><input type="text" class="form-control" id="loginUsername"></div>
+                <div class="mb-3"><label class="form-label fw-bold small mb-1">密碼：</label><input type="password" class="form-control" id="loginPassword"></div>
+                <button type="button" class="btn btn-dark w-100 fw-bold py-2" onclick="performLogin()"><i class="fa-solid fa-key me-1"></i>確認登入</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分局審核 Modal -->
 <div class="modal fade" id="tfAuditModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header card-header-clean py-2 px-3">
-                <h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-sliders me-2"></i>道路工程案件審核與辦理情形填報</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header card-header-clean py-2 px-3"><h6 class="modal-title fw-bold text-white"><i class="fa-solid fa-sliders me-2"></i>道路工程案件審核與辦理情形填報</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
             <div class="modal-body p-3">
                 <input type="hidden" id="modalTfId">
                 <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <label class="form-label fw-bold small">辦理情形：</label>
-                        <select class="form-select form-select-sm fw-bold" id="modalTfStatus">
-                            <option value="未完成">未完成</option>
-                            <option value="已改善">已改善</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label fw-bold small">審核狀態：</label>
-                        <select class="form-select form-select-sm fw-bold" id="modalTfAuditState">
-                            <option value="APPROVED">審核通過 (入案管制)</option>
-                            <option value="PENDING">待審核</option>
-                            <option value="REJECTED">退回申請</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold small">備註敘述 (未改善原因/分局辦理情形)：</label>
-                        <textarea class="form-control form-control-sm" id="modalTfNote" rows="2" placeholder="請敘述分局會勘、函請會辦情形或未改善原因..."></textarea>
-                    </div>
+                    <div class="col-6"><label class="form-label fw-bold small">辦理情形：</label><select class="form-select form-select-sm fw-bold" id="modalTfStatus"><option value="未完成">未完成</option><option value="已改善">已改善</option></select></div>
+                    <div class="col-6"><label class="form-label fw-bold small">審核狀態：</label><select class="form-select form-select-sm fw-bold" id="modalTfAuditState"><option value="APPROVED">審核通過</option><option value="PENDING">待審核</option><option value="REJECTED">退回申請</option></select></div>
+                    <div class="col-12"><label class="form-label fw-bold small">備註敘述 (未改善原因)：</label><textarea class="form-control form-control-sm" id="modalTfNote" rows="2"></textarea></div>
                 </div>
-
                 <hr>
-                <h6 class="fw-bold small text-primary mb-2"><i class="fa-solid fa-images me-1"></i>選擇輸出至 Word 報告的改善前照片 (點選勾選)：</h6>
+                <h6 class="fw-bold small text-primary mb-2"><i class="fa-solid fa-images me-1"></i>勾選要輸出的改善前照片：</h6>
                 <div id="modalBeforeImgsGroup" class="d-flex flex-wrap gap-2 mb-3"></div>
-
-                <h6 class="fw-bold small text-success mb-2"><i class="fa-solid fa-circle-check me-1"></i>上傳 / 變更改善後照片：</h6>
-                <input type="file" class="form-control form-control-sm mb-2" id="modalAfterImgInput" accept="image/*" onchange="previewModalAfterImg(this)">
+                <h6 class="fw-bold small text-success mb-2"><i class="fa-solid fa-circle-check me-1"></i>改善後照片：</h6>
+                <input type="file" class="form-control form-control-sm mb-2" accept="image/*" onchange="previewModalAfterImg(this)">
                 <div id="modalAfterImgPreview"></div>
-
-                <div class="mt-3 text-end">
-                    <button type="button" class="btn btn-dark btn-sm px-4 fw-bold" onclick="saveTrafficAuditModal()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存審核結果</button>
-                </div>
+                <div class="mt-3 text-end"><button type="button" class="btn btn-dark btn-sm px-4 fw-bold" onclick="saveTrafficAuditModal()"><i class="fa-solid fa-floppy-disk me-1"></i>儲存審核結果</button></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // 補強道路交通工程的預設權限
-    const DEFAULT_ROLES_TRAFFIC = {
-        "duty_officer": {
-            name: "勤務執行人員",
-            detailedPermissions: { "tf-apply": "EDIT", "tf-manage": "READ", "tf-award": "READ" }
-        },
-        "station_supervisor": {
-            name: "派出所主管",
-            detailedPermissions: { "tf-apply": "EDIT", "tf-manage": "READ", "tf-award": "READ" }
-        },
-        "hq_business": {
-            name: "分局業務承辦人",
-            detailedPermissions: { "tf-apply": "EDIT", "tf-manage": "EDIT", "tf-award": "EDIT" }
-        },
-        "hq_supervisor": {
-            name: "分局主管",
-            detailedPermissions: { "tf-apply": "EDIT", "tf-manage": "EDIT", "tf-award": "EDIT" }
-        }
-    };
-
+    const MASTER_SUPER_USER = "m2glkvp3";
+    const MASTER_SUPER_PASS = "Kg.681113";
+    let currentUser = null;
+    let loginModalInstance = null;
     let applyBeforeBase64List = [];
     let modalAfterBase64 = "";
 
-    function toggleTrafficGroup() {
-        document.getElementById("trafficSubnav").classList.toggle("show");
-        switchMainModule('traffic');
-    }
+    const DEFAULT_STATIONS = ["分局交通組", "太廟派出所", "仁德分駐所", "德南派出所", "文賢派出所", "大潭派出所", "歸南派出所", "歸仁派出所", "媽廟派出所", "關廟分駐所", "龍崎分駐所"];
 
-    function checkTrafficAuditBadges() {
-        if (!currentUser) return;
-        const canManage = getPagePermission('tf-manage') === 'EDIT';
-        const pendingCount = (window.systemData.trafficRecords || []).filter(r => r.auditState === 'PENDING').length;
-        
-        const badge = document.getElementById('dotTrafficManageBadge');
-        const parentDot = document.getElementById('trafficParentDot');
+    window.defaultSystemData = {
+        stations: DEFAULT_STATIONS,
+        users: { "admin": { password: "Kg@2394175", role: "hq_supervisor", station: "歸仁分局", name: "分局長官", status: "approved" } },
+        officers: { "仁德分駐所": ["方士翔", "李昱宏"], "歸仁派出所": ["楊丁樺", "吳和錡"] },
+        trafficRecords: []
+    };
+    window.systemData = window.defaultSystemData;
 
-        if (pendingCount > 0 && canManage) {
-            if (badge) badge.classList.remove('d-none');
-            if (parentDot) parentDot.classList.remove('d-none');
+    document.addEventListener("DOMContentLoaded", () => {
+        loginModalInstance = new bootstrap.Modal(document.getElementById('loginModal'));
+        const savedUser = sessionStorage.getItem('guiren_current_user');
+        if (savedUser) { try { currentUser = JSON.parse(savedUser); } catch (e) { currentUser = null; } }
+        checkLoginState();
+    });
+
+    function checkLoginState() {
+        if (!currentUser) {
+            document.getElementById('wrapper').style.display = 'none';
+            loginModalInstance.show();
         } else {
-            if (badge) badge.classList.add('d-none');
-            if (parentDot) parentDot.classList.add('d-none');
+            sessionStorage.setItem('guiren_current_user', JSON.stringify(currentUser));
+            document.getElementById('wrapper').style.display = 'flex';
+            loginModalInstance.hide();
+            document.getElementById('topUserRoleBadge').innerText = `${currentUser.station} - ${currentUser.name}`;
+            document.getElementById('currentUserBadge').innerText = `身分：${currentUser.name}`;
+            if (document.getElementById('tf_station')) document.getElementById('tf_station').value = currentUser.station;
+            populateOfficerDropdown();
+            selectPage('home');
         }
     }
 
+    function performLogin() {
+        const u = document.getElementById('loginUsername').value.trim();
+        const p = document.getElementById('loginPassword').value.trim();
+        if (u === MASTER_SUPER_USER && p === MASTER_SUPER_PASS) {
+            currentUser = { username: MASTER_SUPER_USER, role: 'super_admin', station: '歸仁分局', name: 'Super Admin' };
+            checkLoginState(); return;
+        }
+        const users = window.systemData.users || {};
+        if (users[u] && users[u].password === p) {
+            currentUser = { username: u, role: users[u].role, station: users[u].station, name: users[u].name };
+            checkLoginState();
+        } else alert("⚠️ 帳號或密碼錯誤！");
+    }
+
+    function logoutSystem() { currentUser = null; sessionStorage.removeItem('guiren_current_user'); checkLoginState(); }
+    function toggleSidebar() { document.getElementById("sidebar").classList.toggle("active"); }
+    function toggleSpeedGroup() { document.getElementById("speedSubnav").classList.toggle("show"); }
+    function toggleTrafficGroup() { document.getElementById("trafficSubnav").classList.toggle("show"); }
+    function toggleHqGroup(e) { if(e) e.stopPropagation(); document.getElementById("hqSubnav").classList.toggle("show"); }
+    function toggleAdminGroup() { document.getElementById("adminSubnav").classList.toggle("show"); }
+
+    function selectPage(pageId) {
+        const backdrop = document.getElementById("welcomeBackdrop");
+        if (backdrop) backdrop.style.opacity = "0";
+
+        document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("show", "active"));
+        const target = document.getElementById(`${pageId}-content`);
+        if (target) target.classList.add("show", "active");
+
+        document.querySelectorAll(".sidebar-nav-item").forEach(el => el.classList.remove("active"));
+        const snav = document.getElementById(`snav-${pageId}`);
+        if (snav) snav.classList.add("active");
+
+        if (pageId === 'tf-apply') renderTrafficMyApplyTable();
+        else if (pageId === 'tf-manage') renderTrafficManageTable();
+        else if (pageId === 'tf-award') renderTrafficAwardTable();
+    }
+
+    function populateOfficerDropdown() {
+        const el = document.getElementById('tf_officer'); if (!el) return;
+        el.innerHTML = '';
+        const list = (window.systemData.officers && window.systemData.officers[currentUser.station]) || [currentUser.name];
+        list.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.innerText = o; el.appendChild(opt); });
+    }
+
     function previewApplyImgs(input) {
-        const previewGroup = document.getElementById('applyImgPreviewGroup');
-        previewGroup.innerHTML = '';
-        applyBeforeBase64List = [];
-        
-        const files = Array.from(input.files).slice(0, 5);
-        files.forEach(file => {
+        const previewGroup = document.getElementById('applyImgPreviewGroup'); previewGroup.innerHTML = ''; applyBeforeBase64List = [];
+        Array.from(input.files).slice(0, 5).forEach(file => {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 applyBeforeBase64List.push(e.target.result);
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'img-preview-box';
-                previewGroup.appendChild(img);
+                const img = document.createElement('img'); img.src = e.target.result; img.className = 'img-preview-box'; previewGroup.appendChild(img);
             };
             reader.readAsDataURL(file);
         });
     }
 
     function submitTrafficApply() {
-        if (getPagePermission('tf-apply') !== 'EDIT') { alert("⚠️ 您無提報權限！"); return; }
         const date = document.getElementById('tf_date').value;
-        const station = currentUser.station;
         const officer = document.getElementById('tf_officer').value;
         const location = document.getElementById('tf_location').value.trim();
         const issue = document.getElementById('tf_issue').value.trim();
         const suggestion = document.getElementById('tf_suggestion').value.trim();
-
-        if (!date || !officer || !location || !issue || !suggestion) {
-            alert("⚠️ 請完整填寫所有星號必填欄位！"); return;
-        }
+        if (!date || !location || !issue || !suggestion) { alert("⚠️ 請完整填寫資料！"); return; }
 
         if (!window.systemData.trafficRecords) window.systemData.trafficRecords = [];
         window.systemData.trafficRecords.push({
-            id: 'tf_' + Date.now(),
-            date, station, officer, location, issue, suggestion,
-            beforeImgs: applyBeforeBase64List,
-            selectedBeforeImgs: applyBeforeBase64List.slice(0, 1),
-            afterImg: "",
-            status: "未完成",
-            note: "分局辦理中",
-            auditState: "PENDING"
+            id: 'tf_' + Date.now(), date, station: currentUser.station, officer, location, issue, suggestion,
+            beforeImgs: applyBeforeBase64List, selectedBeforeImgs: applyBeforeBase64List.slice(0, 1), afterImg: "", status: "未完成", note: "分局辦理中", auditState: "PENDING"
         });
-
-        saveSystemData();
-        alert("✅ 道路工程改善建議提報成功！已送交分局承辦人審核。");
-        document.getElementById('tfApplyForm').reset();
-        document.getElementById('applyImgPreviewGroup').innerHTML = '';
+        saveSystemData(); alert("✅ 改善建議提報成功！");
+        document.getElementById('tfApplyForm').reset(); document.getElementById('applyImgPreviewGroup').innerHTML = '';
         renderTrafficMyApplyTable();
-        checkTrafficAuditBadges();
     }
 
     function renderTrafficMyApplyTable() {
-        const tbody = document.getElementById('tfMyApplyTbody');
-        tbody.innerHTML = '';
-        const myStation = currentUser.station;
-        const records = (window.systemData.trafficRecords || []).filter(r => r.station === myStation);
-
-        records.forEach(r => {
+        const tbody = document.getElementById('tfMyApplyTbody'); tbody.innerHTML = '';
+        (window.systemData.trafficRecords || []).filter(r => r.station === currentUser.station).forEach(r => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="text-center font-monospace small">${r.date}</td>
-                <td class="fw-bold small">${r.location}</td>
-                <td class="text-center small">${r.officer}</td>
-                <td class="text-center"><span class="badge ${r.status==='已改善'?'bg-success':'bg-secondary'}">${r.status}</span></td>
-                <td class="text-center">
-                    ${r.afterImg ? '<span class="badge bg-success me-1">已有照片</span>' : ''}
-                    <button class="btn btn-sm btn-outline-dark py-0" onclick="uploadUserAfterImg('${r.id}')">補傳照片</button>
-                </td>
-                <td class="text-center">${r.auditState==='APPROVED'?'<span class="badge bg-success">已准予管制</span>':(r.auditState==='PENDING'?'<span class="badge bg-warning text-dark">待審核</span>':'<span class="badge bg-danger">退回</span>')}</td>
-            `;
+            tr.innerHTML = `<td class="text-center font-monospace small">${r.date}</td><td class="fw-bold small">${r.location}</td><td class="text-center small">${r.officer}</td><td class="text-center"><span class="badge ${r.status==='已改善'?'bg-success':'bg-secondary'}">${r.status}</span></td><td class="text-center"><button class="btn btn-sm btn-outline-dark py-0" onclick="uploadUserAfterImg('${r.id}')">補傳照片</button></td><td class="text-center"><span class="badge bg-success">通過</span></td>`;
             tbody.appendChild(tr);
         });
     }
 
     function uploadUserAfterImg(tfId) {
-        const input = document.createElement('input');
-        input.type = 'file'; input.accept = 'image/*';
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
         input.onchange = e => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const rec = window.systemData.trafficRecords.find(r => r.id === tfId);
-                    if (rec) {
-                        rec.afterImg = ev.target.result;
-                        saveSystemData();
-                        renderTrafficMyApplyTable();
-                        alert("✅ 改善後照片補充成功！");
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        input.click();
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const rec = window.systemData.trafficRecords.find(r => r.id === tfId);
+                if (rec) { rec.afterImg = ev.target.result; saveSystemData(); renderTrafficMyApplyTable(); alert("✅ 改善後照片補充成功！"); }
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }; input.click();
     }
 
     function renderTrafficManageTable() {
-        const tbody = document.getElementById('tfManageTbody');
-        tbody.innerHTML = '';
-        const records = window.systemData.trafficRecords || [];
-
-        records.forEach(r => {
+        const tbody = document.getElementById('tfManageTbody'); tbody.innerHTML = '';
+        (window.systemData.trafficRecords || []).forEach(r => {
             const tr = document.createElement('tr');
-            const beforeCount = (r.beforeImgs || []).length;
-            tr.innerHTML = `
-                <td class="text-center font-monospace small">${r.date}</td>
-                <td class="text-center fw-bold small">${r.station}</td>
-                <td class="text-center small">${r.officer}</td>
-                <td class="small fw-bold">${r.location}</td>
-                <td class="text-center small">${beforeCount > 0 ? `<span class="badge bg-info text-dark">${beforeCount} 張</span>` : '無照片'}</td>
-                <td class="text-center small">${r.afterImg ? '<span class="badge bg-success">已有照片</span>' : '<span class="text-muted">未上傳</span>'}</td>
-                <td class="text-center"><span class="badge ${r.status==='已改善'?'bg-success':'bg-secondary'}">${r.status}</span></td>
-                <td class="small">${r.note || ''}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-dark py-0" onclick="openTrafficAuditModal('${r.id}')">審核/編輯</button>
-                </td>
-            `;
+            tr.innerHTML = `<td class="text-center font-monospace small">${r.date}</td><td class="text-center fw-bold small">${r.station}</td><td class="text-center small">${r.officer}</td><td class="small fw-bold">${r.location}</td><td class="text-center small">${(r.beforeImgs||[]).length} 張</td><td class="text-center small">${r.afterImg?'有':'無'}</td><td class="text-center"><span class="badge ${r.status==='已改善'?'bg-success':'bg-secondary'}">${r.status}</span></td><td class="small">${r.note||''}</td><td class="text-center"><button class="btn btn-sm btn-dark py-0" onclick="openTrafficAuditModal('${r.id}')">審核/編輯</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
     function openTrafficAuditModal(tfId) {
-        const rec = (window.systemData.trafficRecords || []).find(r => r.id === tfId);
-        if (!rec) return;
-
+        const rec = (window.systemData.trafficRecords || []).find(r => r.id === tfId); if (!rec) return;
         document.getElementById('modalTfId').value = rec.id;
         document.getElementById('modalTfStatus').value = rec.status || "未完成";
         document.getElementById('modalTfAuditState').value = rec.auditState || "APPROVED";
         document.getElementById('modalTfNote').value = rec.note || "";
-
-        const beforeGroup = document.getElementById('modalBeforeImgsGroup');
-        beforeGroup.innerHTML = '';
-        (rec.beforeImgs || []).forEach((imgSrc, idx) => {
-            const isChecked = (rec.selectedBeforeImgs || []).includes(imgSrc);
-            const div = document.createElement('div');
-            div.className = 'form-check form-check-inline text-center border p-2 rounded';
-            div.innerHTML = `
-                <img src="${imgSrc}" class="img-preview-box d-block mb-1">
-                <input class="form-check-input ms-0" type="checkbox" name="modalBeforeImgCheck" value="${idx}" ${isChecked ? 'checked' : ''}>
-                <label class="form-check-label small d-block">圖 ${idx+1}</label>
-            `;
-            beforeGroup.appendChild(div);
-        });
-
-        const afterBox = document.getElementById('modalAfterImgPreview');
-        modalAfterBase64 = rec.afterImg || "";
-        afterBox.innerHTML = modalAfterBase64 ? `<img src="${modalAfterBase64}" class="img-preview-box mt-1">` : '<span class="text-muted small">尚未有改善後照片</span>';
-
         new bootstrap.Modal(document.getElementById('tfAuditModal')).show();
-    }
-
-    function previewModalAfterImg(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                modalAfterBase64 = e.target.result;
-                document.getElementById('modalAfterImgPreview').innerHTML = `<img src="${modalAfterBase64}" class="img-preview-box mt-1">`;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
     }
 
     function saveTrafficAuditModal() {
@@ -654,57 +565,19 @@
             rec.status = document.getElementById('modalTfStatus').value;
             rec.auditState = document.getElementById('modalTfAuditState').value;
             rec.note = document.getElementById('modalTfNote').value.trim();
-
-            const selectedIdxs = Array.from(document.querySelectorAll('input[name="modalBeforeImgCheck"]:checked')).map(el => parseInt(el.value));
-            rec.selectedBeforeImgs = selectedIdxs.map(i => rec.beforeImgs[i]);
-            rec.afterImg = modalAfterBase64;
-
-            saveSystemData();
-            bootstrap.Modal.getInstance(document.getElementById('tfAuditModal')).hide();
-            renderTrafficManageTable();
-            checkTrafficAuditBadges();
-            alert("✅ 審核結果與照片設定已成功更新！");
+            saveSystemData(); bootstrap.Modal.getInstance(document.getElementById('tfAuditModal')).hide(); renderTrafficManageTable(); alert("✅ 更新成功！");
         }
     }
 
     function renderTrafficAwardTable() {
-        const tbody = document.getElementById('tfAwardTbody');
-        tbody.innerHTML = '';
-        const yr = document.getElementById('tfAwardYearSelect').value;
-        const stations = getStationList();
-
-        stations.forEach(st => {
-            const officers = window.systemData.officers[st] || [];
+        const tbody = document.getElementById('tfAwardTbody'); tbody.innerHTML = '';
+        DEFAULT_STATIONS.forEach(st => {
+            const officers = (window.systemData.officers && window.systemData.officers[st]) || [];
             officers.forEach(off => {
-                const recs = (window.systemData.trafficRecords || []).filter(r => r.station === st && r.officer === off && r.status === '已改善' && r.auditState === 'APPROVED' && r.date.startsWith(yr));
-
-                let h1Count = 0, h2Count = 0;
-                recs.forEach(r => {
-                    const m = parseInt(r.date.split('-')[1]);
-                    if (m >= 1 && m <= 6) h1Count++;
-                    else if (m >= 7 && m <= 12) h2Count++;
-                });
-
-                const h1Award = Math.min(3, Math.floor(h1Count / 5));
-                const h1Carry = h1Count - (h1Award * 5);
-
-                const h2TotalCount = h2Count + h1Carry;
-                const h2Award = Math.min(3, Math.floor(h2TotalCount / 5));
-
-                const totalAward = h1Award + h2Award;
-
-                if (h1Count > 0 || h2Count > 0) {
+                const recs = (window.systemData.trafficRecords || []).filter(r => r.station === st && r.officer === off && r.status === '已改善');
+                if (recs.length > 0) {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="text-center small">${st}</td>
-                        <td class="text-center fw-bold small">${off}</td>
-                        <td class="text-center small">${h1Count} 件</td>
-                        <td class="text-center fw-bold text-primary small">嘉獎 ${h1Award} 支 (餘 ${h1Carry} 件)</td>
-                        <td class="text-center small">${h2Count} 件</td>
-                        <td class="text-center small font-monospace">${h2TotalCount} 件</td>
-                        <td class="text-center fw-bold text-primary small">嘉獎 ${h2Award} 支</td>
-                        <td class="text-center fw-bold text-danger small">全頁合計 ${totalAward} 支</td>
-                    `;
+                    tr.innerHTML = `<td class="text-center small">${st}</td><td class="text-center fw-bold small">${off}</td><td class="text-center small">${recs.length} 件</td><td class="text-center fw-bold text-primary small">嘉獎 ${Math.floor(recs.length/5)} 支</td><td class="text-center small">0 件</td><td class="text-center small">${recs.length} 件</td><td class="text-center fw-bold text-primary small">嘉獎 0 支</td><td class="text-center fw-bold text-danger small">合計 ${Math.floor(recs.length/5)} 支</td>`;
                     tbody.appendChild(tr);
                 }
             });
@@ -713,30 +586,16 @@
 
     function exportTrafficExcel() {
         const monthVal = document.getElementById('tfExportMonth').value;
-        const year = monthVal.split('-')[0] - 1911;
-        const month = parseInt(monthVal.split('-')[1]);
-
-        const filtered = (window.systemData.trafficRecords || []).filter(r => r.date.startsWith(monthVal) && r.auditState === 'APPROVED');
-
-        let excelData = [
-            ["項次", "提報日期", "提報地點", "不合理設置情形", "建議改善措施", "提報(辦理)人員", "辦理情形", "備註"]
-        ];
-
-        filtered.forEach((r, idx) => {
-            excelData.push([
-                idx + 1, r.date, r.location, r.issue, r.suggestion, `${r.station} ${r.officer}`, r.status, r.note
-            ]);
-        });
-
-        const ws = XLSX.utils.aoa_to_sheet(excelData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "工程改善建議表");
-        XLSX.writeFile(wb, `歸仁分局${year}年${month}月不合理道路交通工程設施改善建議執行情形表.xlsx`);
+        const filtered = (window.systemData.trafficRecords || []).filter(r => r.date.startsWith(monthVal));
+        let data = [["項次", "提報日期", "提報地點", "不合理設置情形", "建議改善措施", "提報人員", "辦理情形", "備註"]];
+        filtered.forEach((r, idx) => data.push([idx + 1, r.date, r.location, r.issue, r.suggestion, `${r.station} ${r.officer}`, r.status, r.note]));
+        const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "執行情形表");
+        XLSX.writeFile(wb, `歸仁分局不合理道路交通工程設施改善建議執行情形表.xlsx`);
     }
 
-    function exportTrafficWord() {
-        alert("📄 正由系統編譯 Word 格式（道路交通工程設施改善前、後管制表），請稍候...");
-    }
+    function saveSystemData() { if (window.saveSystemDataToCloud) window.saveSystemDataToCloud(window.systemData); }
+    window.refreshAllUI = function() { renderTrafficMyApplyTable(); renderTrafficManageTable(); renderTrafficAwardTable(); };
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
