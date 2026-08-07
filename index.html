@@ -360,7 +360,7 @@
                     <div class="card border-danger shadow-sm mb-3 d-none" id="homeGapAlertCard">
                         <div class="card-header bg-danger text-white fw-bold d-flex align-items-center py-2">
                             <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                            <span>案件管制表缺漏（斷號）警示通知</span>
+                            <span>案件管制表缺漏（斷號/跳號）警示通知</span>
                         </div>
                         <div class="card-body bg-light text-dark p-3">
                             <p class="mb-2 text-danger fw-bold small"><i class="fa-solid fa-circle-exclamation me-1"></i>檢測到下列測速儀器之案件編號有未填寫的「缺漏斷號」區間：</p>
@@ -440,6 +440,18 @@
 
                 <!-- 3. 測速案件管制表 -->
                 <div class="tab-pane fade" id="case-content">
+                    <!-- 🔴 案件管制表頁面：跳號/缺漏警示卡片 -->
+                    <div class="card border-danger shadow-sm mb-3 d-none" id="caseGapAlertCard">
+                        <div class="card-header bg-danger text-white fw-bold d-flex align-items-center py-2">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            <span>案件管制表缺漏（斷號/跳號）警示通知</span>
+                        </div>
+                        <div class="card-body bg-light text-dark p-3">
+                            <p class="mb-2 text-danger fw-bold small"><i class="fa-solid fa-circle-exclamation me-1"></i>檢測到下列測速儀器之案件編號有未填寫的「缺漏斷號」區間：</p>
+                            <div id="caseGapAlertList" class="list-group list-group-flush border rounded bg-white small"></div>
+                        </div>
+                    </div>
+
                     <div class="card shadow-sm mb-3">
                         <div class="card-header card-header-clean d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
                             <span><i class="fa-solid fa-sliders me-2"></i><span id="cardTitleCaseEquipSelect">測速裝備選擇與登錄</span></span>
@@ -2221,7 +2233,11 @@
     function checkCaseCodeGaps() {
         const gapAlertCard = document.getElementById("homeGapAlertCard");
         const gapAlertList = document.getElementById("homeGapAlertList");
-        gapAlertList.innerHTML = "";
+        const caseGapAlertCard = document.getElementById("caseGapAlertCard");
+        const caseGapAlertList = document.getElementById("caseGapAlertList");
+
+        if (gapAlertList) gapAlertList.innerHTML = "";
+        if (caseGapAlertList) caseGapAlertList.innerHTML = "";
         let totalGapsFound = 0;
 
         Object.keys(window.systemData.equipments || {}).forEach(eqKey => {
@@ -2263,23 +2279,46 @@
                     const currentStatus = equip.currentStatus || "分局(保管)";
                     const displayEquipTitle = `${equip.name} (${currentStatus})`;
 
-                    const item = document.createElement("div");
-                    item.className = "list-group-item d-flex justify-content-between align-items-center py-2";
-                    item.innerHTML = `
-                        <div>
-                            <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${displayEquipTitle}</span>
-                            <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
-                            <span class="font-monospace fw-bold text-dark">${rangeText}</span>
-                        </div>
-                        <button class="btn btn-sm btn-outline-dark py-0" onclick="selectPage('case'); document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">前往補填</button>
-                    `;
-                    gapAlertList.appendChild(item);
+                    // 首頁總表發送跳號提示卡片
+                    if (gapAlertList) {
+                        const item = document.createElement("div");
+                        item.className = "list-group-item d-flex justify-content-between align-items-center py-2";
+                        item.innerHTML = `
+                            <div>
+                                <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${displayEquipTitle}</span>
+                                <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
+                                <span class="font-monospace fw-bold text-dark">${rangeText}</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-dark py-0" onclick="selectPage('case'); document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">前往補填</button>
+                        `;
+                        gapAlertList.appendChild(item);
+                    }
+
+                    // 案件管制表頁面發送跳號提示卡片
+                    if (caseGapAlertList) {
+                        const item2 = document.createElement("div");
+                        item2.className = "list-group-item d-flex justify-content-between align-items-center py-2";
+                        item2.innerHTML = `
+                            <div>
+                                <span class="fw-bold text-dark me-2"><i class="fa-solid fa-video me-1 text-secondary"></i>${displayEquipTitle}</span>
+                                <span class="badge bg-danger me-2">缺漏 ${range.end - range.start + 1} 筆</span>
+                                <span class="font-monospace fw-bold text-dark">${rangeText}</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-dark py-0" onclick="document.getElementById('equipSelect').value='${eqKey}'; switchEquipment();">切換至此裝備</button>
+                        `;
+                        caseGapAlertList.appendChild(item2);
+                    }
                 });
             }
         });
 
-        if (totalGapsFound > 0) gapAlertCard.classList.remove("d-none");
-        else gapAlertCard.classList.add("d-none");
+        if (totalGapsFound > 0) {
+            if (gapAlertCard) gapAlertCard.classList.remove("d-none");
+            if (caseGapAlertCard) caseGapAlertCard.classList.remove("d-none");
+        } else {
+            if (gapAlertCard) gapAlertCard.classList.add("d-none");
+            if (caseGapAlertCard) caseGapAlertCard.classList.add("d-none");
+        }
     }
 
     function renderStationDutyTable() {
@@ -2414,6 +2453,7 @@
     }
 
     function renderCaseTable() {
+        checkCaseCodeGaps();
         const equipKey = document.getElementById("equipSelect").value;
         const equip = window.systemData.equipments[equipKey];
         if (!equip) return;
